@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Dashboard {
+  id        String   @id @default(cuid())
+  name      String
+  widgets   Widget[]
+  wallpaper Json?
+  settings  Json?
+}
+
+// Versions-Snapshots eines einzelnen Views. Werden vor jedem Layout-Save
+// automatisch angelegt (Pre-Save-Stand) + bei Import/Restore. Auf die letzten
+// 20 begrenzt. data hält { name, wallpaper, settings, widgets[] }.
+model Snapshot {
+  id            String   @id @default(cuid())
+  dashboardId   String
+  dashboardName String   @default("")
+  reason        String   @default("auto") // auto | manual | pre-import | pre-restore
+  data          Json
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  passwordHash   String
+  role           String         @default("admin")
+  shortcutToken  String?        @unique // Für iOS-Shortcuts / externe API-Clients
+  // 2FA (TOTP). totpSecret = base32, gesetzt sobald Setup begonnen wurde
+  // (auch wenn noch nicht enabled). totpEnabled erst true nach bestätigtem Setup-Code.
+  totpSecret     String?
+  totpEnabled    Boolean        @default(false)
+  // recoveryCodes = JSON-Array gehashter (scrypt) one-shot Codes — werden beim
+  // Verbrauch aus dem Array entfernt.
+  recoveryCodes  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  calendarAuths  CalendarAuth[]
+  timers         Timer[]
+}
+
+// Audit-Log + Brute-Force-Source-of-Truth. Wird beim Login geschrieben
+// (success oder fail). `reason` = "bad_pwd" | "bad_totp" | "no_user" | "locked" | "ok".
+model LoginAttempt {
+  id      String   @id @default(cuid())
+  ip      String
+  email   String?
+  success Boolean
+  reason  String?
+  at      DateTime @default(now())
+
+  @@index([ip, at])
+  @@index([email, at])
+  @@index([at])
+}
+
+// Aktive Lockouts. scope = "ip:1.2.3.4" oder "user:foo@bar".
+// In-DB statt In-Memory, damit Container-Restart die Sperre nicht aufhebt.
+model LoginLockout {
+  id        String   @id @default(cuid())
+  scope     String   @unique
+  until     DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([until])
+}
+
+// Vom User hochgeladene Custom-Module. Werden in der Live-View per
+// dynamischem <script>-Tag-Einbinden geladen (Bundle ist Plain-JS).
+// Das Bundle registriert sich bei `window.MagicFrame.registerWidget(...)`.
+// `manifestJson` enthält Felder fürs Editor-Inspector (Field-Schema).
+// `type` ist die widget-type-id (z.B. "custom:hello-v1"), eindeutig.
+model CustomModule {
+  id           String   @id @default(cuid())
+  type         String   @unique // z.B. "custom:hello" — wird im View-Layout als widget.type genutzt
+  label        String
+  description  String   @default("")
+  iconEmoji    String   @default("🧩")
+  version      String   @default("1.0.0")
+  // JSON: { fields: [{ key, label, type, default? }], author?, homepage? }
+  manifestJson String
+  // ES2017+ IIFE, registriert sich bei window.MagicFrame.registerWidget.
+  bundleJs     String
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+// Timer fürs Board. Können per Phone / Shortcut gestartet werden und laufen
+// visuell auf dem Display ab. targetDashboardId=null → alle Boards.
+model Timer {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label             String    @default("Timer")
+  targetDashboardId String?
+  startedAt         DateTime  @default(now())
+  durationMs        Int
+  completedAt       DateTime?
+  dismissedAt       DateTime?
+
+  @@index([userId, dismissedAt])
+}
+
+// Quick-Post-Nachrichten aufs Board (Text + optional Bild-URL).
+// TTL per expiresAt; displays zeigen nur wo now < expiresAt.
+model BoardMessage {
+  id                String    @id @default(cuid())
+  userId            String
+  text              String
+  imageUrl          String?
+  targetDashboardId String?
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime?
+  dismissedAt       DateTime?
+
+  @@index([targetDashboardId, dismissedAt])
+}
+
+// Gemeinsame Einkaufsliste. Kein per-user Scope — Familie teilt eine.
+model ShoppingItem {
+  id              String    @id @default(cuid())
+  text            String
+  checked         Boolean   @default(false)
+  createdByUserId String?
+  createdAt       DateTime  @default(now())
+  checkedAt       DateTime?
+
+  @@index([checked, createdAt])
+}
+
+// Todos / Ämtli. Optional einer Person zugewiesen (freier String, weil
+// echtes Multi-User-Modell noch nicht steht).
+model Todo {
+  id              String    @id @default(cuid())
+  title           String
+  assignee        String?
+  dueDate         DateTime?
+  priority        String    @default("normal") // low | normal | high
+  createdByUserId String?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  @@index([completedAt, dueDate])
+}
+
+// Pro Nutzer und OAuth-Provider (google, microsoft, …) ein Set an
+// Tokens. Über accountEmail können mehrere Konten desselben Anbieters
+// parallel gespeichert werden.
+model CalendarAuth {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String   // "google" | "microsoft"
+  accountEmail String?
+  accountName  String?
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime
+  scope        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, provider, accountEmail])
+  @@index([userId, provider])
+}
+
+// Singleton-Tabelle für globale App-Settings. Genau eine Row mit id="global".
+model AppSettings {
+  id        String   @id @default("global")
+  haUrl     String   @default("")
+  haToken   String   @default("")
+  extra     Json?
+  updatedAt DateTime @updatedAt
+}
+
+model Widget {
+  id          String    @id @default(cuid())
+  type        String    // Dateiname der Widget-Komponente, z.B. "ClockWidget.tsx"
+  label       String    @default("") // Vom Nutzer vergebener Anzeigename
+  config      Json      // Modul-spezifische Konfiguration
+  bgOpacity   Float     @default(0.2) // Widget Background Visibility (0 = hidden, 1 = solid)
+  x           Int       // Grid Position
+  y           Int
+  w           Int       // Breite
+  h           Int       // Höhe
+  dashboardId String
+  dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+}

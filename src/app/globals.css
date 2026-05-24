@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* react-resizable Griff im Editor sichtbarer machen.
+   Default ist ein kleines SVG-Dreieck, das man kaum sieht.
+   Wir zeigen einen deutlichen Greifpunkt mit Hover-Effekt. */
+.editor-grid .react-resizable-handle {
+  width: 22px !important;
+  height: 22px !important;
+  right: 4px !important;
+  bottom: 4px !important;
+  background-image: none !important;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  cursor: se-resize;
+}
+.editor-grid .react-resizable-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-right: 2px solid rgba(255, 255, 255, 0.7);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.7);
+  border-bottom-right-radius: 10px;
+  pointer-events: none;
+}
+.editor-grid .react-grid-item:hover .react-resizable-handle {
+  opacity: 1;
+}
+.editor-grid .react-resizable-handle:hover {
+  transform: scale(1.15);
+}
+.editor-grid .react-grid-item.react-grid-placeholder {
+  background: rgba(59, 130, 246, 0.25) !important;
+  border: 1.5px dashed rgba(59, 130, 246, 0.6) !important;
+  border-radius: 16px;
+  opacity: 1 !important;
+}
+
+/* Live-Dashboard (statisches Grid): KEINE Layout-Transitions.
+   Standardmäßig animiert react-grid-layout `transform/width/height` über 200ms.
+   Auf Tizen-/Samsung-TV-Browsern führt das bei minimalen Reflows (Kontainer-
+   Querys, WidthProvider-Tick, Resize-Event vom OS-Overlay) dazu, dass die
+   Widgets sichtbar zittern. Auf einem Static-Grid gibt es nichts zu animieren,
+   also schalten wir die Transition komplett aus.
+
+   ⚠️ Kein `backface-visibility: hidden` oder `will-change: transform` hier
+   ergänzen — auf Tizen-TVs ist das GPU-Layer-Budget knapp; ein Promote-to-Layer
+   pro Grid-Item kickt den Wallpaper-Crossfade aus dem HW-Compositor und
+   die Bild-Übergänge werden hart statt sanft. */
+.dashboard-static-grid .react-grid-item,
+.dashboard-static-grid .react-grid-item.cssTransforms {
+  transition: none !important;
+}
+
+/* Pulse für abgelaufene Timer-Karten im HANotificationWidget. */
+@keyframes ha-timer-card-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(249, 115, 22, 0.15); }
+  50%      { box-shadow: 0 8px 32px rgba(249, 115, 22, 0.55); }
+}
+
+/* Settings-Modals (Inspector + Wallpaper): Sektionen in 2 Spalten fließen
+   lassen statt vertikal stapeln → Modal wird breiter statt länger.
+   `.settings-cols` ist ein Wrapper um den bestehenden space-y-Container; dessen
+   Sektionen (`> * > *`) dürfen nicht über die Spaltengrenze zerrissen werden. */
+@media (min-width: 768px) {
+  .settings-cols {
+    column-count: 2;
+    column-gap: 1.5rem;
+  }
+  .settings-cols > * > * {
+    break-inside: avoid;
+  }
+}

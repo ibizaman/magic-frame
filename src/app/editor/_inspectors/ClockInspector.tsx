@@ -1,0 +1,253 @@
+"use client";
+
+import React from 'react';
+import type { WidgetLayoutItem } from '../_types';
+import { useT } from "@/lib/i18n/LocaleProvider";
+
+type ClockInspectorProps = {
+  widget: WidgetLayoutItem;
+  updateConfig: (i: string, key: string, value: any) => void;
+  citySearchQuery: string;
+  citySearchResults: any[];
+  isSearchingCity: boolean;
+  searchCity: (query: string) => void;
+  setCitySearchResults: (v: any[]) => void;
+  setCitySearchQuery: (v: string) => void;
+};
+
+export default function ClockInspector({
+  widget: activeWidget,
+  updateConfig,
+  citySearchQuery,
+  citySearchResults,
+  isSearchingCity,
+  searchCity,
+  setCitySearchResults,
+  setCitySearchQuery,
+}: ClockInspectorProps) {
+  const t = useT();
+  return (
+    <div className="space-y-4">
+       <div>
+          <label className="text-sm font-medium text-white/80 block mb-2">{t("Zeitzone (z.B. Europe/Berlin)")}</label>
+          <input
+             type="text" value={activeWidget.config?.timezone || ''} placeholder={t("Automatisch / Lokal")}
+             onChange={(e) => updateConfig(activeWidget.i, 'timezone', e.target.value)}
+             className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500"
+          />
+       </div>
+
+       <ExtraTimezones widget={activeWidget} updateConfig={updateConfig} />
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+             <label className="text-sm font-medium text-white/80 block mb-2">{t("Textausrichtung")}</label>
+             <select
+                value={activeWidget.config?.align || 'left'}
+                onChange={(e) => updateConfig(activeWidget.i, 'align', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
+             >
+                <option value="left">{t("Links")}</option>
+                <option value="center">{t("Mittig")}</option>
+                <option value="right">{t("Rechts")}</option>
+             </select>
+          </div>
+       </div>
+       <label className="flex items-center gap-3 cursor-pointer group pt-2">
+          <div className="relative">
+             <input
+                type="checkbox"
+                checked={activeWidget.config?.hideSeconds ?? false}
+                onChange={(e) => updateConfig(activeWidget.i, 'hideSeconds', e.target.checked)}
+                className="sr-only peer"
+             />
+             <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+          </div>
+          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Sekunden ausblenden")}</span>
+       </label>
+       <label className="flex items-center gap-3 cursor-pointer group">
+          <div className="relative">
+             <input
+                type="checkbox"
+                checked={(activeWidget.config as any)?.hideDate ?? false}
+                onChange={(e) => updateConfig(activeWidget.i, 'hideDate', e.target.checked)}
+                className="sr-only peer"
+             />
+             <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+          </div>
+          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Datum ausblenden")}</span>
+       </label>
+
+       <div className="border-t border-white/10 pt-4 mt-2 mb-2">
+          <label className="flex items-center gap-3 cursor-pointer group">
+             <div className="relative">
+                <input
+                   type="checkbox"
+                   checked={activeWidget.config?.showMiniWeather ?? false}
+                   onChange={(e) => updateConfig(activeWidget.i, 'showMiniWeather', e.target.checked)}
+                   className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+             </div>
+             <span className="text-sm font-medium text-cyan-400 group-hover:text-cyan-300 transition-colors">{t("Wetter-Multiwidget Modus (Kompaktes Wetter hier aktivieren)")}</span>
+          </label>
+       </div>
+
+       {activeWidget.config?.showMiniWeather && (
+          <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-4">
+              <div className="relative">
+                 <label className="text-xs font-medium text-white/80 block mb-2 text-cyan-400">{t("Ort suchen (Auto-Ausfüllen)")}</label>
+                 <input
+                    type="text" value={citySearchQuery} placeholder={t("z.B. München...")}
+                    onChange={(e) => searchCity(e.target.value)}
+                    className="w-full bg-black border border-cyan-500/30 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-400 transition-colors"
+                 />
+                 {isSearchingCity && <div className="absolute right-3 top-10 text-xs text-white/50">{t("Sucht...")}</div>}
+
+                 {citySearchResults.length > 0 && (
+                    <div className="absolute z-10 w-full mt-2 bg-zinc-800 border border-white/10 rounded-lg shadow-2xl max-h-[250px] overflow-y-auto">
+                       {citySearchResults.map(city => (
+                          <div key={city.id}
+                               className="p-3 hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
+                               onClick={() => {
+                                  updateConfig(activeWidget.i, 'lat', city.latitude.toString());
+                                  updateConfig(activeWidget.i, 'lon', city.longitude.toString());
+                                  updateConfig(activeWidget.i, 'location', `${city.name}, ${city.admin1 || city.country}`);
+                                  setCitySearchResults([]);
+                                  setCitySearchQuery("");
+                               }}
+                          >
+                             <div className="font-bold text-white">{city.name}</div>
+                             <div className="text-xs text-white/60 mt-0.5">{city.admin1 ? `${city.admin1}, ` : ''}{city.country}</div>
+                          </div>
+                       ))}
+                    </div>
+                 )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <div>
+                    <label className="text-xs font-medium text-white/40 block mb-2">{t("Latitude (Auto)")}</label>
+                    <input
+                       type="text" value={activeWidget.config?.lat || ''} disabled
+                       className="w-full bg-white/5 border border-transparent text-white/50 font-sans text-xs rounded p-2"
+                    />
+                 </div>
+                 <div>
+                    <label className="text-xs font-medium text-white/40 block mb-2">{t("Longitude (Auto)")}</label>
+                    <input
+                       type="text" value={activeWidget.config?.lon || ''} disabled
+                       className="w-full bg-white/5 border border-transparent text-white/50 font-sans text-xs rounded p-2"
+                    />
+                 </div>
+              </div>
+              <div className="mt-4 border-t border-white/10 pt-4">
+                 <label className="text-sm font-medium text-white/80 block mb-2">{t("Icon Stil (Wetter)")}</label>
+                 <select
+                    value={(activeWidget.config as any)?.iconSet || 'lucide'}
+                    onChange={(e) => updateConfig(activeWidget.i, 'iconSet', e.target.value)}
+                    className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer"
+                 >
+                    <option value="lucide">{t("Lucide (Klar, Umriss)")}</option>
+                    <option value="solid">{t("Solid (Gefüllt, Flach)")}</option>
+                    <option value="celestial">{t("Celestial (3D, Animiert)")}</option>
+                    <option value="forecast">{t("Forecast (Colored Glass)")}</option>
+                 </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                 <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative">
+                       <input
+                          type="checkbox"
+                          checked={activeWidget.config?.showHumidity ?? false}
+                          onChange={(e) => updateConfig(activeWidget.i, 'showHumidity', e.target.checked)}
+                          className="sr-only peer"
+                       />
+                       <div className="w-9 h-5 bg-black/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                    </div>
+                    <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{t("Luftfeuchte")} 💧</span>
+                 </label>
+                 <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative">
+                       <input
+                          type="checkbox"
+                          checked={activeWidget.config?.showWind ?? false}
+                          onChange={(e) => updateConfig(activeWidget.i, 'showWind', e.target.checked)}
+                          className="sr-only peer"
+                       />
+                       <div className="w-9 h-5 bg-black/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                    </div>
+                    <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{t("Wind")} 💨</span>
+                 </label>
+              </div>
+          </div>
+       )}
+    </div>
+  );
+}
+
+function ExtraTimezones({ widget, updateConfig }: { widget: any; updateConfig: (i: string, key: string, value: any) => void }) {
+   const t = useT();
+   const raw: any[] = Array.isArray(widget.config?.extraTimezones) ? widget.config.extraTimezones : [];
+   const list = raw.map((e) => (typeof e === "string" ? { tz: e, label: "" } : { tz: e?.tz ?? "", label: e?.label ?? "" }));
+
+   const update = (next: { tz: string; label: string }[]) => {
+      updateConfig(widget.i, "extraTimezones", next);
+   };
+
+   return (
+      <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+         <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-white/50 mb-2">
+            {t("Weitere Zeitzonen (Worldclock)")}
+         </div>
+         <div className="space-y-2">
+            {list.length === 0 && (
+               <p className="text-[11px] text-white/40 italic">
+                  {t("Leer = nur die Haupt-Uhr oben wird angezeigt.")}
+               </p>
+            )}
+            {list.map((entry, idx) => (
+               <div key={idx} className="flex gap-2 items-center">
+                  <input
+                     type="text"
+                     value={entry.label}
+                     placeholder="NYC"
+                     onChange={(e) => {
+                        const next = [...list];
+                        next[idx] = { ...entry, label: e.target.value };
+                        update(next);
+                     }}
+                     className="w-20 bg-black border border-white/10 text-white text-xs rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
+                  />
+                  <input
+                     type="text"
+                     value={entry.tz}
+                     placeholder="America/New_York"
+                     onChange={(e) => {
+                        const next = [...list];
+                        next[idx] = { ...entry, tz: e.target.value };
+                        update(next);
+                     }}
+                     className="flex-1 bg-black border border-white/10 text-white text-xs font-mono rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                     onClick={() => update(list.filter((_, i) => i !== idx))}
+                     className="w-8 h-8 flex items-center justify-center text-red-400 hover:bg-red-500/10 rounded-md"
+                     title={t("Entfernen")}
+                  >
+                     ×
+                  </button>
+               </div>
+            ))}
+            <button
+               onClick={() => update([...list, { tz: "", label: "" }])}
+               className="w-full h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-white/30 rounded-md transition-colors"
+            >
+               {t("+ Zeitzone hinzufügen")}
+            </button>
+         </div>
+         <p className="text-[11px] text-white/40 mt-2 leading-relaxed">
+            {t("IANA-Format (z.B. Europe/Berlin, America/New_York). Label ist optional.")}
+         </p>
+      </div>
+   );
+}

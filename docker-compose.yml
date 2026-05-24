@@ -1,0 +1,95 @@
+# Magic Frame Stack
+#
+# Hinweis: Der Postgres-DB-Name (POSTGRES_DB / DATABASE_URL-Pfad) heißt
+# weiterhin `magicdashboard` — bewusst NICHT umbenannt, damit bestehende
+# Installationen ohne Datenverlust auf neue Releases updaten können. Der
+# App-Code referenziert die DB nur über DATABASE_URL, der Name ist nur
+# ein interner Identifier.
+#
+# Caddy ist immer dabei und macht Reverse-Proxy + automatisches HTTPS
+# (via Let's Encrypt). Im Default (keine Domain konfiguriert) fungiert
+# Caddy einfach als transparenter HTTP-Proxy auf :80 → app:3000.
+# Sobald in der App eine Domain + ACME-Email gesetzt wird, generiert die
+# App ein neues Caddyfile und triggert einen Reload — Caddy holt das Cert.
+#
+# Die App lauscht nur intern auf 3000 (Compose-Network), nicht mehr
+# direkt am Host. Wer den alten Direct-:80-Mode will, kann
+# `ports: ["80:3000"]` bei `app` setzen und Caddy auf einen anderen
+# Port verschieben — aber dann läuft auch kein automatisches HTTPS.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/magicdashboard?schema=public
+      - NODE_ENV=production
+      - SESSION_SECRET=${SESSION_SECRET}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - COOKIE_SECURE=${COOKIE_SECURE:-}
+      - APP_BASE_URL=${APP_BASE_URL:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - MS_CLIENT_ID=${MS_CLIENT_ID:-}
+      - MS_CLIENT_SECRET=${MS_CLIENT_SECRET:-}
+      - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY:-}
+      # Caddy-Admin-API für Reloads. Standard-URL des Sidecar-Containers.
+      - CADDY_ADMIN_URL=${CADDY_ADMIN_URL:-http://caddy:2019}
+    volumes:
+      - magic_configs:/app/configs
+      - magic_wallpapers:/app/wallpapers
+      # Shared Caddy-Config-Volume — App schreibt Caddyfile rein, Caddy liest.
+      - magic_caddy_config:/caddy/config
+    depends_on:
+      db:
+        condition: service_healthy
+
+  caddy:
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+      # Admin-API: nur an localhost binden — kein Remote-Zugriff erwünscht.
+      - "127.0.0.1:2019:2019"
+    volumes:
+      # Caddyfile-Verzeichnis (von App beschreibbar, von Caddy gelesen)
+      - magic_caddy_config:/etc/caddy
+      # Persistent ACME-State (Certs, Account-Keys)
+      - magic_caddy_data:/data
+      - magic_caddy_conf:/config
+    depends_on:
+      - app
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: magicdashboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - magic_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  magic_configs:
+  magic_wallpapers:
+  magic_pgdata:
+  magic_caddy_config:
+  magic_caddy_data:
+  magic_caddy_conf:

@@ -1,0 +1,431 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import type { WidgetLayoutItem } from '../_types';
+import { useT } from "@/lib/i18n/LocaleProvider";
+
+type CalendarInspectorProps = {
+  widget: WidgetLayoutItem;
+  updateConfig: (i: string, key: string, value: any) => void;
+};
+
+export default function CalendarInspector({
+  widget: activeWidget,
+  updateConfig,
+}: CalendarInspectorProps) {
+  const t = useT();
+  return (
+    <div className="space-y-4">
+       <FeedsEditor widget={activeWidget} updateConfig={updateConfig} />
+       <div>
+          <label className="text-sm font-medium text-white/80 block mb-2">{t("Darstellungs-Design")}</label>
+          <select
+             value={activeWidget.config?.design || 'cards'}
+             onChange={(e) => updateConfig(activeWidget.i, 'design', e.target.value)}
+             className="w-full bg-white/5 border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-white/20"
+          >
+             <option value="cards">{t("Moderne Kacheln (Glassmorphism)")}</option>
+             <option value="minimal">{t("Minimalistisch (Nur Linien)")}</option>
+          </select>
+       </div>
+       <div>
+          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+             <span>{t("Max. Termine anzeigen")}</span>
+             <span className="text-blue-400">{activeWidget.config?.limit || 5}</span>
+          </label>
+          <input
+             type="range" min="1" max="15" value={activeWidget.config?.limit || 5}
+             onChange={(e) => updateConfig(activeWidget.i, 'limit', parseInt(e.target.value))}
+             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+          />
+       </div>
+       <div>
+          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+             <span>{t("Hintergrund Kacheln (Deckkraft)")}</span>
+             <span className="text-blue-400">{activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}%</span>
+          </label>
+          <input
+             type="range" min="0" max="100" value={activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}
+             onChange={(e) => updateConfig(activeWidget.i, 'cardOpacity', parseInt(e.target.value))}
+             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+          />
+       </div>
+       <div>
+          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+             <span>{t("Tage im Voraus (Zeitfenster)")}</span>
+             <span className="text-green-400">{activeWidget.config?.days || 30}</span>
+          </label>
+          <input
+             type="range" min="1" max="90" value={activeWidget.config?.days || 30}
+             onChange={(e) => updateConfig(activeWidget.i, 'days', parseInt(e.target.value))}
+             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-green-500 bg-white/10"
+          />
+       </div>
+       <div>
+          <label className="text-sm font-medium text-white/80 block mb-2">{t("Akzentfarbe (Hex, z.B. #FF0055)")}</label>
+          <div className="flex gap-3">
+             <input
+                type="color" value={activeWidget.config?.color || '#ffffff'}
+                onChange={(e) => updateConfig(activeWidget.i, 'color', e.target.value)}
+                className="h-10 w-10 rounded cursor-pointer shrink-0 border-0 bg-transparent p-0"
+             />
+             <input
+                type="text" value={activeWidget.config?.color || '#ffffff'}
+                onChange={(e) => updateConfig(activeWidget.i, 'color', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg px-3 focus:outline-none"
+             />
+          </div>
+       </div>
+       <label className="flex items-center gap-3 cursor-pointer mt-2 group">
+          <div className="relative flex items-center justify-center">
+             <input
+                type="checkbox"
+                checked={activeWidget.config?.hideOnEmpty || false}
+                onChange={(e) => updateConfig(activeWidget.i, 'hideOnEmpty', e.target.checked)}
+                className="appearance-none w-5 h-5 border border-white/20 rounded bg-black checked:bg-violet-500 checked:border-violet-500 transition-colors"
+             />
+             {activeWidget.config?.hideOnEmpty && (
+                <svg className="w-3.5 h-3.5 text-white absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+             )}
+          </div>
+          <span className="text-sm text-white/80 group-hover:text-white transition-colors">{t("Widget kompett ausblenden, wenn leer")}</span>
+       </label>
+    </div>
+  );
+}
+
+type FeedType = "ical" | "google" | "microsoft";
+
+type Feed = {
+  id?: string;
+  label: string;
+  color: string;
+  type: FeedType;
+  url?: string;
+  accountId?: string;
+  calendarId?: string;
+};
+
+type Account = {
+  id: string;
+  provider: "google" | "microsoft";
+  accountEmail: string | null;
+  accountName: string | null;
+};
+
+type ProviderCalendar = {
+  id: string;
+  summary: string;
+  primary?: boolean;
+  backgroundColor?: string;
+};
+
+function FeedsEditor({
+  widget,
+  updateConfig,
+}: {
+  widget: WidgetLayoutItem;
+  updateConfig: (i: string, key: string, value: any) => void;
+}) {
+  const t = useT();
+  const raw: any[] = Array.isArray((widget.config as any)?.feeds)
+    ? (widget.config as any).feeds
+    : [];
+  const legacyUrl = (widget.config as any)?.icalUrl;
+  const legacyColor = (widget.config as any)?.color || "#8B5CF6";
+
+  const feeds: Feed[] =
+    raw.length > 0
+      ? raw.map((f, i) => ({
+          id: f.id ?? `feed-${i}`,
+          label: f.label ?? `Kalender ${i + 1}`,
+          type: (f.type as FeedType) ?? "ical",
+          url: f.url ?? "",
+          accountId: f.accountId ?? "",
+          calendarId: f.calendarId ?? "",
+          color: f.color ?? legacyColor,
+        }))
+      : legacyUrl
+        ? [{
+            id: "feed-legacy",
+            label: "Kalender",
+            type: "ical",
+            url: legacyUrl,
+            color: legacyColor,
+          }]
+        : [];
+
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/calendar/accounts", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { accounts: [] }))
+      .then((d) => setAccounts(d.accounts ?? []))
+      .catch(() => setAccounts([]));
+  }, []);
+
+  const write = (next: Feed[]) => {
+    updateConfig(widget.i, "feeds", next);
+    if (legacyUrl) updateConfig(widget.i, "icalUrl", "");
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-white/80 block text-violet-400">
+        {t("Kalender-Quellen")}
+      </label>
+
+      {feeds.length === 0 && (
+        <p className="text-[11px] text-white/40">
+          {t("Noch kein Feed. Wähle unten einen Typ und klick hinzufügen.")}
+        </p>
+      )}
+
+      {feeds.map((feed, idx) => (
+        <div
+          key={idx}
+          className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2"
+          style={{ borderLeft: `3px solid ${feed.color}` }}
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={feed.label}
+              placeholder={t("Label (z.B. Arbeit)")}
+              onChange={(e) => {
+                const next = [...feeds];
+                next[idx] = { ...feed, label: e.target.value };
+                write(next);
+              }}
+              className="flex-1 bg-black border border-white/10 text-white text-sm rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
+            />
+            <input
+              type="color"
+              value={feed.color}
+              onChange={(e) => {
+                const next = [...feeds];
+                next[idx] = { ...feed, color: e.target.value };
+                write(next);
+              }}
+              className="h-9 w-9 rounded-md cursor-pointer bg-black border border-white/10 p-0"
+            />
+            <button
+              onClick={() => write(feeds.filter((_, i) => i !== idx))}
+              title={t("Feed entfernen")}
+              className="w-9 h-9 flex items-center justify-center rounded-md text-red-400 hover:bg-red-500/10"
+            >
+              ×
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={feed.type}
+              onChange={(e) => {
+                const next = [...feeds];
+                next[idx] = { ...feed, type: e.target.value as FeedType };
+                write(next);
+              }}
+              className="bg-black border border-white/10 text-white/80 text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500 shrink-0"
+            >
+              <option value="ical">{t("iCal / Webcal")}</option>
+              <option value="google">{t("Google-Konto")}</option>
+              <option value="microsoft">Microsoft 365</option>
+            </select>
+            <FeedBody
+              feed={feed}
+              accounts={accounts}
+              onChange={(patch) => {
+                const next = [...feeds];
+                next[idx] = { ...feed, ...patch };
+                write(next);
+              }}
+            />
+          </div>
+        </div>
+      ))}
+
+      <div className="grid grid-cols-3 gap-2">
+        <button
+          onClick={() =>
+            write([
+              ...feeds,
+              {
+                id: `feed-${Date.now()}`,
+                label: feeds.length === 0 ? "iCal-Kalender" : `Kalender ${feeds.length + 1}`,
+                type: "ical",
+                url: "",
+                color: ["#8B5CF6", "#10B981", "#F59E0B", "#3B82F6", "#EF4444", "#06B6D4"][feeds.length % 6],
+              },
+            ])
+          }
+          className="h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-violet-500/40 rounded-md transition-colors"
+        >
+          + iCal
+        </button>
+        <button
+          onClick={() =>
+            write([
+              ...feeds,
+              {
+                id: `feed-${Date.now()}`,
+                label: "Google",
+                type: "google",
+                accountId: "",
+                calendarId: "primary",
+                color: "#EF4444",
+              },
+            ])
+          }
+          className="h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-red-500/40 rounded-md transition-colors"
+        >
+          + Google
+        </button>
+        <button
+          onClick={() =>
+            write([
+              ...feeds,
+              {
+                id: `feed-${Date.now()}`,
+                label: "Microsoft",
+                type: "microsoft",
+                accountId: "",
+                calendarId: "",
+                color: "#0EA5E9",
+              },
+            ])
+          }
+          className="h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-sky-500/40 rounded-md transition-colors"
+        >
+          + Microsoft
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FeedBody({
+  feed,
+  accounts,
+  onChange,
+}: {
+  feed: Feed;
+  accounts: Account[] | null;
+  onChange: (patch: Partial<Feed>) => void;
+}) {
+  if (feed.type === "ical") {
+    return (
+      <input
+        type="text"
+        value={feed.url ?? ""}
+        placeholder="https://p01-calendars.icloud.com/…"
+        onChange={(e) => onChange({ url: e.target.value })}
+        className="flex-1 bg-black border border-white/10 text-white/80 text-xs font-mono rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
+      />
+    );
+  }
+
+  return <ProviderFeedBody feed={feed} accounts={accounts} onChange={onChange} />;
+}
+
+function ProviderFeedBody({
+  feed,
+  accounts,
+  onChange,
+}: {
+  feed: Feed;
+  accounts: Account[] | null;
+  onChange: (patch: Partial<Feed>) => void;
+}) {
+  const t = useT();
+  const providerAccounts =
+    accounts?.filter((a) => a.provider === feed.type) ?? [];
+  const [calendars, setCalendars] = useState<ProviderCalendar[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!feed.accountId) {
+      setCalendars(null);
+      setError(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetch(
+      `/api/calendar/provider/calendars?provider=${feed.type}&accountId=${encodeURIComponent(feed.accountId)}`,
+      { cache: "no-store" },
+    )
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.error ?? `HTTP ${r.status}`);
+        return d;
+      })
+      .then((d) => {
+        if (cancelled) return;
+        setCalendars(d.calendars ?? []);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setError(e?.message ?? t("Fehler beim Laden"));
+        setCalendars([]);
+      })
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [feed.type, feed.accountId]);
+
+  return (
+    <div className="flex-1 space-y-2">
+      {providerAccounts.length === 0 ? (
+        <a
+          href="/editor/integrations"
+          className="block text-xs text-center text-white/60 hover:text-white bg-black/40 border border-white/10 rounded-md h-9 leading-9 hover:border-violet-500/40"
+        >
+          {t("Noch kein Konto verbunden → Integrationen öffnen").replace("Konto", feed.type === "google" ? "Google-Konto" : "Microsoft-Konto")}
+        </a>
+      ) : (
+        <select
+          value={feed.accountId ?? ""}
+          onChange={(e) => onChange({ accountId: e.target.value, calendarId: "" })}
+          className="w-full bg-black border border-white/10 text-white text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500"
+        >
+          <option value="">{t("— Konto wählen —")}</option>
+          {providerAccounts.map((acc) => (
+            <option key={acc.id} value={acc.id}>
+              {acc.accountName || acc.accountEmail || t("(unbenannt)")}
+            </option>
+          ))}
+        </select>
+      )}
+
+      {feed.accountId && (
+        <select
+          value={feed.calendarId ?? ""}
+          onChange={(e) => onChange({ calendarId: e.target.value })}
+          disabled={loading || !!error}
+          className="w-full bg-black border border-white/10 text-white text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+        >
+          <option value="">
+            {loading
+              ? t("Lade Kalender…")
+              : error
+                ? `${t("Fehler:")} ${error}`
+                : feed.type === "microsoft"
+                  ? t("— Standard-Kalender —")
+                  : t("— Primary —")}
+          </option>
+          {(calendars ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.summary}
+              {c.primary ? " (primary)" : ""}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
+  );
+}

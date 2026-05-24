@@ -1,0 +1,56 @@
+import WebSocket from 'ws';
+
+export class HAConnector {
+  private url: string;
+  private token: string;
+  private ws: WebSocket | null = null;
+  private idCounter = 1;
+
+  constructor(url: string, token: string) {
+    this.url = url;
+    this.token = token;
+  }
+
+  connect() {
+    console.log(`[HA Bridge] Connecting to ${this.url}...`);
+    this.ws = new WebSocket(`${this.url}/api/websocket`);
+
+    this.ws.on('open', () => {
+      console.log('[HA Bridge] Connected to Home Assistant WebSocket');
+    });
+
+    this.ws.on('message', (data) => {
+      const msg = JSON.parse(data.toString());
+      
+      if (msg.type === 'auth_required') {
+        this.ws?.send(JSON.stringify({ type: 'auth', access_token: this.token }));
+      } else if (msg.type === 'auth_ok') {
+        console.log('[HA Bridge] Authenticated successfully');
+        this.subscribeEvents();
+      } else if (msg.type === 'event') {
+        // Forward HA state changes an die verbundenen Displays via Live-Sync.
+        if ((global as any).LIVE_SYNC_IO) {
+          (global as any).LIVE_SYNC_IO.emit("HA_STATE_CHANGE", msg.event);
+        }
+      } else if (msg.type === 'auth_invalid') {
+         console.error('[HA Bridge] Authentication invalid. Check token.');
+      }
+    });
+
+    this.ws.on('error', (err) => console.error('[HA Bridge] WS Error:', err));
+    this.ws.on('close', () => {
+      console.log('[HA Bridge] Disconnected. Reconnecting in 5s...');
+      setTimeout(() => this.connect(), 5000);
+    });
+  }
+
+  private subscribeEvents() {
+    const id = this.idCounter++;
+    this.ws?.send(JSON.stringify({
+      id,
+      type: 'subscribe_events',
+      event_type: 'state_changed'
+    }));
+    console.log('[HA Bridge] Subscribed to state_changed events');
+  }
+}
