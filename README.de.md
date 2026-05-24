@@ -66,11 +66,19 @@ du das Dashboard auch von unterwegs erreichen willst.
 
 ## Quick Start
 
+Zwei Befehle auf einer frischen Linux-Kiste. Schritt 1 weglassen, falls Docker schon installiert ist:
+
 ```bash
+# 1. Docker installieren (mit Compose-Plugin) — offizieller One-Liner
+curl -fsSL https://get.docker.com | sh
+
+# 2. Magic Frame installieren
 curl -fsSL https://raw.githubusercontent.com/jeremiaa/magic-frame/main/deploy/install.sh | bash
 ```
 
-Einzige Voraussetzung: **Docker** (mit Compose-Plugin). Das Script
+> macOS / Windows? Statt Schritt 1 [Docker Desktop](https://www.docker.com/products/docker-desktop/) installieren, dann Schritt 2 im Terminal.
+
+Das zweite Script
 
 1. klont das Repo
 2. generiert `SESSION_SECRET` automatisch (mit `openssl` falls vorhanden, sonst `/dev/urandom`-Fallback)

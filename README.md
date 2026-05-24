@@ -66,11 +66,19 @@ want the dashboard reachable from outside.
 
 ## Quick Start
 
+Two commands on a fresh Linux box. Skip step 1 if you already have Docker:
+
 ```bash
+# 1. Install Docker (with Compose plugin) — official one-liner
+curl -fsSL https://get.docker.com | sh
+
+# 2. Install Magic Frame
 curl -fsSL https://raw.githubusercontent.com/jeremiaa/magic-frame/main/deploy/install.sh | bash
 ```
 
-Only requirement: **Docker** (with Compose plugin). The script
+> macOS / Windows? Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) instead of step 1, then run step 2 in a terminal.
+
+The second script
 
 1. clones the repo
 2. generates `SESSION_SECRET` automatically (uses `openssl` if available, falls back to `/dev/urandom`)
