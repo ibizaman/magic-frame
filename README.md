@@ -261,12 +261,12 @@ Tailwind CSS 4 · Socket.IO · react-grid-layout · iron-session · otplib · es
 
 ## Contributions
 
-Pull requests are very welcome — for widgets, translations, bug fixes,
-documentation improvements, new integrations. Issues with a reproduction
-are also great.
+Issues with a clear reproduction are especially welcome — they help me
+move things forward directly. I'm happy to look at pull requests, but
+depending on complexity it might take a bit.
 
-For larger changes or new features: open an issue first so we don't
-work on overlapping things in parallel.
+For larger changes: please open an issue first so we can sort out what
+fits and what doesn't.
 
 ---
 

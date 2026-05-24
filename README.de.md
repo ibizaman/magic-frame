@@ -259,13 +259,14 @@ Tailwind CSS 4 · Socket.IO · react-grid-layout · iron-session · otplib · es
 
 ---
 
-## Beiträge
+## Contributions
 
-Pull-Requests sind sehr willkommen — für Widgets, Übersetzungen, Bug-Fixes,
-Doku-Verbesserungen, neue Integrationen. Issues mit Repro sind auch top.
+Issues mit klarer Reproduktion sind besonders willkommen — die helfen mir
+direkt weiter. Pull-Requests schaue ich mir gerne an, kann aber je nach
+Komplexität etwas dauern.
 
-Für größere Änderungen oder neue Features: kurz vorher in einem Issue
-abstimmen damit wir nicht parallel an verwandten Sachen arbeiten.
+Für größere Änderungen: bitte vorher ein Issue aufmachen damit wir
+abstimmen können was rein passt und was nicht.
 
 ---
 
