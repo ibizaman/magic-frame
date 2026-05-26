@@ -13,7 +13,7 @@ export default function MagicFrameLogo({ className = "w-12 h-12" }: { className?
         <rect x="5" y="5" width="110" height="150" rx="22" fill="url(#brandGrad)" />
         <rect x="14" y="14" width="92" height="132" rx="14" fill="#0f172a" />
         
-        <path d="M14 110 L38 90 L60 105 L80 85 L92 95 V146 H14 Z" fill="url(#brandGrad)" fillOpacity="0.4" />
+        <path d="M14 115 L38 80 L60 100 L88 70 L106 90 V146 H14 Z" fill="url(#brandGrad)" fillOpacity="0.4" />
         
         <rect x="25" y="28" width="45" height="16" rx="5" fill="white" />
         <rect x="75" y="28" width="20" height="16" rx="5" fill="white" fillOpacity="0.3" />
