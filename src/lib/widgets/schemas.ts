@@ -39,7 +39,10 @@ const clockConfig = baseConfig.extend({
   location: z.string().optional(),
   showHumidity: z.boolean().optional(),
   showWind: z.boolean().optional(),
+  showUv: z.boolean().optional(),
   iconSet: z.string().optional(),
+  unitTemp: z.enum(["celsius", "fahrenheit"]).optional(),
+  statsSize: z.number().optional(),
 });
 
 const weatherConfig = baseConfig.extend({
@@ -51,7 +54,12 @@ const weatherConfig = baseConfig.extend({
   hideForecast: z.boolean().optional(),
   showHumidity: z.boolean().optional(),
   showWind: z.boolean().optional(),
+  showUv: z.boolean().optional(),
+  showSunTimes: z.boolean().optional(),
   subtextSize: z.number().optional(),
+  statsSize: z.number().optional(),
+  unitTemp: z.enum(["celsius", "fahrenheit"]).optional(),
+  unitWind: z.enum(["kmh", "mph", "ms", "kn"]).optional(),
 });
 
 const calendarConfig = baseConfig.extend({
@@ -59,6 +67,7 @@ const calendarConfig = baseConfig.extend({
   limit: z.number().optional(),
   days: z.number().optional(),
   hideOnEmpty: z.boolean().optional(),
+  hideWeekday: z.boolean().optional(),
 });
 
 const buttonConfig = baseConfig

@@ -288,7 +288,7 @@ export default function WeatherInspector({
                 />
                 <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
              </div>
-             <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Sonnenauf-/untergang anzeigen")} 🌅</span>
+             <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Sonnenauf-/untergang anzeigen")}</span>
           </label>
 
           <div className="mt-3 pt-3 border-t border-white/10">
@@ -323,8 +323,11 @@ export default function WeatherInspector({
              )}
           </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 mb-6">
-              <label className="flex items-center gap-3 cursor-pointer group">
+           {/* Toggles fließen über mehrere Zeilen wenn der Inspector schmal ist.
+               Vorher 3-Spalten-Grid, dadurch überlappten lange deutsche Labels
+               ("Windgeschwindigkeit") mit den Nachbar-Toggles. */}
+           <div className="flex flex-wrap gap-x-6 gap-y-3 mt-6 mb-6">
+              <label className="flex items-center gap-3 cursor-pointer group shrink-0">
                  <div className="relative">
                     <input
                        type="checkbox"
@@ -334,10 +337,10 @@ export default function WeatherInspector({
                     />
                     <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                  </div>
-                 <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Luftfeuchtigkeit")} 💧</span>
+                 <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors whitespace-nowrap">{t("Luftfeuchte")}</span>
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer group">
+              <label className="flex items-center gap-3 cursor-pointer group shrink-0">
                  <div className="relative">
                     <input
                         type="checkbox"
@@ -347,10 +350,10 @@ export default function WeatherInspector({
                     />
                     <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                  </div>
-                 <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Windgeschwindigkeit")} 💨</span>
+                 <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors whitespace-nowrap">{t("Wind")}</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer group">
+              <label className="flex items-center gap-3 cursor-pointer group shrink-0">
                  <div className="relative">
                      <input
                         type="checkbox"
@@ -360,9 +363,33 @@ export default function WeatherInspector({
                      />
                      <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
                  </div>
-                 <span className="text-sm font-medium text-white/80 group-hover:text-white">{t("UV-Index")}</span>
+                 <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors whitespace-nowrap">{t("UV-Index")}</span>
               </label>
            </div>
+
+           {provider === "dwd" && (activeWidget.config as any)?.showUv && (
+              <p className="text-[11px] text-amber-300/80 -mt-3 mb-4 leading-relaxed">
+                 {t("Hinweis: Das DWD-Modell liefert keinen UV-Index. Magic Frame ergänzt den Wert automatisch aus dem Standard-Open-Meteo-Modell — UV erscheint also trotzdem.")}
+              </p>
+           )}
+
+           {/* Schriftgröße der Stats-Zeile (UV/Wind/Feuchte) in Pixel.
+               Px statt em, damit die Stats nicht mit der Widget-Größe skalieren —
+               bei großen Widgets wurden sie sonst fast so groß wie die Hauptanzeige. */}
+           {(activeWidget.config?.showHumidity || activeWidget.config?.showWind || (activeWidget.config as any)?.showUv) && (
+              <div className="-mt-2 mb-6">
+                 <label className="text-xs font-medium text-white/60 flex justify-between mb-1.5">
+                    <span>{t("Schriftgröße Luftfeuchte / Wind / UV")}</span>
+                    <span className="text-blue-300">{(activeWidget.config as any)?.statsSize ?? 14} px</span>
+                 </label>
+                 <input
+                    type="range" min="8" max="40" step="1"
+                    value={(activeWidget.config as any)?.statsSize ?? 14}
+                    onChange={(e) => updateConfig(activeWidget.i, 'statsSize', parseInt(e.target.value))}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                 />
+              </div>
+           )}
 
            <div>
              <label className="text-sm font-medium text-white/80 block mb-2 text-blue-400">{t("Infozeile „Fühlt sich an wie…\"")}</label>

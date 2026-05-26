@@ -52,12 +52,60 @@ export async function fetchOpenMeteo(
     temperature_unit: units.tempUnit,
     wind_speed_unit: units.windUnit,
   });
+
+  // DWD-ICON-Modell liefert keinen UV-Index. Wir feuern parallel einen
+  // schlanken Request gegen das Standard-Open-Meteo-Forecast-Modell nur für
+  // UV (current + daily.uv_index_max) und mergen das später ins DWD-Result.
+  // Schlägt der Fallback fehl → einfach kein UV (silent), Haupt-Fetch bleibt
+  // funktional.
+  const uvFallbackPromise =
+    endpoint === "dwd-icon"
+      ? fetchUvFromStandardOpenMeteo(lat, lon).catch(() => null)
+      : null;
+
   const res = await fetch(`https://api.open-meteo.com/v1/${endpoint}?${params.toString()}`, {
     next: { revalidate: 60 * 15 },
   });
   if (!res.ok) throw new Error(`${endpoint} ${res.status}`);
   const data = await res.json();
+
+  if (uvFallbackPromise) {
+    const uv = await uvFallbackPromise;
+    if (uv) {
+      if (data.current && (data.current.uv_index === undefined || data.current.uv_index === null)) {
+        data.current.uv_index = uv.current;
+      }
+      if (data.daily && Array.isArray(uv.dailyMax) && uv.dailyMax.length > 0) {
+        // DWD daily-Array könnte bereits da sein, aber `uv_index_max` fehlt
+        data.daily.uv_index_max = uv.dailyMax;
+      }
+    }
+  }
+
   return { ...data, _provider: endpoint === "dwd-icon" ? "dwd" : "open-meteo" };
+}
+
+async function fetchUvFromStandardOpenMeteo(
+  lat: string,
+  lon: string,
+): Promise<{ current: number | undefined; dailyMax: number[] | undefined } | null> {
+  const params = new URLSearchParams({
+    latitude: lat,
+    longitude: lon,
+    current: "uv_index",
+    daily: "uv_index_max",
+    forecast_days: "7",
+    timezone: "auto",
+  });
+  const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, {
+    next: { revalidate: 60 * 15 },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return {
+    current: typeof data.current?.uv_index === "number" ? data.current.uv_index : undefined,
+    dailyMax: Array.isArray(data.daily?.uv_index_max) ? data.daily.uv_index_max : undefined,
+  };
 }
 
 export async function fetchOpenWeatherMap(
@@ -65,7 +113,8 @@ export async function fetchOpenWeatherMap(
   lon: string,
   units: WeatherUnits,
 ): Promise<NormalizedWeather> {
-  const key = process.env.OPENWEATHERMAP_API_KEY;
+  const { getOwmKey } = await import("./owm-credentials");
+  const key = await getOwmKey();
   if (!key) throw new Error("owm_not_configured");
 
   // OWM: 'metric' (°C, m/s) oder 'imperial' (°F, mph). Wind-Umrechnung danach.

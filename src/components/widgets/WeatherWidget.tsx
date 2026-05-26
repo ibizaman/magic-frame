@@ -7,20 +7,10 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type StatIconKey = "droplets" | "wind" | "sunrise" | "sunset" | "uv";
 
-function StatIcon({ k, iconSet, sizeEm = 1 }: { k: StatIconKey; iconSet?: string; sizeEm?: number }) {
-  // Bei farbigen Icon-Sets (celestial/forecast) passen Emojis optisch besser.
-  // Bei lucide/solid nehmen wir schlichte Line-Icons damit alles konsistent wirkt.
-  const useEmoji = iconSet === "celestial" || iconSet === "forecast";
-  if (useEmoji) {
-    const emoji: Record<StatIconKey, string> = {
-      droplets: "💧",
-      wind: "💨",
-      sunrise: "🌅",
-      sunset: "🌇",
-      uv: "☀️",
-    };
-    return <span style={{ fontSize: `${sizeEm}em` }}>{emoji[k]}</span>;
-  }
+function StatIcon({ k, sizeEm = 1 }: { k: StatIconKey; iconSet?: string; sizeEm?: number }) {
+  // Stat-Icons sind immer Line-Icons (Lucide), unabhängig vom Wetter-iconSet.
+  // Vorher gab's einen Emoji-Branch für celestial/forecast — sah inkonsistent
+  // aus zwischen Hauptkarte und Subtext.
   const style: CSSProperties = { width: `${sizeEm}em`, height: `${sizeEm}em` };
   const cls = "opacity-80";
   if (k === "droplets") return <Droplets style={style} strokeWidth={2} className={cls} />;
@@ -140,6 +130,11 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
   const isVertical = config?.forecastLayout === 'vertical';
   const flexDirectionClass = isVertical ? 'flex-col gap-[1.5em]' : 'gap-[2em] md:gap-[3em]';
   const subtextSizeEm = 1.2 * (config?.subtextSize ? config.subtextSize / 100 : 1);
+  // Stats-Zeile (Luftfeuchte/Wind/UV) wird in Pixel angegeben, nicht in em.
+  // Grund: em skaliert mit der Widget-Schriftgröße — wenn das Widget groß
+  // war, wurden bei 200% die Stats fast so groß wie die Hauptanzeige.
+  // Mit px bleibt die Stats-Größe absolut und unabhängig vom Widget.
+  const statsSizePx = typeof config?.statsSize === 'number' ? config.statsSize : 14;
   const subtextOpacity = (config?.subtextOpacity ?? 80) / 100;
   const subtextUppercase = config?.subtextUppercase === true;
   const subtextTracking = config?.subtextTracking ?? "wide";
@@ -209,29 +204,36 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
            className={`mt-[0.5em] ${subtextUppercase ? "uppercase" : ""} ${subtextTrackingClass} text-ellipsis whitespace-nowrap overflow-hidden`}
         >
           {t("Fühlt sich an wie")} {feelsLike}{tempSuffix}
-          {((config?.showHumidity && humidity !== undefined) || (config?.showWind && windSpeed !== undefined) || (config?.showUv && uv !== undefined)) && (
-            <span className="ml-[0.8em] inline-flex items-center gap-[0.5em]">
-              {config?.showHumidity && humidity !== undefined && (
-                <span className="inline-flex items-center gap-[0.3em]">
-                   <StatIcon k="droplets" iconSet={iconSet} />
-                   {humidity}%
-                </span>
-              )}
-              {config?.showWind && windSpeed !== undefined && (
-                <span className="inline-flex items-center gap-[0.3em]">
-                   <StatIcon k="wind" iconSet={iconSet} />
-                   {Math.round(windSpeed)} {windUnitLabel}
-                </span>
-              )}
-              {config?.showUv && uv !== undefined && (
-                <span className="inline-flex items-center gap-[0.3em]">
-                   <StatIcon k="uv" iconSet={iconSet} />
-                   UV {Math.round(uv)}
-                </span>
-              )}
-            </span>
-          )}
         </div>
+        {/* Stats-Zeile separat — darf auf neue Zeile umbrechen wenn Widget
+            schmal/groß ist (zB große Hauptansicht). Vorher in der Subtext-Zeile
+            mit whitespace-nowrap → wurde abgeschnitten. Eigener statsSize-Slider,
+            damit User UV/Wind/Feuchte unabhängig von "Fühlt sich an wie" skaliert. */}
+        {((config?.showHumidity && humidity !== undefined) || (config?.showWind && windSpeed !== undefined) || (config?.showUv && uv !== undefined)) && (
+          <div
+             style={{ fontSize: `${statsSizePx}px`, opacity: subtextOpacity }}
+             className={`mt-[0.3em] ${subtextUppercase ? "uppercase" : ""} ${subtextTrackingClass} flex flex-wrap items-center gap-x-[0.8em] gap-y-[0.2em]`}
+          >
+            {config?.showHumidity && humidity !== undefined && (
+              <span className="inline-flex items-center gap-[0.3em]">
+                 <StatIcon k="droplets" iconSet={iconSet} />
+                 {humidity}%
+              </span>
+            )}
+            {config?.showWind && windSpeed !== undefined && (
+              <span className="inline-flex items-center gap-[0.3em]">
+                 <StatIcon k="wind" iconSet={iconSet} />
+                 {Math.round(windSpeed)} {windUnitLabel}
+              </span>
+            )}
+            {config?.showUv && uv !== undefined && (
+              <span className="inline-flex items-center gap-[0.3em]">
+                 <StatIcon k="uv" iconSet={iconSet} />
+                 UV {Math.round(uv)}
+              </span>
+            )}
+          </div>
+        )}
         {config?.showSunTimes !== false && (sunrise || sunset) && (
           <div style={{ fontSize: `${subtextSizeEm * 0.8}em` }} className="mt-[0.3em] opacity-60 inline-flex items-center gap-[0.8em]">
             {sunrise && (
