@@ -401,7 +401,7 @@ export default function ViewsListPage() {
                         .replace(/[^a-z0-9-]/g, "-"),
                     )
                   }
-                  placeholder="kueche"
+                  placeholder={t("kueche")}
                   className="w-full bg-black border border-white/10 text-white font-mono rounded-lg p-3 outline-none focus:border-blue-500"
                 />
               </div>

@@ -1345,4 +1345,7 @@ export const EN: Record<string, string> = {
   "Duplikat anlegen & öffnen": "Create duplicate & open",
   "Ändert die URL auf dem Display. Bestehende Tablets müssen ggf. neu konfiguriert werden.":
     "Changes the URL on the display. Existing tablets may need to be reconfigured.",
+  // URL-slug placeholder paired with "z.B. Küche" — keep the language
+  // consistent so "Kitchen / kitchen" reads naturally in EN mode.
+  "kueche": "kitchen",
 };
