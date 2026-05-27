@@ -91,7 +91,7 @@ export default function IntegrationsPage() {
             </label>
             <label className="block">
               <span className="text-xs font-medium text-white/70 block mb-1.5">
-                Long-Lived Access Token
+                {t("Long-Lived Access Token")}
               </span>
               <input
                 type="password"
@@ -155,7 +155,7 @@ export default function IntegrationsPage() {
   );
 }
 
-const ERROR_LABELS: Record<string, string> = {
+const ERROR_LABEL_KEYS: Record<string, string> = {
   not_configured: "Provider ist serverseitig nicht konfiguriert (GOOGLE_CLIENT_ID / MS_CLIENT_ID fehlt in .env).",
   no_code: "Autorisierung abgebrochen — kein Code vom Anbieter.",
   bad_state: "State-Parameter ungültig (Session oder CSRF-Check fehlgeschlagen).",
@@ -177,12 +177,13 @@ function CalendarAccountsSection() {
     const ok = sp.get("ok");
     const err = sp.get("err");
     if (provider && ok) {
-      const label = provider === "google" ? "Google-Konto" : "Microsoft-Konto";
-      setBanner({ kind: "ok", message: `${label} erfolgreich verbunden.` });
+      const label = provider === "google" ? t("Google-Konto") : t("Microsoft-Konto");
+      setBanner({ kind: "ok", message: `${label} ${t("erfolgreich verbunden.")}` });
       window.history.replaceState({}, "", "/editor/integrations");
     } else if (provider && err) {
       const label = provider === "google" ? "Google" : "Microsoft";
-      setBanner({ kind: "err", message: `${label}: ${ERROR_LABELS[err] ?? err}` });
+      const errMsg = ERROR_LABEL_KEYS[err] ? t(ERROR_LABEL_KEYS[err]) : err;
+      setBanner({ kind: "err", message: `${label}: ${errMsg}` });
       window.history.replaceState({}, "", "/editor/integrations");
     }
   }, []);
@@ -208,7 +209,7 @@ function CalendarAccountsSection() {
   }, []);
 
   async function disconnect(id: string) {
-    if (!confirm("Konto wirklich trennen? Alle Feeds, die dieses Konto nutzen, werden ungültig.")) return;
+    if (!confirm(t("Konto wirklich trennen? Alle Feeds, die dieses Konto nutzen, werden ungültig."))) return;
     setDeleting(id);
     try {
       await fetch(`/api/auth/calendar/accounts?id=${encodeURIComponent(id)}`, { method: "DELETE" });
@@ -246,7 +247,7 @@ function CalendarAccountsSection() {
             onClick={() => setBanner(null)}
             className="text-xs opacity-70 hover:opacity-100"
           >
-            schließen
+            {t("schließen")}
           </button>
         </div>
       )}
@@ -273,10 +274,10 @@ function CalendarAccountsSection() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-white truncate">
-                  {acc.accountName || acc.accountEmail || "(unbenannt)"}
+                  {acc.accountName || acc.accountEmail || t("(unbenannt)")}
                 </div>
                 <div className="text-[11px] text-white/40 truncate">
-                  {acc.accountEmail || "kein E-Mail ermittelbar"} ·
+                  {acc.accountEmail || t("kein E-Mail ermittelbar")} ·
                   {acc.provider === "google" ? " Google Calendar" : " Microsoft 365"}
                 </div>
               </div>
@@ -336,6 +337,7 @@ function CalendarAccountsSection() {
 }
 
 function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
+  const t = useT();
   const [status, setStatus] = useState<any>(null);
   const [gId, setGId] = useState("");
   const [gSecret, setGSecret] = useState("");
@@ -376,11 +378,11 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
         body: JSON.stringify(body),
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error || "Fehlgeschlagen.");
+      if (!r.ok) throw new Error(d.error || t("Fehlgeschlagen."));
       setGSecret("");
       setMSecret("");
       setStatus(d.status);
-      setMsg({ kind: "ok", message: "Zugangsdaten gespeichert. Die Verbinden-Buttons sind jetzt aktiv." });
+      setMsg({ kind: "ok", message: t("Zugangsdaten gespeichert. Die Verbinden-Buttons sind jetzt aktiv.") });
       onSaved();
     } catch (err: any) {
       setMsg({ kind: "err", message: err.message });
@@ -390,7 +392,7 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
   }
 
   async function reset() {
-    if (!confirm("Gespeicherte OAuth-Zugangsdaten löschen?")) return;
+    if (!confirm(t("Gespeicherte OAuth-Zugangsdaten löschen?"))) return;
     const r = await fetch("/api/admin/oauth-credentials", { method: "DELETE" });
     const d = await r.json();
     setStatus(d.status);
@@ -411,18 +413,16 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
     "w-full bg-black border border-white/10 text-white text-xs rounded-md px-2 h-9 focus:outline-none focus:border-purple-500";
 
   return (
-    <details className="mt-4 group" open={status ? !status.googleConfigured && !status.microsoftConfigured : false}>
+    <details className="mt-4 group">
       <summary className="cursor-pointer select-none flex items-center gap-2 text-sm text-white/70 hover:text-white">
         <KeyRound size={14} className="text-purple-300" />
-        OAuth-Zugangsdaten einrichten (Klick-Verbinden aktivieren)
+        {t("OAuth-Zugangsdaten einrichten (Klick-Verbinden aktivieren)")}
         <ChevronDown size={14} className="text-white/40 transition-transform group-open:rotate-180" />
       </summary>
 
       <div className="mt-3 bg-black/30 border border-white/10 rounded-xl p-4 space-y-4">
         <p className="text-[11px] text-white/50 leading-relaxed">
-          Einmalig eine OAuth-App bei Google Cloud bzw. Microsoft Entra anlegen, dann
-          Client-ID + Secret hier eintragen — danach läuft das Verbinden per Klick &
-          Zustimmung. Trage bei der App-Registrierung diese <strong>Redirect-URIs</strong> ein:
+          {t("Einmalig eine OAuth-App bei Google Cloud bzw. Microsoft Entra anlegen, dann Client-ID + Secret hier eintragen — danach läuft das Verbinden per Klick & Zustimmung. Trage bei der App-Registrierung diese Redirect-URIs ein:")}
         </p>
 
         <div className="space-y-2">
@@ -433,26 +433,26 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
         <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-red-300">Google</div>
-            <input className={fieldCls} placeholder="Client-ID (…apps.googleusercontent.com)" value={gId} onChange={(e) => setGId(e.target.value)} />
+            <input className={fieldCls} placeholder={t("Client-ID (…apps.googleusercontent.com)")} value={gId} onChange={(e) => setGId(e.target.value)} />
             <input className={fieldCls} type="password" autoComplete="off"
-              placeholder={status?.googleSecretSet ? "Secret gesetzt — leer = unverändert" : "Client-Secret"}
+              placeholder={status?.googleSecretSet ? t("Secret gesetzt — leer = unverändert") : t("Client-Secret")}
               value={gSecret} onChange={(e) => setGSecret(e.target.value)} />
-            {status?.googleFromEnv && <p className="text-[10px] text-amber-300/80">Aktuell aus .env (env hat Vorrang, falls hier leer).</p>}
+            {status?.googleFromEnv && <p className="text-[10px] text-amber-300/80">{t("Aktuell aus .env (env hat Vorrang, falls hier leer).")}</p>}
           </div>
           <div className="space-y-2">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-300">Microsoft 365</div>
-            <input className={fieldCls} placeholder="Application (Client) ID" value={mId} onChange={(e) => setMId(e.target.value)} />
+            <input className={fieldCls} placeholder={t("Application (Client) ID")} value={mId} onChange={(e) => setMId(e.target.value)} />
             <input className={fieldCls} type="password" autoComplete="off"
-              placeholder={status?.msSecretSet ? "Secret gesetzt — leer = unverändert" : "Client-Secret (Value)"}
+              placeholder={status?.msSecretSet ? t("Secret gesetzt — leer = unverändert") : t("Client-Secret (Value)")}
               value={mSecret} onChange={(e) => setMSecret(e.target.value)} />
-            {status?.microsoftFromEnv && <p className="text-[10px] text-amber-300/80">Aktuell aus .env (env hat Vorrang, falls hier leer).</p>}
+            {status?.microsoftFromEnv && <p className="text-[10px] text-amber-300/80">{t("Aktuell aus .env (env hat Vorrang, falls hier leer).")}</p>}
           </div>
 
           {msg && (
             <div className="md:col-span-2">
               <div className={`flex items-center gap-2 text-xs rounded-md border px-3 py-2 ${msg.kind === "ok" ? "bg-green-600/10 border-green-500/40 text-green-200" : "bg-red-600/10 border-red-500/40 text-red-200"}`}>
                 {msg.kind === "ok" ? <Check size={14} /> : <AlertTriangle size={14} />}
-                <span>{msg.message}</span>
+                <span>{t(msg.message)}</span>
               </div>
             </div>
           )}
@@ -461,11 +461,11 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
             <button type="submit" disabled={busy}
               className="flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-40">
               {busy ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-              Speichern
+              {t("Speichern")}
             </button>
             <button type="button" onClick={reset}
               className="px-3 h-9 rounded-lg text-xs text-white/50 hover:text-white hover:bg-white/5">
-              Zurücksetzen
+              {t("Zurücksetzen")}
             </button>
           </div>
         </form>
@@ -475,13 +475,14 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
 }
 
 function RedirectRow({ label, uri, copied, onCopy }: { label: string; uri: string; copied: boolean; onCopy: () => void }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-md px-2 py-1.5">
       <span className="text-[10px] uppercase tracking-wider text-white/40 w-16 shrink-0">{label}</span>
       <code className="flex-1 text-[11px] font-mono text-white/70 truncate">{uri}</code>
       <button onClick={onCopy} className="text-xs text-white/50 hover:text-white bg-white/5 hover:bg-white/10 rounded px-2 h-6 flex items-center gap-1 shrink-0">
         {copied ? <Check size={11} /> : <Copy size={11} />}
-        {copied ? "kopiert" : "Kopieren"}
+        {copied ? t("kopiert") : t("Kopieren")}
       </button>
     </div>
   );
@@ -504,7 +505,7 @@ function HAListsSection() {
     try {
       const r = await fetch("/api/ha-lists", { cache: "no-store" });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error || "Konnte HA-Listen nicht laden.");
+      if (!r.ok) throw new Error(d.error || t("Konnte HA-Listen nicht laden."));
       setLists(d.lists ?? []);
     } catch (e: any) {
       setError(e.message);
@@ -533,7 +534,7 @@ function HAListsSection() {
 
       {error && (
         <div className="mb-3 text-sm rounded-lg p-3 border bg-red-500/10 border-red-500/30 text-red-300">
-          {error}
+          {t(error)}
         </div>
       )}
 
@@ -674,12 +675,12 @@ function TodoistSection() {
 
       {msg && (
         <div className={`mb-3 text-sm rounded-lg p-3 border ${msg.kind === "ok" ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-red-500/10 border-red-500/30 text-red-300"}`}>
-          {msg.msg}
+          {t(msg.msg)}
         </div>
       )}
       {error && (
         <div className="mb-3 text-sm rounded-lg p-3 border bg-red-500/10 border-red-500/30 text-red-300">
-          {error}
+          {t(error)}
         </div>
       )}
 
@@ -763,7 +764,6 @@ function TodoistSection() {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="0123456789abcdef…"
-                autoFocus
                 className="flex-1 bg-black border border-white/10 text-white text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-rose-500"
               />
               <button
@@ -904,7 +904,7 @@ function OpenWeatherMapSection() {
 
       {msg && (
         <div className={`mb-3 text-sm rounded-lg p-3 border ${msg.kind === "ok" ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-red-500/10 border-red-500/30 text-red-300"}`}>
-          {msg.msg}
+          {t(msg.msg)}
         </div>
       )}
 
