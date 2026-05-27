@@ -279,24 +279,43 @@ Browser ändert ein Widget → POST an Next.js-API → Snapshot in Postgres → 
 
 ## Update / Maintenance
 
+### Der normale Weg
+
 ```bash
 cd magic-frame
-./deploy/install.sh        # zieht latest + rebuildet, idempotent, Daten + Secrets bleiben
+./deploy/install.sh
 ```
 
-> **Achtung für frühe v1.0.x-Installer:** Wenn `git pull` mit `Need to specify how to reconcile divergent branches` abbricht oder `git fetch` mit `would clobber existing tag v1.0.0` aussteigt, ist dein Clone von vor einem der Launch-Week-History-Rewrites (Co-Author-Scrub, CLAUDE.md-Scrub, v1.0.1-Retag). Einmalige Recovery:
-> ```bash
-> git fetch --force --tags origin
-> git reset --hard origin/main
-> ```
-> Danach wieder `./deploy/install.sh`. `.env`, Datenbank und hochgeladene Custom-Module bleiben unberührt — die liegen nicht in Git. Ab v1.0.2 macht das install-Skript das automatisch.
+Idempotent — zieht den aktuellen Code, baut die Container neu, lässt deine `.env`, das Datenbank-Volume und hochgeladene Custom-Module unangetastet. Ab v1.0.2 funktioniert das in einem Schritt, auch wenn die History upstream umgeschrieben wurde.
 
-Backup der Datenbank:
+### Wenn's schiefgeht (frühe v1.0.x-Clones)
+
+Wenn du in der Launch-Woche (vor v1.0.2) geclont hast, kann einer dieser Fehler auftauchen:
+
+```
+fatal: Need to specify how to reconcile divergent branches
+```
+```
+! [rejected]    v1.0.0   -> v1.0.0   (would clobber existing tag)
+```
+
+Der Grund: die History upstream wurde damals mehrfach umgeschrieben (Co-Author-Scrub, CLAUDE.md-Scrub, v1.0.1-Retag). Einmalige Recovery:
+
+```bash
+cd magic-frame
+git fetch --force --tags origin
+git reset --hard origin/main
+./deploy/install.sh
+```
+
+`.env`, Datenbank und hochgeladene Custom-Module bleiben unangetastet — nichts davon liegt in Git. Nach diesem einmaligen Reset läuft `./deploy/install.sh` wieder von alleine.
+
+### Datenbank-Backup
 ```bash
 docker compose exec db pg_dump -U postgres magicdashboard | gzip > backup-$(date +%F).sql.gz
 ```
 
-Logs:
+### Logs
 ```bash
 docker compose logs -f app
 docker compose logs -f caddy

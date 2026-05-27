@@ -279,24 +279,43 @@ Browser changes a widget → POST to Next.js API → snapshot to Postgres → So
 
 ## Update / maintenance
 
+### The normal way
+
 ```bash
 cd magic-frame
-./deploy/install.sh        # pulls latest + rebuilds, idempotent, data + secrets stay
+./deploy/install.sh
 ```
 
-> **Heads-up for early v1.0.x adopters:** if `git pull` fails with `Need to specify how to reconcile divergent branches`, or `git fetch` aborts with `would clobber existing tag v1.0.0`, your clone is from before the launch-week history rewrites (Co-Author scrub, CLAUDE.md scrub, v1.0.1 retag). One-time recovery:
-> ```bash
-> git fetch --force --tags origin
-> git reset --hard origin/main
-> ```
-> Then re-run `./deploy/install.sh`. Your `.env`, database, and uploaded custom modules are untouched — they don't live in git. From v1.0.2 onwards the install script does this automatically.
+Idempotent — pulls the latest code, rebuilds the containers, and leaves your `.env`, database volume and uploaded custom modules alone. From v1.0.2 onwards this works in one step even if upstream history got rewritten.
 
-Database backup:
+### If it fails (early v1.0.x clones)
+
+If you cloned during the launch week (before v1.0.2) you may see one of these:
+
+```
+fatal: Need to specify how to reconcile divergent branches
+```
+```
+! [rejected]    v1.0.0   -> v1.0.0   (would clobber existing tag)
+```
+
+That's because the upstream history was rewritten a few times during launch (Co-Author scrub, CLAUDE.md scrub, v1.0.1 retag). One-time recovery:
+
+```bash
+cd magic-frame
+git fetch --force --tags origin
+git reset --hard origin/main
+./deploy/install.sh
+```
+
+Your `.env`, database and uploaded custom modules are untouched — none of that lives in git. After this one-time reset, regular `./deploy/install.sh` works on its own again.
+
+### Database backup
 ```bash
 docker compose exec db pg_dump -U postgres magicdashboard | gzip > backup-$(date +%F).sql.gz
 ```
 
-Logs:
+### Logs
 ```bash
 docker compose logs -f app
 docker compose logs -f caddy
