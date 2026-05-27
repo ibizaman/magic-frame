@@ -7,7 +7,23 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function ClockWidget({ config }: { config?: any }) {
   const { locale, t } = useLocale();
-  const dateLocale = locale === "en" ? "en-GB" : "de-DE";
+  // Defaults follow the App locale (en → 12h + US date, de → 24h + DE date),
+  // but the user can override per widget via the Inspector — same pattern as
+  // unitTemp / unitWind on the Weather widget. Settings:
+  //   timeFormat: "auto" | "12h" | "24h"
+  //   dateFormat: "auto" | "en-US" | "en-GB" | "de-DE"
+  const localeBased = locale === "en" ? "en-US" : "de-DE";
+  const dateLocale: string = (() => {
+    const f = config?.dateFormat;
+    if (f === "en-US" || f === "en-GB" || f === "de-DE") return f;
+    return localeBased; // "auto"
+  })();
+  const is12h: boolean = (() => {
+    const f = config?.timeFormat;
+    if (f === "12h") return true;
+    if (f === "24h") return false;
+    return locale === "en"; // "auto"
+  })();
   const [time, setTime] = useState<Date | null>(null);
   const [weather, setWeather] = useState<any>(null);
 
@@ -41,7 +57,19 @@ export default function ClockWidget({ config }: { config?: any }) {
 
   if (!time) return <div className="animate-pulse w-full h-full bg-white/5 rounded-xl min-h-[4em]"></div>;
 
-  const timezone = config?.timezone;
+  // Defensive: if the stored timezone isn't a valid IANA zone (we shipped a
+  // build where the picker accepted free text and saved garbage like
+  // "America/New_York)"), drop it. Otherwise the first Intl call below
+  // throws and the whole widget renders in the catch-block fallback —
+  // which used to ignore is12h and always show 24h.
+  let timezone = config?.timezone as string | undefined;
+  if (timezone) {
+    try {
+      new Intl.DateTimeFormat("en-US", { timeZone: timezone });
+    } catch {
+      timezone = undefined;
+    }
+  }
   const options: Intl.DateTimeFormatOptions = timezone ? { timeZone: timezone } : {};
 
   // Day/Night bestimmen: wenn timezone gesetzt, deren Stunde nutzen.
@@ -56,19 +84,34 @@ export default function ClockWidget({ config }: { config?: any }) {
   const isDay = hoursInTz > 6 && hoursInTz < 20;
   
   let hours = "00", minutes = "00", seconds = "00";
+  let dayPeriod = ""; // "AM" / "PM" — only populated when is12h
   let dateStr = "";
 
   try {
-     const timeFormatter = new Intl.DateTimeFormat('de-DE', { ...options, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+     const timeFormatter = new Intl.DateTimeFormat(dateLocale, { ...options, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: is12h });
      const timeParts = timeFormatter.formatToParts(time);
      hours = timeParts.find(p => p.type === 'hour')?.value || '00';
      minutes = timeParts.find(p => p.type === 'minute')?.value || '00';
      seconds = timeParts.find(p => p.type === 'second')?.value || '00';
+     // dayPeriod only appears in 12h locales. Some Intl implementations
+     // emit a lowercase "am"/"pm" — we uppercase for visual consistency.
+     dayPeriod = (timeParts.find(p => p.type === 'dayPeriod')?.value || '').toUpperCase();
 
+     // en-US: "Tue, May 27", de-DE: "Di., 27. Mai"
      const dateFormatter = new Intl.DateTimeFormat(dateLocale, { ...options, weekday: 'short', day: '2-digit', month: 'short' });
-     dateStr = dateFormatter.format(time); // Returns like: "Sa., 11. Apr" / "Sat, 11 Apr"
+     dateStr = dateFormatter.format(time);
   } catch (error) {
-     hours = time.getHours().toString().padStart(2, '0');
+     // Fallback path — should be rare now that the timezone is validated
+     // above, but if Intl misbehaves we still honour the 12h/24h pick
+     // instead of silently forcing 24h.
+     const rawHours = time.getHours();
+     if (is12h) {
+        const h12 = rawHours % 12 === 0 ? 12 : rawHours % 12;
+        hours = h12.toString().padStart(2, '0');
+        dayPeriod = rawHours >= 12 ? 'PM' : 'AM';
+     } else {
+        hours = rawHours.toString().padStart(2, '0');
+     }
      minutes = time.getMinutes().toString().padStart(2, '0');
      seconds = time.getSeconds().toString().padStart(2, '0');
      const days = locale === "en"
@@ -94,11 +137,43 @@ export default function ClockWidget({ config }: { config?: any }) {
          </div>
        )}
        
-       {/* Main Clock */}
+       {/* Main Clock
+           Layout note: parent uses `items-baseline` so HH:MM and the seconds
+           share the same text baseline — that's the visual rhythm a digital
+           clock wants. When AM/PM is needed we position it absolutely above
+           the seconds (bottom: 100% sits its bottom edge at the seconds' top)
+           so it doesn't disturb baseline alignment and doesn't drift when
+           the seconds digit widths change. tabular-nums on both digit
+           clusters keeps widths constant. */}
        <div className="flex items-baseline tracking-tight leading-none mb-2">
-         <span style={{ fontSize: '4.5em' }} className="font-bold">{hours}:{minutes}</span>
-         {(!config || config?.hideSeconds !== true) && (
-            <span style={{ fontSize: '1.8em' }} className="opacity-70 ml-[0.3em] font-medium">{seconds}</span>
+         <span style={{ fontSize: '4.5em', fontVariantNumeric: 'tabular-nums' }} className="font-bold">{hours}:{minutes}</span>
+
+         {(!config || config?.hideSeconds !== true) ? (
+            <span
+               style={{ position: 'relative', fontSize: '1.8em', fontVariantNumeric: 'tabular-nums' }}
+               className="opacity-70 ml-[0.3em] font-medium"
+            >
+               {seconds}
+               {dayPeriod && (
+                  <span
+                     style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: 0,
+                        fontSize: '0.5em',
+                        marginBottom: '0.15em',
+                     }}
+                     className="opacity-60 font-semibold tracking-[0.18em] whitespace-nowrap leading-none"
+                  >
+                     {dayPeriod}
+                  </span>
+               )}
+            </span>
+         ) : (
+            // Seconds hidden → AM/PM inline at larger size next to HH:MM.
+            dayPeriod && (
+               <span style={{ fontSize: '1.6em' }} className="opacity-60 ml-[0.4em] font-medium tracking-wide">{dayPeriod}</span>
+            )
          )}
        </div>
 
@@ -113,7 +188,9 @@ export default function ClockWidget({ config }: { config?: any }) {
                 if (!tz) return null;
                 let h = "--:--";
                 try {
-                   h = new Intl.DateTimeFormat("de-DE", { timeZone: tz, hour: "2-digit", minute: "2-digit" }).format(time);
+                   // World-clock entries follow the App locale too — English
+                   // gets "8:32 AM", German gets "08:32".
+                   h = new Intl.DateTimeFormat(dateLocale, { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: is12h }).format(time);
                 } catch {}
                 return (
                    <div key={idx} className="flex items-baseline gap-1">

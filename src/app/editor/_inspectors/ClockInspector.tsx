@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { WidgetLayoutItem } from '../_types';
+import TimezonePicker from '../_components/TimezonePicker';
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 type ClockInspectorProps = {
@@ -29,28 +30,59 @@ export default function ClockInspector({
   return (
     <div className="space-y-4">
        <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">{t("Zeitzone (z.B. Europe/Berlin)")}</label>
-          <input
-             type="text" value={activeWidget.config?.timezone || ''} placeholder={t("Automatisch / Lokal")}
-             onChange={(e) => updateConfig(activeWidget.i, 'timezone', e.target.value)}
-             className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500"
+          <label className="text-sm font-medium text-white/80 block mb-2">{t("Zeitzone")}</label>
+          <TimezonePicker
+             value={activeWidget.config?.timezone || ''}
+             onChange={(v) => updateConfig(activeWidget.i, 'timezone', v)}
+             placeholder={t("Automatisch / Lokal")}
+             clearable
           />
+          <p className="text-[11px] text-white/40 mt-1">
+             {t("Leer = Browser-Zeit. Tippen filtert die Liste (z.B. berlin → Europe/Berlin).")}
+          </p>
        </div>
 
        <ExtraTimezones widget={activeWidget} updateConfig={updateConfig} />
+
        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-             <label className="text-sm font-medium text-white/80 block mb-2">{t("Textausrichtung")}</label>
+             <label className="text-sm font-medium text-white/80 block mb-2">{t("Uhrzeitformat")}</label>
              <select
-                value={activeWidget.config?.align || 'left'}
-                onChange={(e) => updateConfig(activeWidget.i, 'align', e.target.value)}
+                value={(activeWidget.config as any)?.timeFormat || 'auto'}
+                onChange={(e) => updateConfig(activeWidget.i, 'timeFormat', e.target.value)}
                 className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
              >
-                <option value="left">{t("Links")}</option>
-                <option value="center">{t("Mittig")}</option>
-                <option value="right">{t("Rechts")}</option>
+                <option value="auto">{t("Automatisch (nach Sprache)")}</option>
+                <option value="24h">{t("24 Stunden (18:32)")}</option>
+                <option value="12h">{t("12 Stunden (6:32 PM)")}</option>
              </select>
           </div>
+          <div>
+             <label className="text-sm font-medium text-white/80 block mb-2">{t("Datumsformat")}</label>
+             <select
+                value={(activeWidget.config as any)?.dateFormat || 'auto'}
+                onChange={(e) => updateConfig(activeWidget.i, 'dateFormat', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
+             >
+                <option value="auto">{t("Automatisch (nach Sprache)")}</option>
+                <option value="de-DE">{t("Deutsch (Di., 27. Mai)")}</option>
+                <option value="en-US">{t("US-Englisch (Tue, May 27)")}</option>
+                <option value="en-GB">{t("UK-Englisch (Tue 27 May)")}</option>
+             </select>
+          </div>
+       </div>
+
+       <div>
+          <label className="text-sm font-medium text-white/80 block mb-2">{t("Textausrichtung")}</label>
+          <select
+             value={activeWidget.config?.align || 'left'}
+             onChange={(e) => updateConfig(activeWidget.i, 'align', e.target.value)}
+             className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
+          >
+             <option value="left">{t("Links")}</option>
+             <option value="center">{t("Mittig")}</option>
+             <option value="right">{t("Rechts")}</option>
+          </select>
        </div>
        <label className="flex items-center gap-3 cursor-pointer group pt-2">
           <div className="relative">
@@ -260,17 +292,18 @@ function ExtraTimezones({ widget, updateConfig }: { widget: any; updateConfig: (
                      }}
                      className="w-20 bg-black border border-white/10 text-white text-xs rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
                   />
-                  <input
-                     type="text"
-                     value={entry.tz}
-                     placeholder="America/New_York"
-                     onChange={(e) => {
-                        const next = [...list];
-                        next[idx] = { ...entry, tz: e.target.value };
-                        update(next);
-                     }}
-                     className="flex-1 bg-black border border-white/10 text-white text-xs font-mono rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
-                  />
+                  <div className="flex-1 min-w-0">
+                     <TimezonePicker
+                        value={entry.tz}
+                        onChange={(v) => {
+                           const next = [...list];
+                           next[idx] = { ...entry, tz: v };
+                           update(next);
+                        }}
+                        placeholder="America/New_York"
+                        className="w-full bg-black border border-white/10 text-white text-xs font-mono rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
+                     />
+                  </div>
                   <button
                      onClick={() => update(list.filter((_, i) => i !== idx))}
                      className="w-8 h-8 flex items-center justify-center text-red-400 hover:bg-red-500/10 rounded-md"

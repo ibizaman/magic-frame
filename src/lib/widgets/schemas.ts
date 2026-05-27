@@ -33,6 +33,11 @@ const baseConfig = z
 const clockConfig = baseConfig.extend({
   timezone: z.string().optional(),
   hideSeconds: z.boolean().optional(),
+  // "auto" follows the App locale (en → 12h, de → 24h). User can pin either.
+  timeFormat: z.enum(["auto", "12h", "24h"]).optional(),
+  // "auto" follows the App locale (en → en-US, de → de-DE). Explicit picks
+  // for users who want a specific regional format.
+  dateFormat: z.enum(["auto", "en-US", "en-GB", "de-DE"]).optional(),
   showMiniWeather: z.boolean().optional(),
   lat: z.string().optional(),
   lon: z.string().optional(),

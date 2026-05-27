@@ -1398,4 +1398,18 @@ export const EN: Record<string, string> = {
   "MJPEG-Qualität hängt direkt am HA-Stream-Profil der Kamera — niedrige Auflösung im HA-Stream-Source liefert auch hier nur niedrige Auflösung. WebRTC (go2rtc) folgt in einem späteren Release.":
     "MJPEG quality depends directly on the camera's HA stream profile — a low-resolution stream source means low-resolution here too. WebRTC (go2rtc) comes in a later release.",
   // "Schließen" already exists earlier in this dict.
+
+  // Clock widget: timezone picker + time/date format selects
+  "Zeitzone": "Time zone",
+  "Leer = Browser-Zeit. Tippen filtert die Liste (z.B. berlin → Europe/Berlin).":
+    "Empty = browser time. Typing filters the list (e.g. berlin → Europe/Berlin).",
+  "Keine passende Zeitzone": "No matching time zone",
+  "Uhrzeitformat": "Time format",
+  "Datumsformat": "Date format",
+  "Automatisch (nach Sprache)": "Automatic (follow language)",
+  "24 Stunden (18:32)": "24 hours (18:32)",
+  "12 Stunden (6:32 PM)": "12 hours (6:32 PM)",
+  "Deutsch (Di., 27. Mai)": "German (Di., 27. Mai)",
+  "US-Englisch (Tue, May 27)": "US English (Tue, May 27)",
+  "UK-Englisch (Tue 27 May)": "UK English (Tue 27 May)",
 };
