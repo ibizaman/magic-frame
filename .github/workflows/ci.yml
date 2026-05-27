@@ -1,0 +1,48 @@
+name: CI
+
+# Runs on every push to main + every pull request. Catches the build-breaking
+# bugs that manual testing easily misses (broken imports, missing schema entries,
+# accidentally removed exports).
+#
+# Linting is intentionally NOT part of CI yet — the codebase has ~500 long-standing
+# `no-explicit-any` warnings from the config-passthrough pattern that would
+# block every PR. Tracking that as separate cleanup; will add `npm run lint`
+# here once the noise is down.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Type-check + Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+        env:
+          # next build wants a DATABASE_URL at compile-time for the Prisma
+          # adapter even when nothing actually connects. A dummy connection
+          # string is enough — the build never opens the connection.
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
