@@ -91,7 +91,11 @@ gen_secret() {
 # "divergent branches" error. Hard-resetting is safe because no user data
 # lives in git — DB, .env, secrets are all in volumes / on disk.
 update_repo() {
-  git fetch --tags origin 2>/dev/null || git fetch --tags
+  # --force on the tag fetch: early v1.0.x adopters have tags that point at
+  # rewritten commits from the launch-week force-pushes. Without --force
+  # `git fetch` would refuse to update those tags with a "would clobber
+  # existing tag" error and abort the whole update.
+  git fetch --force --tags origin 2>/dev/null || git fetch --force --tags
   local LOCAL REMOTE BASE
   LOCAL=$(git rev-parse HEAD)
   REMOTE=$(git rev-parse '@{u}' 2>/dev/null || git rev-parse origin/main 2>/dev/null || echo "")
