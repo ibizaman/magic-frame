@@ -281,9 +281,14 @@ Browser changes a widget → POST to Next.js API → snapshot to Postgres → So
 
 ```bash
 cd magic-frame
-git pull
-./deploy/install.sh        # idempotent, data + secrets stay
+./deploy/install.sh        # pulls latest + rebuilds, idempotent, data + secrets stay
 ```
+
+> **Heads-up for early v1.0.x adopters:** if `git pull` fails with `Need to specify how to reconcile divergent branches`, your clone is from before one of the early force-pushes (history cleanup). Run once:
+> ```bash
+> git fetch origin && git reset --hard origin/main
+> ```
+> Then re-run `./deploy/install.sh`. Your `.env`, database, and uploaded custom modules are untouched — they don't live in git. From v1.0.2 onwards `install.sh` handles this automatically.
 
 Database backup:
 ```bash

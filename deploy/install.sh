@@ -79,12 +79,54 @@ gen_secret() {
 # -----------------------------------------------------------------------------
 # 2) Clone or update repo
 # -----------------------------------------------------------------------------
+# update_repo handles three cases:
+#   1. up-to-date → no-op
+#   2. local is behind remote (clean fast-forward) → pull
+#   3. local has diverged → hard-reset to remote
+#
+# Case 3 is what bit the early v1.0.x adopters: the upstream history got
+# rewritten a few times during launch (Co-Author scrub, CLAUDE.md scrub,
+# v1.0.1 retag), so anyone who cloned during that window has commits that
+# no longer exist on GitHub. A plain `git pull` then fails with the
+# "divergent branches" error. Hard-resetting is safe because no user data
+# lives in git — DB, .env, secrets are all in volumes / on disk.
+update_repo() {
+  git fetch --tags origin 2>/dev/null || git fetch --tags
+  local LOCAL REMOTE BASE
+  LOCAL=$(git rev-parse HEAD)
+  REMOTE=$(git rev-parse '@{u}' 2>/dev/null || git rev-parse origin/main 2>/dev/null || echo "")
+  if [ -z "$REMOTE" ]; then
+    echo "  → no upstream tracking branch, skipping update"
+    return 0
+  fi
+  if [ "$LOCAL" = "$REMOTE" ]; then
+    echo "  → already up to date"
+    return 0
+  fi
+  BASE=$(git merge-base HEAD "$REMOTE" 2>/dev/null || echo "")
+  if [ "$LOCAL" = "$BASE" ]; then
+    # clean fast-forward
+    git pull --ff-only
+    return 0
+  fi
+  # Diverged. Reset to upstream — preserves your .env, DB volumes and
+  # any custom-module uploads (those live outside the repo). Anything
+  # you've hand-edited inside the repo will be replaced with the
+  # upstream version.
+  echo "  ⚠  Local repo diverges from upstream. This usually means upstream"
+  echo "     history was rewritten between your clone and now. Resetting your"
+  echo "     working copy to match the published version (your .env, DB and"
+  echo "     uploaded custom modules stay untouched)."
+  git reset --hard "$REMOTE"
+}
+
 if [ -f docker-compose.yml ] && [ -d src ]; then
-  step "Already inside the repo — skipping clone"
+  step "Already inside the repo — pulling latest"
   REPO_DIR="."
+  ( update_repo )
 elif [ -d "$REPO_DIR/.git" ]; then
   step "Updating existing repo $REPO_DIR"
-  ( cd "$REPO_DIR" && git pull --ff-only )
+  ( cd "$REPO_DIR" && update_repo )
 else
   step "Cloning repo into ./$REPO_DIR"
   git clone "$REPO_URL" "$REPO_DIR"
