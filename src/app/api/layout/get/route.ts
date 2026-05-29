@@ -22,19 +22,10 @@ export async function GET(req: NextRequest) {
        return NextResponse.json({ layout: [], wallpaper: null, settings: null }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
-    const defaultLabel = (type: string) => {
-      const map: Record<string, string> = {
-        "ClockWidget.tsx": "Uhr",
-        "WeatherWidget.tsx": "Wetter",
-        "CalendarWidget.tsx": "Kalender",
-        "HomeAssistantWidget.tsx": "HA Entity",
-        "ButtonWidget.tsx": "Buttons",
-        "HANotificationWidget.tsx": "Benachrichtigungen",
-      };
-      return map[type] ?? type.replace("Widget.tsx", "");
-    };
-
-    // Map to react-grid-layout format
+    // Map to react-grid-layout format. Return the label verbatim (empty stays
+    // empty) — the editor derives the display title from the widget type via
+    // widgetTitle() and localises it. Injecting a German default here used to
+    // be a second source of untranslated widget titles (issue #7).
     const rawLayout = dashboard.widgets.map(w => ({
       i: w.id,
       x: w.x,
@@ -44,7 +35,7 @@ export async function GET(req: NextRequest) {
       type: w.type,
       bgOpacity: w.bgOpacity,
       config: w.config,
-      label: w.label && w.label.trim() !== "" ? w.label : defaultLabel(w.type),
+      label: typeof w.label === "string" ? w.label : "",
     }));
 
     const layout = migrateLayoutConfigs(rawLayout);

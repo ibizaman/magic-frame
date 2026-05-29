@@ -107,8 +107,63 @@ export interface WallpaperConfig {
   showTimer?: boolean;
 }
 
+// ── Widget display titles ────────────────────────────────────────────────
+// Canonical default label per widget type, stored as the GERMAN source key.
+// The title is ALWAYS rendered through t(), so it follows the active app
+// locale. New widgets store an EMPTY label and derive their title from the
+// type via widgetTitle() — no German string is ever baked into the DB.
+export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
+  "ClockWidget.tsx": "Uhr",
+  "WeatherWidget.tsx": "Wetter",
+  "CalendarWidget.tsx": "Kalender",
+  "HomeAssistantWidget.tsx": "HA Entity",
+  "ButtonWidget.tsx": "Buttons",
+  "HANotificationWidget.tsx": "Benachrichtigungen",
+  "TimerWidget.tsx": "Timer",
+  "MessagesWidget.tsx": "Nachrichten",
+  "ShoppingListWidget.tsx": "Einkaufsliste",
+  "TodosWidget.tsx": "Todos",
+  "CameraWidget.tsx": "Kamera",
+};
+
+// Every German default string we have ever auto-assigned (the current types
+// above plus historical ones like the old "Uhr & Datum" clock default). Lets
+// us recognise a stored label as an auto-default — not a user customisation —
+// on existing DB rows, so we localise it instead of showing German verbatim
+// on an English display.
+const AUTO_DEFAULT_LABELS = new Set<string>([
+  ...Object.values(WIDGET_DEFAULT_LABEL),
+  "Uhr & Datum",
+]);
+
+/** True when a label is empty or one of our auto-assigned German defaults. */
+export function isAutoDefaultLabel(label: string | undefined): boolean {
+  const l = (label ?? "").trim();
+  return l === "" || AUTO_DEFAULT_LABELS.has(l);
+}
+
+/**
+ * Display title for a widget. Empty / auto-default labels derive from the
+ * widget type and localise via t(); genuine user labels pass through as-is.
+ *
+ * NB: widget *targeting* (Button show/hide links) keys off the widget id
+ * (`w.i`), never the label — so deriving the title here is display-only and
+ * cannot break those dependencies.
+ */
+export function widgetTitle(
+  type: string,
+  label: string | undefined,
+  t: (s: string) => string,
+): string {
+  if (isAutoDefaultLabel(label)) {
+    const def = WIDGET_DEFAULT_LABEL[type];
+    return def ? t(def) : type.replace("Widget.tsx", "");
+  }
+  return label as string;
+}
+
 export const defaultLayout: WidgetLayoutItem[] = [
-  { i: 'clk', x: 2, y: 2, w: 10, h: 4, type: 'ClockWidget.tsx', label: 'Uhr & Datum', bgOpacity: 20, config: { fontSize: 24, fontFamily: 'Inter' } },
-  { i: 'cal', x: 2, y: 7, w: 10, h: 6, type: 'CalendarWidget.tsx', label: 'Kalender', bgOpacity: 20, config: { fontSize: 18, fontFamily: 'Inter' } },
-  { i: 'wth', x: 2, y: 14, w: 20, h: 6, type: 'WeatherWidget.tsx', label: 'Wetter', bgOpacity: 50, config: { fontSize: 20, fontFamily: 'Inter' } },
+  { i: 'clk', x: 2, y: 2, w: 10, h: 4, type: 'ClockWidget.tsx', label: '', bgOpacity: 20, config: { fontSize: 24, fontFamily: 'Inter' } },
+  { i: 'cal', x: 2, y: 7, w: 10, h: 6, type: 'CalendarWidget.tsx', label: '', bgOpacity: 20, config: { fontSize: 18, fontFamily: 'Inter' } },
+  { i: 'wth', x: 2, y: 14, w: 20, h: 6, type: 'WeatherWidget.tsx', label: '', bgOpacity: 50, config: { fontSize: 20, fontFamily: 'Inter' } },
 ];

@@ -20,6 +20,7 @@ import {
   WidgetLayoutItem,
   WallpaperConfig,
   defaultLayout,
+  widgetTitle,
 } from "../_types";
 import AddWidgetModal from "../_components/AddWidgetModal";
 import WallpaperSettingsModal, { type ImmichAlbum } from "../_components/WallpaperSettingsModal";
@@ -203,11 +204,9 @@ function MobileEditorInner() {
 
   const addWidget = (type: string) => {
     const newId = Math.random().toString(36).substring(7);
-    // Store the German source — see the desktop editor for the rationale.
-    let label = type.replace("Widget.tsx", "");
-    if (type === "ClockWidget.tsx") label = "Uhr";
-    if (type === "WeatherWidget.tsx") label = "Wetter";
-    if (type === "HomeAssistantWidget.tsx") label = "HA Entity";
+    // Empty label — title is derived from the type and localised at render.
+    // See the desktop editor for the rationale (issue #7).
+    const label = "";
 
     const newWidget: WidgetLayoutItem = {
       i: newId,
@@ -445,7 +444,7 @@ function MobileEditorInner() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-white truncate">
-                    {t(w.label)}
+                    {widgetTitle(w.type, w.label, t)}
                   </div>
                   <div className="text-xs text-white/50 truncate">
                     {w.type.replace("Widget.tsx", "")} · {w.w}×{w.h} · Pos {w.x},

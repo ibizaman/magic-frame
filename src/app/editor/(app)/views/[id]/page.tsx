@@ -36,6 +36,7 @@ import {
   WidgetLayoutItem,
   WallpaperConfig,
   defaultLayout,
+  widgetTitle,
 } from "@/app/editor/_types";
 import InspectorPanel from "@/app/editor/_components/InspectorPanel";
 import WallpaperSettingsModal, {
@@ -444,20 +445,12 @@ export default function ViewEditor({
 
   const addWidget = (type: string) => {
     const newId = Math.random().toString(36).substring(7);
-    // Default labels are stored as the German source string. Rendering goes
-    // through t() so each display localises to the active app locale — that
-    // way a widget created in the German UI still shows "Clock" when the
-    // viewer switches to English, instead of being stuck as "Uhr". User-set
-    // custom labels stay as the user typed them (t() falls back to source
-    // when no translation exists).
-    let label = type.replace("Widget.tsx", "");
-    if (type === "ClockWidget.tsx") label = "Uhr";
-    if (type === "WeatherWidget.tsx") label = "Wetter";
-    if (type === "HomeAssistantWidget.tsx") label = "HA Entity";
-    if (type === "TimerWidget.tsx") label = "Timer";
-    if (type === "MessagesWidget.tsx") label = "Nachrichten";
-    if (type === "ShoppingListWidget.tsx") label = "Einkaufsliste";
-    if (type === "TodosWidget.tsx") label = "Todos";
+    // Core widgets store an EMPTY label — the display title is derived from
+    // the type via widgetTitle() and localised at render. No German string is
+    // baked into the DB, so a new view's widgets read correctly in whatever
+    // locale the display is set to (issue #7). Only custom modules carry a
+    // stored label (their manifest name).
+    let label = "";
     // Custom-Modul: label aus dem Manifest, Felder mit Defaults vorbelegen.
     const initialConfig: any = { fontSize: 20, fontFamily: "var(--font-geist-sans)" };
     if (type.startsWith("custom:")) {
@@ -909,7 +902,7 @@ export default function ViewEditor({
                             {widgetIconFor(w.type, 14)}
                           </span>
                           <span className="text-xs font-semibold tracking-wide font-sans text-white/95 truncate flex-1">
-                            {t(w.label)}
+                            {widgetTitle(w.type, w.label, t)}
                           </span>
                           <button
                             type="button"

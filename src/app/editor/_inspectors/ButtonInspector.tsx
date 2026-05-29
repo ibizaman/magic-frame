@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { WidgetLayoutItem } from '../_types';
+import { widgetTitle } from '../_types';
 import IconPicker from '../_components/IconPicker';
 import HAEntityInput from '../_components/HAEntityInput';
 import { useT } from "@/lib/i18n/LocaleProvider";
@@ -177,7 +178,7 @@ function ActionEditor({
               .map((w) => {
                 const targetsKey = keyPrefix === "" ? `targets${btnSuffix}` : `longPressTargets${btnSuffix}`;
                 const isActive = ((activeWidget.config as any)?.[targetsKey] || []).includes(w.i);
-                const widgetName = w.label || w.type.replace(".tsx", "");
+                const widgetName = widgetTitle(w.type, w.label, t);
                 return (
                   <label key={w.i} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded cursor-pointer">
                     <input

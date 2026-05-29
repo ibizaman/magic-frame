@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Copy, Trash2, X, LayoutGrid, Type, SlidersHorizontal } from "lucide-react";
 import type { WidgetLayoutItem } from "../_types";
+import { widgetTitle, isAutoDefaultLabel } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import ClockInspector from "../_inspectors/ClockInspector";
 import WeatherInspector from "../_inspectors/WeatherInspector";
@@ -82,7 +83,7 @@ export default function InspectorPanel(props: InspectorPanelProps) {
             {typeLabel}
           </div>
           <div className="text-sm font-semibold text-white truncate">
-            {t(activeWidget.label)}
+            {widgetTitle(activeWidget.type, activeWidget.label, t)}
           </div>
         </div>
         <button
@@ -200,9 +201,13 @@ function LayoutTab({
         <SectionHeader title="Name" />
         <input
           type="text"
-          value={activeWidget.label}
+          // Auto-default / empty labels show blank with the localised default
+          // name as placeholder — so the field is editable-from-clean and the
+          // user always sees what the title currently renders as. Typing turns
+          // it into a genuine custom label; clearing it reverts to the default.
+          value={isAutoDefaultLabel(activeWidget.label) ? "" : activeWidget.label}
           onChange={(e) => updateLabel(activeWidget.i, e.target.value)}
-          placeholder={t("z.B. Küche-Uhr")}
+          placeholder={widgetTitle(activeWidget.type, "", t)}
           className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
         />
         <p className="text-[11px] text-white/40 mt-1.5">
