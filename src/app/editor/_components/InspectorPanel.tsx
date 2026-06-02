@@ -59,6 +59,8 @@ const NO_MULTICOL_CONTENT = new Set<string>([
   "CalendarWidget.tsx",
   "HomeAssistantWidget.tsx",
   "ButtonWidget.tsx",
+  "ShoppingListWidget.tsx",
+  "TodosWidget.tsx",
 ]);
 
 export default function InspectorPanel(props: InspectorPanelProps) {

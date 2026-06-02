@@ -71,10 +71,39 @@ export function MessagesInspector({ widget, updateConfig }: Props) {
 
 export function ShoppingInspector({ widget, updateConfig }: Props) {
   const t = useT();
+  const title = (widget.config as any)?.title ?? "";
+  const hideHeader = (widget.config as any)?.hideHeader ?? false;
+  const hideCount = (widget.config as any)?.hideCount ?? false;
   const hideAdd = (widget.config as any)?.hideAddForm ?? false;
   return (
     <div className="space-y-4">
       <HASourceSelector widget={widget} updateConfig={updateConfig} />
+      <CheckboxRow
+        checked={hideHeader}
+        onChange={(v) => updateConfig(widget.i, "hideHeader", v)}
+        label="Titelzeile ausblenden"
+      />
+      {!hideHeader && (
+        <>
+          <div>
+            <label className="text-sm font-medium text-white/80 block mb-2">
+              {t("Titel der Liste (optional)")}
+            </label>
+            <input
+              type="text"
+              value={title}
+              placeholder={t("leer = Standard")}
+              onChange={(e) => updateConfig(widget.i, "title", e.target.value)}
+              className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <CheckboxRow
+            checked={hideCount}
+            onChange={(v) => updateConfig(widget.i, "hideCount", v)}
+            label="Anzahl ausblenden"
+          />
+        </>
+      )}
       <CheckboxRow
         checked={hideAdd}
         onChange={(v) => updateConfig(widget.i, "hideAddForm", v)}
@@ -90,12 +119,41 @@ export function ShoppingInspector({ widget, updateConfig }: Props) {
 
 export function TodosInspector({ widget, updateConfig }: Props) {
   const t = useT();
+  const title = (widget.config as any)?.title ?? "";
+  const hideHeader = (widget.config as any)?.hideHeader ?? false;
+  const hideCount = (widget.config as any)?.hideCount ?? false;
   const assignee = (widget.config as any)?.assignee ?? "";
   const hideAdd = (widget.config as any)?.hideAddForm ?? false;
   const listSource = (widget.config as any)?.listSource ?? "local";
   return (
     <div className="space-y-4">
       <HASourceSelector widget={widget} updateConfig={updateConfig} />
+      <CheckboxRow
+        checked={hideHeader}
+        onChange={(v) => updateConfig(widget.i, "hideHeader", v)}
+        label="Titelzeile ausblenden"
+      />
+      {!hideHeader && (
+        <>
+          <div>
+            <label className="text-sm font-medium text-white/80 block mb-2">
+              {t("Titel der Liste (optional)")}
+            </label>
+            <input
+              type="text"
+              value={title}
+              placeholder={t("leer = Standard")}
+              onChange={(e) => updateConfig(widget.i, "title", e.target.value)}
+              className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <CheckboxRow
+            checked={hideCount}
+            onChange={(v) => updateConfig(widget.i, "hideCount", v)}
+            label="Anzahl ausblenden"
+          />
+        </>
+      )}
       {listSource === "local" && (
         <div>
           <label className="text-sm font-medium text-white/80 block mb-2">

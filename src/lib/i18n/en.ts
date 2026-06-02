@@ -596,6 +596,10 @@ export const EN: Record<string, string> = {
   "Max. Nachrichten anzeigen": "Max. messages to show",
   "Widget komplett ausblenden wenn keine Nachrichten": "Hide widget completely when no messages",
   "Eingabe-Feld ausblenden (nur lesen)": "Hide input field (read only)",
+  "Titel der Liste (optional)": "List title (optional)",
+  "Titelzeile ausblenden": "Hide title bar",
+  "Anzahl ausblenden": "Hide count",
+  "leer = Standard": "empty = default",
   "Filter auf Person (optional)": "Filter by person (optional)",
   "z.B. Emma — leer = alle": "e.g. Emma — empty = everyone",
   "Nur Todos mit diesem Assignee werden angezeigt; neue Todos werden dieser Person zugewiesen.":

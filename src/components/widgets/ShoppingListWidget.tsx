@@ -159,24 +159,30 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
   const unchecked = items.filter((i) => !i.checked);
   const checked = items.filter((i) => i.checked);
   const hideAdd = config?.hideAddForm === true;
+  const customTitle = (config?.title ?? "").trim();
+  const hideHeader = config?.hideHeader === true;
+  const hideCount = config?.hideCount === true;
+  const headerLabel = customTitle || t("Einkaufsliste");
 
   return (
     <div className="w-full h-full flex flex-col gap-[0.5em] overflow-hidden p-1">
-      <div className="flex items-center gap-[0.5em] mb-[0.2em]">
-        <ShoppingCart size={14} className="opacity-60 shrink-0" />
-        <span className="text-[0.7em] opacity-60 uppercase tracking-wider">
-          {t("Einkaufsliste")} · {unchecked.length}
-        </span>
-        {checked.length > 0 && (
-          <button
-            onClick={clearDone}
-            className="ml-auto text-[0.6em] opacity-40 hover:opacity-80 nodrag flex items-center gap-[0.2em]"
-            title={t("Abgehakte löschen")}
-          >
-            <Trash2 size={10} /> {checked.length}
-          </button>
-        )}
-      </div>
+      {!hideHeader && (
+        <div className="flex items-center gap-[0.5em] mb-[0.2em]">
+          <ShoppingCart size={14} className="opacity-60 shrink-0" />
+          <span className="text-[0.7em] opacity-60 uppercase tracking-wider">
+            {headerLabel}{!hideCount && ` · ${unchecked.length}`}
+          </span>
+          {checked.length > 0 && (
+            <button
+              onClick={clearDone}
+              className="ml-auto text-[0.6em] opacity-40 hover:opacity-80 nodrag flex items-center gap-[0.2em]"
+              title={t("Abgehakte löschen")}
+            >
+              <Trash2 size={10} /> {checked.length}
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col gap-[0.3em]"
            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}>

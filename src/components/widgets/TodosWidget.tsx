@@ -160,17 +160,23 @@ export default function TodosWidget({ config }: { config?: any }) {
   }
 
   const hideAdd = config?.hideAddForm === true;
+  const customTitle = (config?.title ?? "").trim();
+  const hideHeader = config?.hideHeader === true;
+  const hideCount = config?.hideCount === true;
+  const headerLabel = customTitle || tr("Todos");
   const open = todos.filter((t) => !t.completedAt);
   const done = todos.filter((t) => t.completedAt);
 
   return (
     <div className="w-full h-full flex flex-col gap-[0.5em] overflow-hidden p-1">
-      <div className="flex items-center gap-[0.5em] mb-[0.2em]">
-        <ClipboardList size={14} className="opacity-60 shrink-0" />
-        <span className="text-[0.7em] opacity-60 uppercase tracking-wider truncate">
-          {assigneeFilter ? `${tr("Todos")} · ${assigneeFilter}` : tr("Todos")} · {open.length}
-        </span>
-      </div>
+      {!hideHeader && (
+        <div className="flex items-center gap-[0.5em] mb-[0.2em]">
+          <ClipboardList size={14} className="opacity-60 shrink-0" />
+          <span className="text-[0.7em] opacity-60 uppercase tracking-wider truncate">
+            {assigneeFilter ? `${headerLabel} · ${assigneeFilter}` : headerLabel}{!hideCount && ` · ${open.length}`}
+          </span>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col gap-[0.3em]"
            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}>

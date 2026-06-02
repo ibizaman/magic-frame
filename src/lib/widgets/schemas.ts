@@ -137,6 +137,9 @@ const messagesConfig = baseConfig
 
 const shoppingConfig = baseConfig
   .extend({
+    title: z.string().optional(),
+    hideHeader: z.boolean().optional(),
+    hideCount: z.boolean().optional(),
     hideAddForm: z.boolean().optional(),
     listSource: z.enum(["local", "ha", "todoist"]).optional(),
     haListEntity: z.string().optional(),
@@ -146,6 +149,9 @@ const shoppingConfig = baseConfig
 
 const todosConfig = baseConfig
   .extend({
+    title: z.string().optional(),
+    hideHeader: z.boolean().optional(),
+    hideCount: z.boolean().optional(),
     assignee: z.string().optional(),
     hideAddForm: z.boolean().optional(),
     listSource: z.enum(["local", "ha", "todoist"]).optional(),
