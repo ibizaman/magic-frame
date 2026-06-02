@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { ShoppingCart, Plus, Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { renderInlineMarkdown } from "@/lib/inline-markdown";
 
 type Item = {
   id: string;
@@ -240,7 +241,7 @@ function ListRow({ item, onToggle }: { item: Item; onToggle: () => void }) {
       <span
         className={`text-[0.82em] flex-1 truncate ${item.checked ? "opacity-40 line-through" : ""}`}
       >
-        {item.text}
+        {renderInlineMarkdown(item.text)}
       </span>
     </button>
   );

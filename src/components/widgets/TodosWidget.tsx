@@ -6,6 +6,7 @@ import { ClipboardList, Plus } from "lucide-react";
 import { format, isPast, isToday, isTomorrow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { renderInlineMarkdown } from "@/lib/inline-markdown";
 
 type Todo = {
   id: string;
@@ -245,7 +246,7 @@ function TodoRow({
     <button
       onClick={onToggle}
       className={`flex items-center gap-[0.6em] text-left bg-black/20 hover:bg-black/40 rounded-md px-[0.6em] py-[0.3em] transition-colors nodrag ${
-        overdue ? "ring-1 ring-red-500/40" : ""
+        overdue ? "ring-1 ring-inset ring-red-500/50" : ""
       }`}
     >
       <span
@@ -256,7 +257,7 @@ function TodoRow({
         {todo.completedAt && "✓"}
       </span>
       <span className={`text-[0.82em] flex-1 truncate ${todo.completedAt ? "opacity-40 line-through" : ""}`}>
-        {todo.title}
+        {renderInlineMarkdown(todo.title)}
       </span>
       <div className="flex items-center gap-[0.3em] shrink-0 text-[0.65em] opacity-70">
         {showAssignee && todo.assignee && (
