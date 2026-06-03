@@ -38,7 +38,13 @@ export async function GET(_: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "Invalid entity id" }, { status: 400 });
   }
   try {
-    const res = await haFetch(`/api/states/${entityId}`);
+    // Modern HA `todo` platform does NOT expose items in the state attributes
+    // anymore — they must be fetched via the `todo.get_items` response service.
+    // (Old attributes.items/all_items path returned nothing → issue #19.)
+    const res = await haFetch(
+      `/api/services/todo/get_items?return_response=true`,
+      { method: "POST", body: JSON.stringify({ entity_id: entityId }) },
+    );
     if (!res.ok) {
       return NextResponse.json(
         { error: `HA returned ${res.status}` },
@@ -46,20 +52,19 @@ export async function GET(_: NextRequest, ctx: Ctx) {
       );
     }
     const data = await res.json();
-    const attr = data.attributes || {};
-    const raw: any[] = Array.isArray(attr.items)
-      ? attr.items
-      : Array.isArray(attr.all_items)
-        ? attr.all_items
-        : [];
-    const items = raw.map((it, idx) => {
+    // Shape: { changed_states: [...], service_response: { "todo.x": { items: [...] } } }
+    const raw: any[] = data?.service_response?.[entityId]?.items ?? [];
+    const items = raw.map((it: any, idx: number) => {
       if (typeof it === "string") {
         return { uid: `s${idx}`, summary: it, status: "needs_action" as const };
       }
       return {
         uid: it.uid ?? `s${idx}`,
         summary: it.summary ?? it.name ?? String(it),
-        status: (it.status as "needs_action" | "completed") ?? "needs_action",
+        status:
+          it.status === "completed"
+            ? ("completed" as const)
+            : ("needs_action" as const),
       };
     });
     return NextResponse.json({ entityId, items });

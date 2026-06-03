@@ -14,11 +14,12 @@ export async function GET() {
       );
     }
     const base = settings.haUrl.replace(/\/+$/, "");
+    const headers = {
+      Authorization: `Bearer ${settings.haToken}`,
+      "Content-Type": "application/json",
+    };
     const res = await fetch(`${base}/api/states`, {
-      headers: {
-        Authorization: `Bearer ${settings.haToken}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
     });
@@ -29,23 +30,49 @@ export async function GET() {
       );
     }
     const all = (await res.json()) as any[];
-    const lists = all
-      .filter((e) => typeof e.entity_id === "string" && e.entity_id.startsWith("todo."))
-      .map((e) => {
-        // Neuere todo-Plattform: attributes.items = [{summary, status, uid}, ...]
-        // Ältere shopping_list: attributes.all_items oder state-Count
-        const attr = e.attributes || {};
-        const items = Array.isArray(attr.items)
-          ? attr.items
-          : Array.isArray(attr.all_items)
-            ? attr.all_items
-            : [];
-        return {
-          entityId: e.entity_id,
-          name: attr.friendly_name || e.entity_id.replace(/^todo\./, ""),
-          itemCount: items.length,
-        };
-      })
+    const todos = all.filter(
+      (e) => typeof e.entity_id === "string" && e.entity_id.startsWith("todo."),
+    );
+    const ids = todos.map((e) => e.entity_id);
+
+    // Item-Counts: die moderne HA-todo-Plattform hält die Items NICHT mehr im
+    // State-Attribut — sie kommen über den `todo.get_items`-Response-Service
+    // (ein gebündelter Call für alle Listen). Best-effort: scheitert der Call,
+    // bleiben die Listen trotzdem wählbar, nur ohne Count. (issue #19)
+    const counts: Record<string, number> = {};
+    if (ids.length > 0) {
+      try {
+        const r = await fetch(
+          `${base}/api/services/todo/get_items?return_response=true`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ entity_id: ids }),
+            cache: "no-store",
+            signal: AbortSignal.timeout(8000),
+          },
+        );
+        if (r.ok) {
+          const d = await r.json();
+          const sr = d?.service_response ?? {};
+          for (const id of ids) {
+            const items = sr?.[id]?.items;
+            counts[id] = Array.isArray(items) ? items.length : 0;
+          }
+        }
+      } catch {
+        // Count ist best-effort — Listen bleiben ohne Count nutzbar.
+      }
+    }
+
+    const lists = todos
+      .map((e) => ({
+        entityId: e.entity_id,
+        name:
+          (e.attributes || {}).friendly_name ||
+          e.entity_id.replace(/^todo\./, ""),
+        itemCount: counts[e.entity_id] ?? 0,
+      }))
       .sort((a, b) => a.name.localeCompare(b.name));
     return NextResponse.json({ lists });
   } catch (err: any) {
