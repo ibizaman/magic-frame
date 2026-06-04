@@ -463,20 +463,37 @@ function buildFrames(images: WallpaperData[], mode: SplitMode): Frame[] {
     return frames;
   }
 
-  // auto: Querformat allein, zwei aufeinanderfolgende Hochformat-Bilder paaren.
-  // Ohne bekannte Orientierung (z.B. Nicht-Immich-Quellen) → als Querformat
-  // behandelt = Einzelbild, also kein Regress.
-  let i = 0;
-  while (i < images.length) {
-    const cur = images[i];
-    const next = images[i + 1];
-    if (cur.orientation === "portrait" && next?.orientation === "portrait") {
-      frames.push({ key: `${cur.id}_${next.id}`, images: [cur, next] });
-      i += 2;
-    } else {
-      frames.push({ key: cur.id, images: [cur] });
-      i += 1;
-    }
+  // auto + Greedy-Pairing: ALLE Hochformat-Bilder paaren, nicht nur direkt
+  // benachbarte (wie ImmichFrame). Die Playlist ist server-seitig schon
+  // gemischt, also kostet das Umsortieren nichts — und es bleiben (außer ggf.
+  // einem ungeraden Rest) keine ungepaarten Portraits übrig. Das behebt
+  // ImmichFrames #541-Schwäche (verstreute Portraits werden sonst gecroppt).
+  // Ohne bekannte Orientierung (Nicht-Immich-Quellen) zählt ein Bild als
+  // Querformat → Einzelbild, also kein Regress.
+  const portraits = images.filter((im) => im.orientation === "portrait");
+  const singles: Frame[] = images
+    .filter((im) => im.orientation !== "portrait")
+    .map((im) => ({ key: im.id, images: [im] }));
+
+  const pairs: Frame[] = [];
+  for (let p = 0; p + 1 < portraits.length; p += 2) {
+    pairs.push({ key: `${portraits[p].id}_${portraits[p + 1].id}`, images: [portraits[p], portraits[p + 1]] });
+  }
+  // Ungerades letztes Portrait → Einzelbild (fit greift, kein harter Crop nötig).
+  if (portraits.length % 2 === 1) {
+    const last = portraits[portraits.length - 1];
+    singles.push({ key: last.id, images: [last] });
+  }
+
+  // Paare und Einzelbilder proportional verschränken, damit nicht erst alle
+  // Paare und danach alle Einzelbilder kommen.
+  let pi = 0;
+  let si = 0;
+  while (pi < pairs.length || si < singles.length) {
+    if (pi >= pairs.length) { frames.push(singles[si++]); continue; }
+    if (si >= singles.length) { frames.push(pairs[pi++]); continue; }
+    if ((pi + 1) / pairs.length <= (si + 1) / singles.length) frames.push(pairs[pi++]);
+    else frames.push(singles[si++]);
   }
   return frames;
 }
