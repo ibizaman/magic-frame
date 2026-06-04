@@ -13,6 +13,8 @@ import {
   LogOut,
   Menu,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 import MagicFrameLogo from "@/components/MagicFrameLogo";
 import { LocaleProvider, useT } from "@/lib/i18n/LocaleProvider";
@@ -56,6 +58,7 @@ function EditorAppLayoutInner({
   const pathname = usePathname() || "/editor";
   const [email, setEmail] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
     fetch("/api/auth/me", { cache: "no-store" })
@@ -63,6 +66,21 @@ function EditorAppLayoutInner({
       .then((d) => setEmail(d?.user?.email ?? null))
       .catch(() => {});
   }, []);
+
+  // Editor-Theme aus localStorage (nach Mount → keine Hydration-Mismatches).
+  // Nur der Editor: die Live-View bekommt kein data-theme und bleibt dunkel.
+  useEffect(() => {
+    const saved = localStorage.getItem("mf-theme");
+    if (saved === "light" || saved === "dark") setTheme(saved);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      localStorage.setItem("mf-theme", next);
+      return next;
+    });
+  };
 
   useEffect(() => {
     setOpen(false);
@@ -129,6 +147,13 @@ function EditorAppLayoutInner({
           </div>
         </div>
         <button
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+        >
+          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+          {theme === "dark" ? t("Heller Modus") : t("Dunkler Modus")}
+        </button>
+        <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
         >
@@ -140,7 +165,7 @@ function EditorAppLayoutInner({
   );
 
   return (
-    <div className="h-screen flex bg-zinc-950 text-white overflow-hidden">
+    <div data-theme={theme} className="h-screen flex bg-zinc-950 text-white overflow-hidden">
       <aside className="hidden md:flex w-60 shrink-0 border-r border-white/10 bg-black/40 flex-col">
         {sidebarContent}
       </aside>

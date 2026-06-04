@@ -95,3 +95,85 @@ body {
     break-inside: avoid;
   }
 }
+
+/* ============================================================
+   LIGHT MODE — Editor-UI (Issue #21)
+   Die App ist hart auf Dark verdrahtet (bg-zinc-950, text-white, bg-white/5 …).
+   Statt hunderte Klassen umzuschreiben, remappen wir die tatsächlich genutzten
+   Farb-Utilities unter [data-theme="light"]. Voll-Deckkraft-Farben laufen über
+   die Tailwind-v4-CSS-Variablen (überschreibbar), Opacity-Varianten sind als
+   Literale eincompiliert → explizit überschreiben.
+   Scope = Editor-Layout-Root. Die Live-/view-Seite hat KEIN data-theme und
+   bleibt unberührt dunkel. Modal-Scrims (bg-black/60–80) bleiben bewusst dunkel.
+   Quick-Fix (#21): deckt die häufigsten Utilities ab; Feinschliff folgt.
+   ============================================================ */
+[data-theme="light"] {
+  color-scheme: light;
+  --color-zinc-950: #f3f4f6; /* Seiten-/Modal-Grundfläche */
+  --color-zinc-900: #ffffff; /* Karten (Voll-Deckkraft) */
+  --color-zinc-800: #e5e7eb;
+  --color-zinc-700: #d4d4d8;
+}
+
+/* Text: weiß → fast-schwarz, gleiche Abstufung */
+[data-theme="light"] .text-white      { color: #18181b; }
+[data-theme="light"] .text-white\/95  { color: rgba(24,24,27,.95); }
+[data-theme="light"] .text-white\/90  { color: rgba(24,24,27,.90); }
+[data-theme="light"] .text-white\/80  { color: rgba(24,24,27,.80); }
+[data-theme="light"] .text-white\/70  { color: rgba(24,24,27,.68); }
+[data-theme="light"] .text-white\/60  { color: rgba(24,24,27,.58); }
+[data-theme="light"] .text-white\/50  { color: rgba(24,24,27,.50); }
+[data-theme="light"] .text-white\/40  { color: rgba(24,24,27,.45); }
+[data-theme="light"] .text-white\/30  { color: rgba(24,24,27,.38); }
+
+/* Flächen: weiß-transparent → schwarz-transparent */
+[data-theme="light"] .bg-white\/5   { background-color: rgba(0,0,0,.045); }
+[data-theme="light"] .bg-white\/10  { background-color: rgba(0,0,0,.06); }
+[data-theme="light"] .bg-white\/15  { background-color: rgba(0,0,0,.075); }
+[data-theme="light"] .bg-white\/20  { background-color: rgba(0,0,0,.09); }
+[data-theme="light"] .bg-white\/30  { background-color: rgba(0,0,0,.13); }
+[data-theme="light"] .bg-white\/50  { background-color: rgba(0,0,0,.18); }
+/* bg-white (solid) bleibt weiß — z.B. Toggle-Knöpfe */
+
+/* Ränder: weiß-transparent → schwarz-transparent */
+[data-theme="light"] .border-white      { border-color: rgba(0,0,0,.18); }
+[data-theme="light"] .border-white\/40  { border-color: rgba(0,0,0,.20); }
+[data-theme="light"] .border-white\/30  { border-color: rgba(0,0,0,.16); }
+[data-theme="light"] .border-white\/20  { border-color: rgba(0,0,0,.13); }
+[data-theme="light"] .border-white\/15  { border-color: rgba(0,0,0,.11); }
+[data-theme="light"] .border-white\/10  { border-color: rgba(0,0,0,.10); }
+[data-theme="light"] .border-white\/5   { border-color: rgba(0,0,0,.06); }
+
+/* Dunkle Flächen (Inputs, Panels) → hell. /60–/80 NICHT anfassen = Modal-Scrims. */
+[data-theme="light"] .bg-black     { background-color: #ffffff; }
+[data-theme="light"] .bg-black\/50 { background-color: rgba(0,0,0,.045); }
+[data-theme="light"] .bg-black\/40 { background-color: rgba(0,0,0,.035); }
+[data-theme="light"] .bg-black\/30 { background-color: rgba(0,0,0,.03); }
+[data-theme="light"] .bg-black\/20 { background-color: rgba(0,0,0,.025); }
+[data-theme="light"] .bg-black\/10 { background-color: rgba(0,0,0,.02); }
+[data-theme="light"] .bg-black\/5  { background-color: rgba(0,0,0,.02); }
+
+/* zinc mit Opazität (Karten/Panels) */
+[data-theme="light"] .bg-zinc-900\/60 { background-color: rgba(255,255,255,.75); }
+[data-theme="light"] .bg-zinc-900\/40 { background-color: rgba(255,255,255,.55); }
+[data-theme="light"] .bg-zinc-800\/60 { background-color: rgba(228,228,231,.6); }
+[data-theme="light"] .bg-zinc-950\/90 { background-color: rgba(243,244,246,.92); }
+
+/* Helle Akzent-Texte (Werte-Anzeigen in Slidern etc.) auf hellem Grund nachdunkeln */
+[data-theme="light"] .text-blue-200,
+[data-theme="light"] .text-blue-300,
+[data-theme="light"] .text-blue-400 { color: #1d4ed8; }
+[data-theme="light"] .text-green-400 { color: #15803d; }
+[data-theme="light"] .text-purple-400 { color: #7e22ce; }
+
+/* Eingabe-Platzhalter lesbar */
+[data-theme="light"] ::placeholder { color: rgba(24,24,27,.42); }
+
+/* Akzent-Buttons behalten weiße Schrift (sonst dunkel auf gesättigtem BG) */
+[data-theme="light"] .text-white.bg-blue-600,
+[data-theme="light"] .text-white.bg-blue-500,
+[data-theme="light"] .text-white.bg-green-600,
+[data-theme="light"] .text-white.bg-green-500,
+[data-theme="light"] .text-white.bg-red-600,
+[data-theme="light"] .text-white.bg-red-500,
+[data-theme="light"] .text-white.bg-indigo-600 { color: #ffffff; }
