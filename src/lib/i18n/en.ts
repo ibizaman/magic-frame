@@ -280,6 +280,8 @@ export const EN: Record<string, string> = {
   // ── Wallpaper modal ──
   "Wallpaper Engine": "Wallpaper engine",
   "Display-Hintergründe konfigurieren": "Configure display backgrounds",
+  "Anzeige": "Display",
+  "Overlays & Text": "Overlays & text",
   "Provider": "Provider",
   "Mitgelieferte Bilder (Standard)": "Bundled images (default)",
   "Übergangseffekt": "Transition effect",
