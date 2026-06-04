@@ -22,6 +22,9 @@ export default function ImageWidget({ config, dashboardId }: { config?: any; das
   const source: string = config?.immichSource ?? "global";
   const intervalSec: number = Math.max(5, config?.intervalSec ?? 30);
   const fitClass = FIT_CLASS[config?.fit as string] ?? "object-cover";
+  // Expliziter Ecken-Radius: rounded-[inherit] erbt vom direkten Parent (= 0),
+  // darum blieb das Bild eckig. Default 16 px = dezent abgerundet.
+  const cornerRadius: number = config?.cornerRadius ?? 16;
 
   const [slides, setSlides] = useState<Slide[]>([]);
   const [error, setError] = useState("");
@@ -105,7 +108,7 @@ export default function ImageWidget({ config, dashboardId }: { config?: any; das
       </div>
     );
   }
-  if (slides.length === 0) return <div className="w-full h-full bg-black/40 rounded-[inherit]" />;
+  if (slides.length === 0) return <div className="w-full h-full bg-black/40" style={{ borderRadius: cornerRadius }} />;
 
   const slotStyle = (slot: "A" | "B"): React.CSSProperties => ({
     opacity: active === slot ? 1 : 0,
@@ -115,7 +118,7 @@ export default function ImageWidget({ config, dashboardId }: { config?: any; das
   });
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-black rounded-[inherit]">
+    <div className="relative w-full h-full overflow-hidden bg-black" style={{ borderRadius: cornerRadius }}>
       {slotA && (
         <img src={slotA.url} alt="" className={`absolute inset-0 w-full h-full ${fitClass}`} style={slotStyle("A")} decoding="async" />
       )}

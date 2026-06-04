@@ -23,6 +23,7 @@ export function ImageInspector({ widget, updateConfig }: Props) {
   const albumId: string = cfg.immichAlbumId ?? "";
   const fit: string = cfg.fit ?? "cover";
   const intervalSec: number = cfg.intervalSec ?? 30;
+  const cornerRadius: number = cfg.cornerRadius ?? 16;
 
   // Editor-Pfad ist /editor/views/<dashboardId> — letztes Segment ist die View-ID.
   const pathname = usePathname();
@@ -140,6 +141,23 @@ export function ImageInspector({ widget, updateConfig }: Props) {
           onChange={(e) => updateConfig(widget.i, "intervalSec", parseInt(e.target.value))}
           className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
         />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+          <span>{t("Ecken-Rundung")}</span>
+          <span className="text-blue-400">{cornerRadius}px</span>
+        </label>
+        <input
+          type="range"
+          min="0"
+          max="40"
+          step="2"
+          value={cornerRadius}
+          onChange={(e) => updateConfig(widget.i, "cornerRadius", parseInt(e.target.value))}
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+        />
+        <p className="text-xs text-white/40 mt-1.5 px-1">{t("0 = eckig. Passt das Bild an die runden Widget-Ecken an.")}</p>
       </div>
     </div>
   );

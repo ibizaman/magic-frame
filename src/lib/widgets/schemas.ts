@@ -141,6 +141,7 @@ const imageConfig = baseConfig
     immichAlbumId: z.string().optional(),
     fit: z.enum(["cover", "contain", "fill", "none"]).optional(),
     intervalSec: z.number().optional(),
+    cornerRadius: z.number().optional(),
   })
   .passthrough();
 

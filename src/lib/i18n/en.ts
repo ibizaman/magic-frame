@@ -207,6 +207,8 @@ export const EN: Record<string, string> = {
   "Home-Assistant-URL": "Home Assistant URL",
   "Immich (global)": "Immich (global)",
   "Bild (Immich)": "Image (Immich)",
+  "Ecken-Rundung": "Corner rounding",
+  "0 = eckig. Passt das Bild an die runden Widget-Ecken an.": "0 = square. Matches the image to the rounded widget corners.",
   "Immich-Quelle": "Immich source",
   "Favoriten": "Favorites",
   "Rückblicke (Memories)": "Memories",
