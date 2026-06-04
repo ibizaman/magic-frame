@@ -48,6 +48,7 @@ export default function WallpaperSettingsModal({
     wallpaper.transitionEffect ?? (wallpaper.zoomEffect ? "kenburns" : "crossfade");
   const defaultTransMs = effectiveTransition === "slide" ? 1200 : 1500;
   const transMs = wallpaper.transitionMs ?? defaultTransMs;
+  const immichMode = wallpaper.immichMode || "album";
 
   const TABS: { key: WpTab; label: string }[] = [
     { key: "source", label: "Quelle" },
@@ -129,7 +130,31 @@ export default function WallpaperSettingsModal({
                       />
                    </div>
 
-                   {fetchImmichAlbums ? (
+                   <div>
+                      <label className="text-sm font-medium text-white/80 block mb-2">{t("Immich-Quelle")}</label>
+                      <select
+                         value={immichMode}
+                         onChange={(e) => setWallpaper({ ...wallpaper, immichMode: e.target.value as "album" | "favorites" | "memories" | "people" })}
+                         className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                      >
+                         <option value="album">{t("Album")}</option>
+                         <option value="favorites">{t("Favoriten")}</option>
+                         <option value="memories">{t("Rückblicke (Memories)")}</option>
+                      </select>
+                   </div>
+
+                   {immichMode === "favorites" && (
+                      <div className="bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white/60 leading-relaxed">
+                         {t("Zeigt alle in Immich favorisierten Fotos (Stern). Kein Album nötig.")}
+                      </div>
+                   )}
+                   {immichMode === "memories" && (
+                      <div className="bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white/60 leading-relaxed">
+                         {t("Zeigt deine Immich-Rückblicke („vor X Jahren an diesem Tag“). Aktualisiert sich automatisch.")}
+                      </div>
+                   )}
+
+                   {immichMode === "album" && (fetchImmichAlbums ? (
                      <div className="space-y-3">
                         <button
                            type="button"
@@ -190,7 +215,7 @@ export default function WallpaperSettingsModal({
                            className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                         />
                      </div>
-                   )}
+                   ))}
                 </div>
              ) : wallpaper.source === 'webdav' ? (
                 <div className="space-y-4">

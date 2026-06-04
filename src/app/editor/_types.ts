@@ -87,6 +87,8 @@ export interface WallpaperConfig {
   immichUrl?: string;
   immichApiKey?: string;
   immichAlbumId?: string;
+  immichMode?: "album" | "favorites" | "memories" | "people"; // Immich-Quelle (#16, Schritt 2)
+  immichPersonId?: string; // bei immichMode === "people"
   showDateTaken?: boolean; // deprecated, use metaShowDate
   metaShowDate?: boolean;
   metaShowLocation?: boolean;

@@ -11,6 +11,51 @@ const prisma = new PrismaClient({ adapter });
 
 export const dynamic = 'force-dynamic';
 
+// Holt die Asset-Liste je nach gewählter Immich-Quelle (issue #16, Schritt 2).
+//   album      → /api/albums/{id}                  (Default, bisheriges Verhalten)
+//   favorites  → POST /api/search/metadata {isFavorite}
+//   memories   → GET /api/memories  (alle Rückblick-Assets zusammengeführt)
+//   people     → POST /api/search/metadata {personIds}
+// Alle Pfade liefern Immich-Assets mit (optional) exifInfo — die Metadata-/
+// Proxy-Logik darunter bleibt identisch.
+async function fetchImmichAssets(baseUrl: string, apiKey: string, wp: any): Promise<any[]> {
+  const headers = { 'x-api-key': apiKey, 'Accept': 'application/json' };
+  const mode = wp.immichMode || 'album';
+
+  if (mode === 'favorites' || mode === 'people') {
+    const body: any = { type: 'IMAGE', size: 250, withExif: true };
+    if (mode === 'favorites') body.isFavorite = true;
+    if (mode === 'people') {
+      if (!wp.immichPersonId) throw new Error('Missing personId');
+      body.personIds = [wp.immichPersonId];
+    }
+    const r = await fetch(`${baseUrl}/api/search/metadata`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error(`Immich search ${r.status}`);
+    const d = await r.json();
+    return d?.assets?.items ?? [];
+  }
+
+  if (mode === 'memories') {
+    const r = await fetch(`${baseUrl}/api/memories`, { headers });
+    if (!r.ok) throw new Error(`Immich memories ${r.status}`);
+    const d = await r.json();
+    const list = Array.isArray(d) ? d : [];
+    // Jede Memory hat ein eigenes assets[]-Array — alle zusammenführen.
+    return list.flatMap((m: any) => (Array.isArray(m?.assets) ? m.assets : []));
+  }
+
+  // album (default)
+  if (!wp.immichAlbumId) throw new Error('Missing albumId');
+  const r = await fetch(`${baseUrl}/api/albums/${wp.immichAlbumId}`, { headers });
+  if (!r.ok) throw new Error(`Immich album ${r.statusText}`);
+  const d = await r.json();
+  return d?.assets ?? [];
+}
+
 export async function GET(req: NextRequest) {
   try {
      const dashboardId = req.nextUrl.searchParams.get('dashboardId') || "1";
@@ -28,31 +73,18 @@ export async function GET(req: NextRequest) {
      const settings = await getAppSettings();
      const immichUrl = wp.immichUrl || settings.immichUrl;
      const immichApiKey = wp.immichApiKey || settings.immichApiKey;
-     if (!immichUrl || !immichApiKey || !wp.immichAlbumId) return new NextResponse("Missing Immich configuration", { status: 400 });
+     if (!immichUrl || !immichApiKey) return new NextResponse("Missing Immich configuration", { status: 400 });
 
      const baseUrl = immichUrl.replace(/\/$/, "");
 
-     // Fetch Album info from Immich
-     const res = await fetch(`${baseUrl}/api/albums/${wp.immichAlbumId}`, {
-        headers: {
-           'x-api-key': immichApiKey,
-           'Accept': 'application/json'
-        }
-     });
+     const assets = await fetchImmichAssets(baseUrl, immichApiKey, wp);
 
-     if (!res.ok) {
-        throw new Error(`Immich API error: ${res.statusText}`);
-     }
-
-     const albumData = await res.json();
-     const assets = albumData.assets || [];
-
-     if (assets.length === 0) return new NextResponse("No assets found in Immich album", { status: 404 });
+     if (assets.length === 0) return new NextResponse("No assets found for this Immich source", { status: 404 });
 
      // Shuffle and select up to 200 assets
      const shuffled = assets.sort(() => 0.5 - Math.random());
      const selected = shuffled.slice(0, 200);
-     
+
      const playlist = [];
 
      for (const asset of selected) {

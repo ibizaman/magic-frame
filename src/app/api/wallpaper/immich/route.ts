@@ -34,7 +34,9 @@ export async function GET(req: NextRequest) {
      // It guarantees fast load times while still looking amazing on Smart TVs.
      const imgRes = await fetch(`${baseUrl}/api/assets/${id}/thumbnail?size=preview`, {
         headers: {
-           'x-api-key': wp.immichApiKey,
+           // resolved key (per-view ?? global) — wp.immichApiKey allein wäre
+           // undefined, sobald ein View nur die globale Verbindung nutzt (#16).
+           'x-api-key': immichApiKey,
            'Accept': 'application/json'
         }
      });
