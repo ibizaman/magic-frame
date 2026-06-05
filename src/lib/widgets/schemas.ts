@@ -119,6 +119,9 @@ const haNotificationConfig = baseConfig
     cardOpacity: z.number().optional(),
     cardTheme: z.enum(["dark", "light"]).optional(),
     cardBlur: z.number().optional(),
+    iconFrame: z.boolean().optional(),
+    iconScale: z.number().optional(),
+    frameScale: z.number().optional(),
     timeFormat: z.enum(["auto", "minutes", "hours", "days", "combined"]).optional(),
     showTimers: z.boolean().optional(),
   })

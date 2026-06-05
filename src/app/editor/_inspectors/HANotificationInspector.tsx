@@ -98,6 +98,44 @@ export default function HANotificationInspector({
                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
                 />
              </div>
+
+             {/* Icon-Darstellung (#20) — Defaults = bisheriges Verhalten */}
+             <label className="flex items-center gap-3 cursor-pointer group py-1">
+                <div className="relative">
+                   <input
+                      type="checkbox"
+                      checked={(activeWidget.config as any)?.iconFrame !== false}
+                      onChange={(e) => updateConfig(activeWidget.i, 'iconFrame', e.target.checked)}
+                      className="sr-only peer"
+                   />
+                   <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                </div>
+                <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Icon im Kasten")}</span>
+             </label>
+             <div>
+                <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                   <span>{t("Icon-Größe")}</span>
+                   <span className="text-blue-400">{Math.round(((activeWidget.config as any)?.iconScale ?? 1) * 100)}%</span>
+                </label>
+                <input
+                   type="range" min="0.6" max="2.4" step="0.1" value={(activeWidget.config as any)?.iconScale ?? 1}
+                   onChange={(e) => updateConfig(activeWidget.i, 'iconScale', parseFloat(e.target.value))}
+                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                />
+             </div>
+             {(activeWidget.config as any)?.iconFrame !== false && (
+                <div>
+                   <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                      <span>{t("Kasten-Größe")}</span>
+                      <span className="text-blue-400">{Math.round(((activeWidget.config as any)?.frameScale ?? 1) * 100)}%</span>
+                   </label>
+                   <input
+                      type="range" min="0.6" max="2" step="0.1" value={(activeWidget.config as any)?.frameScale ?? 1}
+                      onChange={(e) => updateConfig(activeWidget.i, 'frameScale', parseFloat(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                   />
+                </div>
+             )}
              <div>
                 <label className="text-sm font-medium text-white/80 block mb-2">{t("Zeitformat")}</label>
                 <select

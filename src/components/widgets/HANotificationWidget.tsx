@@ -345,6 +345,10 @@ export default function HANotificationWidget({
 
     const { cardOpacity, cardBlur, isLight, hasBg } = useGlassStyle(config);
     const isMinimal = config?.design === 'minimal';
+    // Icon-Darstellung (#20) — Defaults = bisheriges Verhalten (Box an, 3.2em/1.4em).
+    const iconFrame = config?.iconFrame !== false;
+    const iconScale = typeof config?.iconScale === "number" ? config.iconScale : 1;
+    const frameScale = typeof config?.frameScale === "number" ? config.frameScale : 1;
 
     if (error) return <div className="text-red-400 text-xs text-center">{error}</div>;
 
@@ -457,17 +461,21 @@ export default function HANotificationWidget({
                 >
                     <Icon icon="lucide:x" width={14} height={14} />
                 </button>
+                {iconFrame ? (
                 <div
-                    className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? "border border-black/5" : "border border-white/5") : ""}`}
-                    style={{ backgroundColor: `${accent}20` }}
+                    className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? "border border-black/5" : "border border-white/5") : ""}`}
+                    style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${accent}20` }}
                 >
                     <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: accent }} />
                     <Icon
                         icon="mdi:timer-outline"
                         className="relative z-10"
-                        style={{ color: accent, fontSize: "1.4em" }}
+                        style={{ color: accent, fontSize: `${1.4 * iconScale}em` }}
                     />
                 </div>
+                ) : (
+                <Icon icon="mdi:timer-outline" className="shrink-0 relative z-10" style={{ color: accent, fontSize: `${1.4 * iconScale}em` }} />
+                )}
                 <div className="flex flex-col min-w-0 flex-1 gap-[0.25em]">
                     <span
                         style={{ fontSize: "0.9em", color: isLight ? "rgba(0,0,0,0.9)" : "#fff" }}
@@ -531,13 +539,17 @@ export default function HANotificationWidget({
                             >
                               <Icon icon="lucide:x" width={14} height={14} />
                             </button>
+                            {iconFrame ? (
                             <div
-                              className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
-                              style={{ backgroundColor: `${color}20` }}
+                              className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
+                              style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${color}20` }}
                             >
                               <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: color }}></div>
-                              <Icon icon={icon} className="relative z-10" style={{ color, fontSize: '1.4em' }} />
+                              <Icon icon={icon} className="relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
                             </div>
+                            ) : (
+                            <Icon icon={icon} className="shrink-0 relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
+                            )}
                             <div className="flex flex-col min-w-0 flex-1">
                               <span style={{ fontSize: '0.9em', color: isLight ? "rgba(0,0,0,0.9)" : "#fff" }} className="font-bold tracking-tight leading-tight text-ellipsis whitespace-nowrap overflow-hidden">
                                 {n.title}
@@ -613,13 +625,17 @@ export default function HANotificationWidget({
                         >
                           <Icon icon="lucide:x" width={14} height={14} />
                         </button>
-                        <div 
-                           className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex items-center justify-center relative overflow-hidden transition-colors duration-500 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`} 
-                           style={{ backgroundColor: `${color}20` }}
+                        {iconFrame ? (
+                        <div
+                           className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden transition-colors duration-500 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
+                           style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${color}20` }}
                         >
                             <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: color }}></div>
-                            <Icon icon={icon} className="relative z-10" style={{ color, fontSize: '1.4em' }} />
+                            <Icon icon={icon} className="relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
                         </div>
+                        ) : (
+                        <Icon icon={icon} className="shrink-0 relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
+                        )}
                         <div className="flex flex-col min-w-0 flex-1">
                             <span style={{ fontSize: '0.9em', color: isLight ? "rgba(0,0,0,0.9)" : "#fff" }} className="font-bold tracking-tight leading-tight text-ellipsis whitespace-nowrap overflow-hidden">
                                 {rule.message || `${rule.entityId} Alert!`}
