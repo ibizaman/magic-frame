@@ -158,6 +158,10 @@ const sensorSlot = z.object({
 const sensorConfig = baseConfig
   .extend({
     design: z.enum(["cards", "grid"]).optional(),
+    cardTheme: z.enum(["dark", "light"]).optional(),
+    cardOpacity: z.number().optional(),
+    cardBlur: z.number().optional(),
+    iconFrame: z.boolean().optional(),
     entities: z.array(sensorSlot).optional(),
   })
   .passthrough();

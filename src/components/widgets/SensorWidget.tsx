@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Activity } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { useGlassStyle } from "@/lib/ui/glass";
 
-// Sensor-Widget (#20): Anzeige-Pendant zum HA-Widget. Zeigt MEHRERE
-// Home-Assistant-Entities als gut lesbare Werte (Icon + kurzer Name + großer
-// Wert), nicht als Control-Surface. Cards- oder Grid-Layout. Pollt
-// /api/ha/state (eine Anfrage für alle Entities), robust gegen unavailable.
+// Sensor-Widget (#20): Anzeige-Pendant zum HA-Widget. Mehrere HA-Entities als
+// gut lesbare Werte (Icon + kurzer Name + großer Wert), Cards- oder Grid-Layout.
+// Teilt das Glass-Styling (Theme/Opacity/Blur) + Icon-Rahmen mit dem HA-Widget.
 type Slot = { entityId?: string; icon?: string; label?: string; color?: string; unit?: string; decimals?: number };
 
 function formatValue(rawState: any, decimals?: number): string {
@@ -22,6 +22,8 @@ export default function SensorWidget({ config }: { config?: any }) {
   const t = useT();
   const slots: Slot[] = Array.isArray(config?.entities) ? config.entities : [];
   const design: string = config?.design === "grid" ? "grid" : "cards";
+  const iconFrame: boolean = config?.iconFrame === true;
+  const glass = useGlassStyle(config);
   const ids = slots.map((s) => s.entityId).filter(Boolean) as string[];
 
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});
@@ -66,6 +68,10 @@ export default function SensorWidget({ config }: { config?: any }) {
     );
   }
 
+  const textMain = glass.isLight ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)";
+  const textSub = glass.isLight ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.55)";
+  const iconDefaultColor = glass.isLight ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)";
+
   const rows = slots
     .filter((s) => s.entityId)
     .map((s) => {
@@ -80,6 +86,26 @@ export default function SensorWidget({ config }: { config?: any }) {
         unit: (s.unit ?? "").trim() || attrs.unit_of_measurement || "",
       };
     });
+
+  // Icon, optional in einer Rahmen-Box (wie HA-Widget). Ohne Rahmen: nacktes Icon.
+  const iconEl = (r: (typeof rows)[number], size: string) => {
+    const ic = (
+      <Icon icon={r.icon} style={{ fontSize: size, color: r.color || iconDefaultColor }} />
+    );
+    if (!iconFrame) return ic;
+    return (
+      <div
+        className="flex items-center justify-center rounded-[0.5em] shrink-0"
+        style={{
+          width: "2em",
+          height: "2em",
+          backgroundColor: r.color ? `${r.color}26` : glass.isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.08)",
+        }}
+      >
+        {ic}
+      </div>
+    );
+  };
 
   if (error && Object.keys(statesDict).length === 0) {
     return (
@@ -98,16 +124,17 @@ export default function SensorWidget({ config }: { config?: any }) {
         {rows.map((r) => (
           <div
             key={r.key}
-            className="flex flex-col items-center justify-center text-center bg-white/5 rounded-[0.8em] p-[0.6em] gap-[0.3em] overflow-hidden"
+            className="flex flex-col items-center justify-center text-center rounded-[0.8em] p-[0.6em] gap-[0.3em] overflow-hidden"
+            style={glass.cardStyle}
           >
-            <Icon icon={r.icon} style={{ fontSize: "1.3em", color: r.color || undefined }} className={r.color ? "" : "opacity-60"} />
+            {iconEl(r, "1.3em")}
             <div className="flex items-baseline gap-[0.1em] max-w-full">
-              <span className="font-semibold leading-none truncate" style={{ fontSize: "1.7em" }}>
+              <span className="font-semibold leading-none truncate" style={{ fontSize: "1.7em", color: textMain }}>
                 {r.value}
               </span>
-              {r.unit && <span className="opacity-60 leading-none" style={{ fontSize: "0.85em" }}>{r.unit}</span>}
+              {r.unit && <span className="leading-none" style={{ fontSize: "0.85em", color: textSub }}>{r.unit}</span>}
             </div>
-            <div className="opacity-55 uppercase tracking-wide truncate max-w-full" style={{ fontSize: "0.6em" }}>
+            <div className="uppercase tracking-wide truncate max-w-full" style={{ fontSize: "0.6em", color: textSub }}>
               {r.label}
             </div>
           </div>
@@ -122,13 +149,14 @@ export default function SensorWidget({ config }: { config?: any }) {
       {rows.map((r) => (
         <div
           key={r.key}
-          className="flex items-center gap-[0.6em] bg-white/5 rounded-[0.8em] px-[0.7em] py-[0.5em] overflow-hidden"
+          className="flex items-center gap-[0.6em] rounded-[0.8em] px-[0.7em] py-[0.5em] overflow-hidden"
+          style={glass.cardStyle}
         >
-          <Icon icon={r.icon} style={{ fontSize: "1.5em", color: r.color || undefined }} className={`shrink-0 ${r.color ? "" : "opacity-70"}`} />
-          <span className="opacity-70 text-[0.82em] truncate flex-1">{r.label}</span>
+          {iconEl(r, "1.5em")}
+          <span className="text-[0.82em] truncate flex-1" style={{ color: textSub }}>{r.label}</span>
           <div className="flex items-baseline gap-[0.1em] shrink-0">
-            <span className="font-semibold leading-none" style={{ fontSize: "1.5em" }}>{r.value}</span>
-            {r.unit && <span className="opacity-60" style={{ fontSize: "0.75em" }}>{r.unit}</span>}
+            <span className="font-semibold leading-none" style={{ fontSize: "1.5em", color: textMain }}>{r.value}</span>
+            {r.unit && <span style={{ fontSize: "0.75em", color: textSub }}>{r.unit}</span>}
           </div>
         </div>
       ))}

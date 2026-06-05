@@ -22,6 +22,7 @@ export function SensorInspector({ widget, updateConfig }: Props) {
   const t = useT();
   const cfg = (widget.config as any) ?? {};
   const design: string = cfg.design === "grid" ? "grid" : "cards";
+  const iconFrame: boolean = cfg.iconFrame === true;
   const slots: Slot[] = Array.isArray(cfg.entities) ? cfg.entities : [];
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
@@ -46,16 +47,68 @@ export function SensorInspector({ widget, updateConfig }: Props) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <label className="text-sm font-medium text-white/80 block mb-2">{t("Darstellung")}</label>
-        <select
-          value={design}
-          onChange={(e) => updateConfig(widget.i, "design", e.target.value)}
-          className={INPUT}
-        >
-          <option value="cards">{t("Cards (Zeilen)")}</option>
-          <option value="grid">{t("Kacheln (Grid)")}</option>
-        </select>
+      <div className="space-y-3">
+        <div>
+          <label className="text-sm font-medium text-white/80 block mb-2">{t("Darstellung")}</label>
+          <select
+            value={design}
+            onChange={(e) => updateConfig(widget.i, "design", e.target.value)}
+            className={INPUT}
+          >
+            <option value="cards">{t("Cards (Zeilen)")}</option>
+            <option value="grid">{t("Kacheln (Grid)")}</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-white/80 block mb-2">{t("Kachel-Theme")}</label>
+          <select
+            value={cfg.cardTheme === "light" ? "light" : "dark"}
+            onChange={(e) => updateConfig(widget.i, "cardTheme", e.target.value)}
+            className={INPUT}
+          >
+            <option value="dark">{t("Dunkel (Glas)")}</option>
+            <option value="light">{t("Hell (weißes Glas)")}</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-white/50 mb-1.5 flex justify-between">
+              <span>{t("Deckkraft")}</span>
+              <span className="text-blue-400">{cfg.cardOpacity ?? 40}%</span>
+            </label>
+            <input
+              type="range" min="0" max="100" step="5" value={cfg.cardOpacity ?? 40}
+              onChange={(e) => updateConfig(widget.i, "cardOpacity", parseInt(e.target.value))}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-white/50 mb-1.5 flex justify-between">
+              <span>{t("Unschärfe")}</span>
+              <span className="text-blue-400">{cfg.cardBlur ?? 12}px</span>
+            </label>
+            <input
+              type="range" min="0" max="40" step="2" value={cfg.cardBlur ?? 12}
+              onChange={(e) => updateConfig(widget.i, "cardBlur", parseInt(e.target.value))}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+            />
+          </div>
+        </div>
+
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={iconFrame}
+              onChange={(e) => updateConfig(widget.i, "iconFrame", e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          </div>
+          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Icon mit Rahmen")}</span>
+        </label>
       </div>
 
       <div className="space-y-3">
