@@ -19,6 +19,11 @@
 
 services:
   app:
+    # Standard: vorgebautes Multi-Arch-Image von ghcr.io (schnell, kein lokaler
+    # Build — vor allem auf dem Pi). `build:` bleibt aktiv als Opt-in:
+    # `docker compose up -d --build` (oder install.sh --build) baut weiterhin
+    # from-source. Beide Wege funktionieren. (#9)
+    image: ghcr.io/jeremiaa/magic-frame-app:${MAGIC_FRAME_VERSION:-latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -50,6 +55,8 @@ services:
         condition: service_healthy
 
   caddy:
+    # Vorgebautes Image (s. app). `build:` bleibt der Opt-in-From-Source-Pfad.
+    image: ghcr.io/jeremiaa/magic-frame-caddy:${MAGIC_FRAME_VERSION:-latest}
     build:
       context: ./caddy
       dockerfile: Dockerfile
