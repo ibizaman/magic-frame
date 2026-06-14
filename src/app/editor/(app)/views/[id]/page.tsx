@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -398,6 +398,44 @@ export default function ViewEditor({
 
   const [socket, setSocket] = useState<any>(null);
   const [saveStatus, setSaveStatus] = useState<null | "saving" | "saved" | "error">(null);
+
+  // #28: vertikale Grid-Grenze. Wird aus der ECHTEN gemessenen Grid-Höhe
+  // abgeleitet (nicht geraten). Solange undefined → kein Limit (= bisheriges
+  // freies Verhalten, damit nie was "kaputt" ist während des Messens).
+  const gridAreaRef = useRef<HTMLDivElement | null>(null);
+  const [gridMaxRows, setGridMaxRows] = useState<number | undefined>(undefined);
+
+  const rowHeight =
+    orientation === "portrait"
+      ? Math.floor((835 - 16 - 368) / 24)
+      : Math.floor((635 - 16 - 368) / 24);
+
+  // Untere Metadata-Leiste (65px) nur reservieren, wenn sie auch angezeigt wird.
+  // Ohne Leiste reicht das Grid bis zum Canvas-Boden — der ResizeObserver misst
+  // die geänderte Höhe und maxRows passt sich automatisch an (#28).
+  const metaBarPx = wallpaper.showMetadata !== false ? 65 : 0;
+
+  useEffect(() => {
+    const el = gridAreaRef.current;
+    if (!el) return;
+    const MARGIN = 16;
+    const measure = () => {
+      const h = el.clientHeight;
+      if (!h || h <= 0 || rowHeight <= 0) {
+        setGridMaxRows(undefined);
+        return;
+      }
+      // Anzahl Reihen, die in die gemessene Höhe passen. round (nicht floor):
+      // das Grid ist konzeptionell 24 Reihen hoch (= cols, = Live-View); floor
+      // schnitt durch Rundung 1 Reihe ab. (833-16)/34 = 24.03 → 24.
+      const rows = Math.round((h - MARGIN) / (rowHeight + MARGIN));
+      setGridMaxRows(rows > 0 ? rows : undefined);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [rowHeight, orientation]);
 
   useEffect(() => {
     const s = io();
@@ -872,7 +910,7 @@ export default function ViewEditor({
               <div
                 className="absolute inset-x-0 top-0 z-0"
                 style={{
-                  bottom: "65px",
+                  bottom: `${metaBarPx}px`,
                   backgroundImage:
                     "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
                   backgroundSize: "calc(100% / 12) 50px",
@@ -880,25 +918,23 @@ export default function ViewEditor({
               ></div>
 
               <div
+                ref={gridAreaRef}
                 className="absolute inset-x-0 top-0 p-4 z-10 slider-container editor-grid"
-                style={{ bottom: "65px" }}
+                style={{ bottom: `${metaBarPx}px` }}
               >
                 <ResponsiveGridLayout
                   className="layout"
                   layouts={{ lg: layout }}
                   breakpoints={{ lg: 0 }}
                   cols={{ lg: 24 }}
-                  rowHeight={
-                    orientation === "portrait"
-                      ? Math.floor((835 - 16 - 368) / 24)
-                      : Math.floor((635 - 16 - 368) / 24)
-                  }
+                  rowHeight={rowHeight}
                   onLayoutChange={onLayoutChange}
                   isDraggable={true}
                   isResizable={true}
                   margin={[16, 16]}
                   compactType={null}
                   preventCollision={true}
+                  maxRows={gridMaxRows}
                   draggableCancel=".nodrag"
                 >
                   {layout.map((w) => {
