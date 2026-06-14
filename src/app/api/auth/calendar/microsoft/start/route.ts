@@ -16,8 +16,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // x-forwarded-host bevorzugen (hinter Reverse-Proxy ist host der interne
+    // Upstream), damit die redirect_uri zur registrierten URL passt (#31).
     const proto = req.headers.get("x-forwarded-proto");
-    const host = req.headers.get("host");
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
     const base = baseUrl(host, proto);
     const redirectUri = `${base}/api/auth/calendar/microsoft/callback`;
 

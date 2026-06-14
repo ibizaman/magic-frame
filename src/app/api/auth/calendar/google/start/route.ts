@@ -16,8 +16,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Hinter einem Reverse-Proxy ist req.headers.host oft der interne Upstream
+    // (localhost:3000); der echte externe Host steht in x-forwarded-host. Den
+    // bevorzugen, damit die redirect_uri zur Google-Console-URL passt (#31).
     const proto = req.headers.get("x-forwarded-proto");
-    const host = req.headers.get("host");
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
     const base = baseUrl(host, proto);
     const redirectUri = `${base}/api/auth/calendar/google/callback`;
 

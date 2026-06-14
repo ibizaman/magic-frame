@@ -13,28 +13,33 @@ export async function GET(req: NextRequest) {
 
   const returnTo = `/editor/integrations?calendar=microsoft`;
 
+  // Externe Base-URL für alle Redirects — nicht req.url (hinter dem Proxy die
+  // interne localhost:3000-URL). x-forwarded-host bevorzugen, APP_BASE_URL
+  // gewinnt. (#31, gleicher Bug wie bei Google)
+  const proto = req.headers.get("x-forwarded-proto");
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const base = baseUrl(host, proto) || req.nextUrl.origin;
+
   if (error) {
-    return NextResponse.redirect(new URL(`${returnTo}&err=${encodeURIComponent(error)}`, req.url));
+    return NextResponse.redirect(new URL(`${returnTo}&err=${encodeURIComponent(error)}`, base));
   }
   if (!code) {
-    return NextResponse.redirect(new URL(`${returnTo}&err=no_code`, req.url));
+    return NextResponse.redirect(new URL(`${returnTo}&err=no_code`, base));
   }
 
   const state = decodeState(rawState);
   if (!state) {
-    return NextResponse.redirect(new URL(`${returnTo}&err=bad_state`, req.url));
+    return NextResponse.redirect(new URL(`${returnTo}&err=bad_state`, base));
   }
 
   const { msClientId: clientId, msClientSecret: clientSecret } =
     await getCalendarOAuthConfig();
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(new URL(`${returnTo}&err=not_configured`, req.url));
+    return NextResponse.redirect(new URL(`${returnTo}&err=not_configured`, base));
   }
 
   try {
-    const proto = req.headers.get("x-forwarded-proto");
-    const host = req.headers.get("host");
-    const redirectUri = `${baseUrl(host, proto)}/api/auth/calendar/microsoft/callback`;
+    const redirectUri = `${base}/api/auth/calendar/microsoft/callback`;
 
     const tokenRes = await fetch(
       "https://login.microsoftonline.com/common/oauth2/v2.0/token",
@@ -54,7 +59,7 @@ export async function GET(req: NextRequest) {
     if (!tokenRes.ok) {
       const body = await tokenRes.text();
       console.error("[ms-callback] token exchange failed:", body);
-      return NextResponse.redirect(new URL(`${returnTo}&err=token_exchange`, req.url));
+      return NextResponse.redirect(new URL(`${returnTo}&err=token_exchange`, base));
     }
     const token = await tokenRes.json();
 
@@ -82,9 +87,9 @@ export async function GET(req: NextRequest) {
       scope: token.scope ?? MICROSOFT_SCOPES,
     });
 
-    return NextResponse.redirect(new URL(`${returnTo}&ok=1`, req.url));
+    return NextResponse.redirect(new URL(`${returnTo}&ok=1`, base));
   } catch (err) {
     console.error("[ms-callback]", err);
-    return NextResponse.redirect(new URL(`${returnTo}&err=exception`, req.url));
+    return NextResponse.redirect(new URL(`${returnTo}&err=exception`, base));
   }
 }
