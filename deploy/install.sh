@@ -15,7 +15,7 @@
 #   3) Generates SESSION_SECRET automatically (openssl if available,
 #      otherwise /dev/urandom)
 #   4) Writes .env from .env.example (all optional fields empty)
-#   5) Builds + starts the docker compose stack
+#   5) Pulls pre-built images (or builds from source with --build) + starts the stack
 #   6) Waits until the app responds, prints the URL for admin setup
 #
 # Idempotent: re-running only updates what changed. An existing
@@ -29,6 +29,16 @@ REPO_URL="https://github.com/jeremiaa/magic-frame.git"
 # someone has scripts that set them.
 REPO_DIR="${MAGIC_FRAME_DIR:-${MAGIC_DASHBOARD_DIR:-magic-frame}}"
 HOST_BIND="${MAGIC_FRAME_HOST:-${MAGIC_DASHBOARD_HOST:-0.0.0.0}}"
+
+# Default: pull pre-built images from ghcr.io (fast — no local compile).
+# Pass --build (or MAGIC_FRAME_BUILD=1) to build from source instead, e.g.
+# for forks or local changes. (#9)
+BUILD_FROM_SOURCE="${MAGIC_FRAME_BUILD:-0}"
+for arg in "$@"; do
+  case "$arg" in
+    --build) BUILD_FROM_SOURCE=1 ;;
+  esac
+done
 
 c_red()    { printf "\033[31m%s\033[0m" "$*"; }
 c_green()  { printf "\033[32m%s\033[0m" "$*"; }
@@ -61,7 +71,7 @@ echo "  docker compose: $(docker compose version | head -c 80)"
 FREE_KB=$(df -Pk . 2>/dev/null | awk 'NR==2 {print $4}')
 if [ -n "$FREE_KB" ] && [ "$FREE_KB" -lt 5242880 ]; then
   FREE_GB=$(( FREE_KB / 1024 / 1024 ))
-  warn "only ~${FREE_GB} GB free on this volume. The build needs ~5 GB. Free up disk or 'docker builder prune -af' before continuing."
+  warn "only ~${FREE_GB} GB free on this volume. Pulled images need ~2-3 GB, a from-source build (--build) ~5 GB. Free up disk or 'docker builder prune -af' before continuing."
 fi
 
 # Random secret generator: openssl if available, otherwise POSIX fallback
@@ -178,9 +188,20 @@ chmod 600 .env
 # -----------------------------------------------------------------------------
 # 4) Build + start docker stack
 # -----------------------------------------------------------------------------
-step "Building + starting containers (first time can take 2-5 minutes)"
-
-docker compose up -d --build
+if [ "$BUILD_FROM_SOURCE" = "1" ]; then
+  step "Building + starting containers from source (first build can take a while, 15-25 min on a Pi)"
+  docker compose up -d --build
+else
+  step "Pulling pre-built images + starting containers"
+  # If the pull fails (e.g. a fork without published images, or offline),
+  # fall back to building from source so the install still succeeds.
+  if docker compose pull; then
+    docker compose up -d
+  else
+    warn "Image pull failed — falling back to building from source"
+    docker compose up -d --build
+  fi
+fi
 
 # -----------------------------------------------------------------------------
 # 5) Wait for app

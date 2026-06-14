@@ -82,7 +82,7 @@ The second script
 
 1. clones the repo
 2. generates `SESSION_SECRET` automatically (uses `openssl` if available, falls back to `/dev/urandom`)
-3. builds + starts the stack (app + Postgres + Caddy as reverse proxy)
+3. pulls pre-built multi-arch images from ghcr.io (or builds from source with `--build`) + starts the stack (app + Postgres + Caddy as reverse proxy)
 4. waits until the app responds
 
 Then open `http://<your-ip>` → **setup flow** → enter email + password
@@ -94,6 +94,12 @@ Re-run on an existing install (idempotent — data + secrets stay):
 
 ```bash
 cd magic-frame && ./deploy/install.sh
+```
+
+By default the installer **pulls pre-built images** from ghcr.io (`amd64` + `arm64`) — fast, and no 15-25 min compile on a Raspberry Pi. To build from source instead (forks, local changes):
+
+```bash
+./deploy/install.sh --build        # or: MAGIC_FRAME_BUILD=1 ./deploy/install.sh
 ```
 
 ---
