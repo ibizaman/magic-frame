@@ -4,6 +4,7 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createClient } from "webdav";
 import { extractEXIFFromBuffer } from "@/lib/wallpaper-engine/exif";
+import { normalizeWebdavUrl } from "@/lib/wallpaper-engine/webdav";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -25,7 +26,8 @@ export async function GET(req: NextRequest) {
      if (wp.source !== 'webdav') return new NextResponse("Not WebDAV", { status: 400 });
      if (!wp.webdavUrl || !wp.webdavUser || !wp.webdavPass) return new NextResponse("Missing NAS credentials", { status: 400 });
 
-     const client = createClient(wp.webdavUrl, { username: wp.webdavUser, password: wp.webdavPass });
+     const cleanUrl = normalizeWebdavUrl(wp.webdavUrl);
+     const client = createClient(cleanUrl, { username: wp.webdavUser, password: wp.webdavPass });
      const targetPath = wp.webdavPath || "/";
      const directoryItems = await client.getDirectoryContents(targetPath);
      const images = (directoryItems as any[]).filter(i => 
@@ -45,7 +47,7 @@ export async function GET(req: NextRequest) {
      const playlist = [];
 
      const baseAuth = "Basic " + Buffer.from(`${wp.webdavUser}:${wp.webdavPass}`).toString('base64');
-     const baseUrl = wp.webdavUrl.replace(/\/$/, "");
+     const baseUrl = cleanUrl.replace(/\/$/, "");
 
      for (const img of selected) {
         let metadata: any = undefined;
@@ -98,8 +100,9 @@ export async function GET(req: NextRequest) {
 
         playlist.push({
            id: img.filename,
-           // Client will now fetch this specific file
-           url: `/api/wallpaper/webdav?file=${encodeURIComponent(img.filename)}`,
+           // Client will now fetch this specific file. dashboardId mitgeben,
+           // damit die Single-Image-Route das richtige Wallpaper findet (#29).
+           url: `/api/wallpaper/webdav?dashboardId=${encodeURIComponent(dashboardId)}&file=${encodeURIComponent(img.filename)}`,
            metadata
         });
      }

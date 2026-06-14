@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "webdav";
+import { normalizeWebdavUrl } from "@/lib/wallpaper-engine/webdav";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Missing WebDAV connection details", { status: 400 });
     }
 
-    const client = createClient(url, { username, password });
+    const client = createClient(normalizeWebdavUrl(url), { username, password });
     
     // Test if directory exists / list contents
     const directoryItems = await client.getDirectoryContents(path);

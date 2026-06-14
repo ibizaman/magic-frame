@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createClient } from "webdav";
+import { normalizeWebdavUrl } from "@/lib/wallpaper-engine/webdav";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -13,7 +14,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-     const dashboard = await prisma.dashboard.findUnique({ where: { id: "1" } });
+     // dashboardId aus der Query (von der Playlist mitgegeben). Fällt auf "1"
+     // zurück, damit alte Single-Dashboard-Setups unverändert weiterlaufen.
+     // Vorher war "1" hart verdrahtet → WebDAV-Bilder luden nur, wenn das
+     // Wallpaper auf Dashboard "1" lag; jeder andere View gab "Not WebDAV". (#29)
+     const dashboardId = req.nextUrl.searchParams.get('dashboardId') || "1";
+     const dashboard = await prisma.dashboard.findUnique({ where: { id: dashboardId } });
      if (!dashboard || !dashboard.wallpaper) return new NextResponse("Not Found", { status: 404 });
      const wp = dashboard.wallpaper as any;
 
@@ -26,7 +32,7 @@ export async function GET(req: NextRequest) {
         return new NextResponse("Missing file parameter", { status: 400 });
      }
 
-     const client = createClient(wp.webdavUrl, { username: wp.webdavUser, password: wp.webdavPass });
+     const client = createClient(normalizeWebdavUrl(wp.webdavUrl), { username: wp.webdavUser, password: wp.webdavPass });
      
      // Fetch as buffer to avoid native Node stream to Web stream conversion complexity overhead for basic images
      const buffer = await client.getFileContents(targetFile) as Buffer;
