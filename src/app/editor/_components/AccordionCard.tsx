@@ -28,7 +28,7 @@ export default function AccordionCard({
 }) {
   const t = useT();
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+    <div className="bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 p-3">
         <button
           type="button"
@@ -41,10 +41,10 @@ export default function AccordionCard({
               style={{ backgroundColor: dotColor }}
             />
           )}
-          <span className="text-sm font-medium text-white truncate">{title}</span>
+          <span className="text-sm font-medium text-[var(--mf-fg)] truncate">{title}</span>
           <ChevronDown
             size={15}
-            className={`shrink-0 text-white/40 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`shrink-0 text-[var(--mf-fg)]/40 transition-transform ${open ? "rotate-180" : ""}`}
           />
         </button>
         {headerExtra}
@@ -54,7 +54,7 @@ export default function AccordionCard({
               e.stopPropagation();
               onDelete();
             }}
-            className="shrink-0 text-white/40 hover:text-red-500 p-1"
+            className="shrink-0 text-[var(--mf-fg)]/40 hover:text-red-500 p-1"
             title={t("Löschen")}
           >
             <Trash2 size={15} />
@@ -62,7 +62,7 @@ export default function AccordionCard({
         )}
       </div>
       {open && (
-        <div className="px-4 pb-4 border-t border-white/5 pt-3">{children}</div>
+        <div className="px-4 pb-4 border-t border-[var(--mf-bdr)]/5 pt-3">{children}</div>
       )}
     </div>
   );

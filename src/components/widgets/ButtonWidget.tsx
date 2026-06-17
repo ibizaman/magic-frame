@@ -78,6 +78,14 @@ async function runButtonAction(slot: any, longPress: boolean) {
         return;
     }
 
+    if (action === "refresh") {
+        // Hard page reload — clears the in-page cache that piles up on
+        // long-running wall displays (Tizen / tablet). Mirrors the per-view
+        // auto-refresh timer, but on demand (tap or HA auto-trigger).
+        if (typeof window !== "undefined") window.location.reload();
+        return;
+    }
+
     // Default: Widget-Targets toggeln/show/hide
     const targets = Array.isArray(slot.targetsConfig)
         ? slot.targetsConfig

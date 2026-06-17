@@ -79,7 +79,7 @@ export default function UpdateBanner() {
             href={info.releaseUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-amber-100 hover:text-white bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-md transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-amber-100 hover:text-[var(--mf-fg)] bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-md transition-colors"
           >
             {t("Release ansehen")}
             <ExternalLink size={12} />

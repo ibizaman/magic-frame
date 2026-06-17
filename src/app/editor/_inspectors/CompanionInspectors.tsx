@@ -16,14 +16,14 @@ export function TimerInspector({ widget, updateConfig }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
           <span>{t("Max. gleichzeitig angezeigte Timer")}</span>
           <span className="text-emerald-400">{max}</span>
         </label>
         <input
           type="range" min={1} max={6} value={max}
           onChange={(e) => updateConfig(widget.i, "maxTimers", parseInt(e.target.value))}
-          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-emerald-500 bg-white/10"
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-emerald-500 bg-[var(--mf-elev)]/10"
         />
       </div>
       <CheckboxRow
@@ -33,7 +33,7 @@ export function TimerInspector({ widget, updateConfig }: Props) {
       />
       <Hint>
         {t("Timer werden per API/Shortcut gestartet.")}{" "}
-        <code className="text-white/60">POST /api/timers?key=TOKEN&label=Pasta&minutes=10</code>
+        <code className="text-[var(--mf-fg)]/60">POST /api/timers?key=TOKEN&label=Pasta&minutes=10</code>
       </Hint>
     </div>
   );
@@ -46,14 +46,14 @@ export function MessagesInspector({ widget, updateConfig }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
           <span>{t("Max. Nachrichten anzeigen")}</span>
           <span className="text-fuchsia-400">{max}</span>
         </label>
         <input
           type="range" min={1} max={10} value={max}
           onChange={(e) => updateConfig(widget.i, "maxMessages", parseInt(e.target.value))}
-          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-white/10"
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10"
         />
       </div>
       <CheckboxRow
@@ -63,7 +63,7 @@ export function MessagesInspector({ widget, updateConfig }: Props) {
       />
       <Hint>
         {t("Nachrichten per API:")}{" "}
-        <code className="text-white/60">POST /api/messages?key=TOKEN&text=Hallo&ttlSec=3600</code>
+        <code className="text-[var(--mf-fg)]/60">POST /api/messages?key=TOKEN&text=Hallo&ttlSec=3600</code>
       </Hint>
     </div>
   );
@@ -86,7 +86,7 @@ export function ShoppingInspector({ widget, updateConfig }: Props) {
       {!hideHeader && (
         <>
           <div>
-            <label className="text-sm font-medium text-white/80 block mb-2">
+            <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
               {t("Titel der Liste (optional)")}
             </label>
             <input
@@ -94,7 +94,7 @@ export function ShoppingInspector({ widget, updateConfig }: Props) {
               value={title}
               placeholder={t("leer = Standard")}
               onChange={(e) => updateConfig(widget.i, "title", e.target.value)}
-              className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
             />
           </div>
           <CheckboxRow
@@ -111,7 +111,7 @@ export function ShoppingInspector({ widget, updateConfig }: Props) {
       />
       <Hint>
         {t("Gemeinsame Familien-Einkaufsliste. Abhaken auf dem Board syncet live auf Phone und andere Displays. Artikel per Shortcut:")}{" "}
-        <code className="text-white/60">POST /api/shopping?key=TOKEN&items=Milch,Brot,Käse</code>
+        <code className="text-[var(--mf-fg)]/60">POST /api/shopping?key=TOKEN&items=Milch,Brot,Käse</code>
       </Hint>
     </div>
   );
@@ -136,7 +136,7 @@ export function TodosInspector({ widget, updateConfig }: Props) {
       {!hideHeader && (
         <>
           <div>
-            <label className="text-sm font-medium text-white/80 block mb-2">
+            <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
               {t("Titel der Liste (optional)")}
             </label>
             <input
@@ -144,7 +144,7 @@ export function TodosInspector({ widget, updateConfig }: Props) {
               value={title}
               placeholder={t("leer = Standard")}
               onChange={(e) => updateConfig(widget.i, "title", e.target.value)}
-              className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
             />
           </div>
           <CheckboxRow
@@ -156,7 +156,7 @@ export function TodosInspector({ widget, updateConfig }: Props) {
       )}
       {listSource === "local" && (
         <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
             {t("Filter auf Person (optional)")}
           </label>
           <input
@@ -164,9 +164,9 @@ export function TodosInspector({ widget, updateConfig }: Props) {
             value={assignee}
             placeholder={t("z.B. Emma — leer = alle")}
             onChange={(e) => updateConfig(widget.i, "assignee", e.target.value)}
-            className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
           />
-          <p className="text-[11px] text-white/40 mt-1">
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
             {t("Nur Todos mit diesem Assignee werden angezeigt; neue Todos werden dieser Person zugewiesen.")}
           </p>
         </div>
@@ -178,7 +178,7 @@ export function TodosInspector({ widget, updateConfig }: Props) {
       />
       <Hint>
         {t("Todos per Shortcut:")}{" "}
-        <code className="text-white/60">POST /api/todos?key=TOKEN&title=Müll+raus&assignee=Emma&priority=high</code>
+        <code className="text-[var(--mf-fg)]/60">POST /api/todos?key=TOKEN&title=Müll+raus&assignee=Emma&priority=high</code>
       </Hint>
     </div>
   );
@@ -239,14 +239,14 @@ function HASourceSelector({ widget, updateConfig }: Props) {
 
   function btnCls(active: boolean) {
     return `px-3 h-8 rounded-md text-xs font-medium transition-colors ${
-      active ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
+      active ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
     }`;
   }
 
   return (
     <div>
-      <label className="text-sm font-medium text-white/80 block mb-2">{t("Quelle")}</label>
-      <div className="inline-flex rounded-lg bg-black/40 border border-white/10 p-0.5 mb-2">
+      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Quelle")}</label>
+      <div className="inline-flex rounded-lg bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 p-0.5 mb-2">
         <button
           type="button"
           onClick={() => updateConfig(widget.i, "listSource", "local")}
@@ -282,7 +282,7 @@ function HASourceSelector({ widget, updateConfig }: Props) {
             <select
               value={haEntity}
               onChange={(e) => updateConfig(widget.i, "haListEntity", e.target.value)}
-              className="flex-1 bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+              className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
             >
               <option value="">{t("— Liste wählen —")}</option>
               {lists?.map((l) => (
@@ -295,13 +295,13 @@ function HASourceSelector({ widget, updateConfig }: Props) {
               type="button"
               onClick={loadHa}
               disabled={loading}
-              className="text-xs bg-white/10 hover:bg-white/15 text-white rounded-md px-2 h-9 disabled:opacity-40"
+              className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-2 h-9 disabled:opacity-40"
             >
               {loading ? "…" : t("Aktualisieren")}
             </button>
           </div>
           {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
-          <p className="text-[11px] text-white/40">
+          <p className="text-[11px] text-[var(--mf-fg)]/40">
             {t("Items werden direkt aus dem todo.* Entity gelesen/geschrieben.")}
           </p>
         </div>
@@ -313,7 +313,7 @@ function HASourceSelector({ widget, updateConfig }: Props) {
             <select
               value={todoistProject}
               onChange={(e) => updateConfig(widget.i, "todoistProjectId", e.target.value)}
-              className="flex-1 bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+              className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
             >
               <option value="">{t("— Projekt wählen —")}</option>
               {tdProjects?.map((p) => (
@@ -327,13 +327,13 @@ function HASourceSelector({ widget, updateConfig }: Props) {
               type="button"
               onClick={loadTodoist}
               disabled={loading}
-              className="text-xs bg-white/10 hover:bg-white/15 text-white rounded-md px-2 h-9 disabled:opacity-40"
+              className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-2 h-9 disabled:opacity-40"
             >
               {loading ? "…" : t("Aktualisieren")}
             </button>
           </div>
           {error && <p className="text-[11px] text-red-400">{t(error)}</p>}
-          <p className="text-[11px] text-white/40">
+          <p className="text-[11px] text-[var(--mf-fg)]/40">
             {t("Aufgaben werden direkt via Todoist-REST-API gelesen + geschrieben. Token in Integrationen → Todoist setzen.")}
           </p>
         </div>
@@ -358,16 +358,16 @@ function CheckboxRow({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="appearance-none w-5 h-5 border border-white/20 rounded bg-black checked:bg-emerald-500 checked:border-emerald-500"
+        className="appearance-none w-5 h-5 border border-[var(--mf-bdr)]/20 rounded bg-[var(--mf-surface)] checked:bg-emerald-500 checked:border-emerald-500"
       />
-      <span className="text-sm text-white/80 group-hover:text-white">{t(label)}</span>
+      <span className="text-sm text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)]">{t(label)}</span>
     </label>
   );
 }
 
 function Hint({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] text-white/40 bg-black/40 border border-white/10 rounded-md p-2 leading-relaxed">
+    <p className="text-[11px] text-[var(--mf-fg)]/40 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-md p-2 leading-relaxed">
       {children}
     </p>
   );

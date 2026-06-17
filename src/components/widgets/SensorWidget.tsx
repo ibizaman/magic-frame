@@ -177,7 +177,7 @@ export default function SensorWidget({ config }: { config?: any }) {
             )}
             {iconEl(r, 1.3)}
             <div className="flex items-baseline gap-[0.1em] max-w-full">
-              <span className="font-semibold leading-none truncate" style={{ fontSize: "1.7em", color: textMain }}>
+              <span className="font-semibold leading-none truncate" style={{ fontSize: "1.7em", color: config?.color || textMain }}>
                 {r.value}
               </span>
               {r.unit && <span className="leading-none" style={{ fontSize: "0.85em", color: textSub }}>{r.unit}</span>}
@@ -210,7 +210,7 @@ export default function SensorWidget({ config }: { config?: any }) {
           {iconEl(r, 1.5)}
           <span className="text-[0.82em] truncate flex-1" style={{ color: textSub }}>{r.label}</span>
           <div className="flex items-baseline gap-[0.1em] shrink-0">
-            <span className="font-semibold leading-none" style={{ fontSize: "1.5em", color: textMain }}>{r.value}</span>
+            <span className="font-semibold leading-none" style={{ fontSize: "1.5em", color: config?.color || textMain }}>{r.value}</span>
             {r.unit && <span style={{ fontSize: "0.75em", color: textSub }}>{r.unit}</span>}
           </div>
         </div>

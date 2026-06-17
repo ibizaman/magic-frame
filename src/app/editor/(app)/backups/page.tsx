@@ -131,11 +131,11 @@ export default function BackupsPage() {
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-[900px] mx-auto px-8 py-10">
         <div className="mb-8">
-          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/40 mb-2">
+          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 mb-2">
             {t("Backups")}
           </div>
           <h1 className="text-3xl font-semibold">{t("Layout-Sicherungen")}</h1>
-          <p className="text-white/50 mt-2 max-w-xl text-sm">
+          <p className="text-[var(--mf-fg)]/50 mt-2 max-w-xl text-sm">
             {t("Kompletter Export aller Views als JSON, Import mit Vorschau, plus automatische Snapshots vor jedem Speichern (1-Klick-Rückkehr).")}
           </p>
         </div>
@@ -196,8 +196,8 @@ function CardShell({
 }) {
   const t = useT();
   return (
-    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-4 flex flex-col">
-      <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/70 mb-3">
+    <div className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-4 flex flex-col">
+      <div className="w-9 h-9 rounded-lg bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 flex items-center justify-center text-[var(--mf-fg)]/70 mb-3">
         {icon}
       </div>
       <div className="font-semibold">{t(title)}</div>
@@ -210,7 +210,7 @@ function ExportCard({ busy, onExport }: { busy: boolean; onExport: () => void })
   const t = useT();
   return (
     <CardShell icon={<Download size={16} />} title="Alle Views exportieren">
-      <p className="text-xs text-white/50 mt-1 mb-3 leading-relaxed flex-1">
+      <p className="text-xs text-[var(--mf-fg)]/50 mt-1 mb-3 leading-relaxed flex-1">
         {t("Ein JSON-File mit Layouts, Wallpapers & View-Settings. (Ohne globale Secrets wie HA-Token.)")}
       </p>
       <button
@@ -285,25 +285,25 @@ function ImportCard({
 
   return (
     <CardShell icon={<Upload size={16} />} title="Import">
-      <p className="text-xs text-white/50 mt-1 mb-3 leading-relaxed flex-1">
+      <p className="text-xs text-[var(--mf-fg)]/50 mt-1 mb-3 leading-relaxed flex-1">
         {t("Backup-Datei wählen — du siehst eine Vorschau vor dem Überschreiben.")}
       </p>
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={onFile} className="hidden" />
       {!parsed ? (
         <button
           onClick={pick}
-          className="flex items-center justify-center gap-2 h-9 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/15 text-white"
+          className="flex items-center justify-center gap-2 h-9 rounded-lg text-sm font-semibold bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]"
         >
           <Upload size={14} /> {t("Datei wählen")}
         </button>
       ) : (
         <div className="space-y-2">
-          <div className="bg-black/40 border border-white/10 rounded-lg p-2 max-h-28 overflow-y-auto">
-            <div className="text-[11px] text-white/50 mb-1">{parsed.count} {t("View(s):")}</div>
+          <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg p-2 max-h-28 overflow-y-auto">
+            <div className="text-[11px] text-[var(--mf-fg)]/50 mb-1">{parsed.count} {t("View(s):")}</div>
             {parsed.views.map((v) => (
-              <div key={v.id} className="text-xs text-white/80 flex justify-between gap-2">
+              <div key={v.id} className="text-xs text-[var(--mf-fg)]/80 flex justify-between gap-2">
                 <span className="truncate">{v.name}</span>
-                <span className="text-white/40 shrink-0">{v.widgets} {t("Widgets")}</span>
+                <span className="text-[var(--mf-fg)]/40 shrink-0">{v.widgets} {t("Widgets")}</span>
               </div>
             ))}
           </div>
@@ -318,7 +318,7 @@ function ImportCard({
             </button>
             <button
               onClick={() => setParsed(null)}
-              className="px-3 h-9 rounded-lg text-sm text-white/60 hover:text-white bg-white/5"
+              className="px-3 h-9 rounded-lg text-sm text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5"
             >
               {t("Abbruch")}
             </button>
@@ -333,13 +333,13 @@ function SnapshotInfoCard({ busy, onSnap }: { busy: boolean; onSnap: () => void 
   const t = useT();
   return (
     <CardShell icon={<Clock size={16} />} title="Auto-Snapshots">
-      <p className="text-xs text-white/50 mt-1 mb-3 leading-relaxed flex-1">
+      <p className="text-xs text-[var(--mf-fg)]/50 mt-1 mb-3 leading-relaxed flex-1">
         {t("Vor jedem Speichern wird automatisch eine Version gesichert (letzte 20). Du kannst auch jetzt einen Snapshot anlegen.")}
       </p>
       <button
         onClick={onSnap}
         disabled={busy}
-        className="flex items-center justify-center gap-2 h-9 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/15 text-white disabled:opacity-40"
+        className="flex items-center justify-center gap-2 h-9 rounded-lg text-sm font-semibold bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] disabled:opacity-40"
       >
         {busy ? <RefreshCw size={14} className="animate-spin" /> : <Camera size={14} />}
         {t("Snapshot jetzt")}
@@ -361,16 +361,16 @@ function SnapshotsList({
 }) {
   const { locale, t } = useLocale();
   if (snapshots === null) {
-    return <div className="text-sm text-white/40">{t("Lade Versionen…")}</div>;
+    return <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade Versionen…")}</div>;
   }
   if (snapshots.length === 0) {
     return (
-      <div className="bg-zinc-900/60 border border-dashed border-white/15 rounded-2xl p-8 text-center">
-        <div className="w-12 h-12 mx-auto rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/60 mb-4">
+      <div className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-dashed border-[var(--mf-bdr)]/15 rounded-2xl p-8 text-center">
+        <div className="w-12 h-12 mx-auto rounded-xl bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 flex items-center justify-center text-[var(--mf-fg)]/60 mb-4">
           <Archive size={22} />
         </div>
         <h3 className="font-semibold mb-1">{t("Noch keine Versionen")}</h3>
-        <p className="text-sm text-white/50 max-w-md mx-auto">
+        <p className="text-sm text-[var(--mf-fg)]/50 max-w-md mx-auto">
           {t("Sobald du einen View speicherst, legt das System automatisch einen Snapshot an. Oder klick oben auf „Snapshot jetzt\".")}
         </p>
       </div>
@@ -379,7 +379,7 @@ function SnapshotsList({
 
   return (
     <div>
-      <div className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/40 mb-3">
+      <div className="text-[11px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-3">
         {t("Versionen")} ({snapshots.length})
       </div>
       <div className="space-y-2">
@@ -388,19 +388,19 @@ function SnapshotsList({
           return (
             <div
               key={s.id}
-              className="flex items-center gap-3 bg-zinc-900/60 border border-white/10 rounded-xl px-4 py-3"
+              className="flex items-center gap-3 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl px-4 py-3"
             >
-              <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/60 shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 flex items-center justify-center text-[var(--mf-fg)]/60 shrink-0">
                 <Clock size={15} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-white truncate">
+                <div className="text-sm text-[var(--mf-fg)] truncate">
                   {s.dashboardName || s.dashboardId}
-                  <span className="text-[10px] uppercase tracking-wider bg-white/5 border border-white/10 text-white/40 px-1.5 py-0.5 rounded ml-2">
+                  <span className="text-[10px] uppercase tracking-wider bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/40 px-1.5 py-0.5 rounded ml-2">
                     {t(s.reasonLabel)}
                   </span>
                 </div>
-                <div className="text-[11px] text-white/40">
+                <div className="text-[11px] text-[var(--mf-fg)]/40">
                   {s.widgetCount} {t("Widgets")} ·{" "}
                   {formatDistanceToNow(new Date(s.createdAt), { addSuffix: true, locale: locale === "en" ? enUS : de })}
                 </div>
@@ -417,7 +417,7 @@ function SnapshotsList({
                 onClick={() => onDelete(s.id)}
                 disabled={isBusy}
                 title={t("Snapshot verwerfen")}
-                className="w-8 h-8 flex items-center justify-center rounded-md text-white/40 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-40"
+                className="w-8 h-8 flex items-center justify-center rounded-md text-[var(--mf-fg)]/40 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-40"
               >
                 <Trash2 size={14} />
               </button>

@@ -22,6 +22,9 @@ import {
   MessageSquare,
   ShoppingCart,
   ClipboardList,
+  Image as ImageIcon,
+  Gauge,
+  Video,
   Lock,
   Globe2,
   Home as HomeIcon,
@@ -51,6 +54,9 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "MessagesWidget.tsx":       { color: "rgba(217,70,239,0.55)",  Icon: MessageSquare },
   "ShoppingListWidget.tsx":   { color: "rgba(234,179,8,0.55)",   Icon: ShoppingCart },
   "TodosWidget.tsx":          { color: "rgba(99,102,241,0.55)",  Icon: ClipboardList },
+  "ImageWidget.tsx":          { color: "rgba(168,85,247,0.55)",  Icon: ImageIcon },
+  "SensorWidget.tsx":         { color: "rgba(20,184,166,0.55)",  Icon: Gauge },
+  "CameraWidget.tsx":         { color: "rgba(244,63,94,0.55)",   Icon: Video },
 };
 const GRID_COLS = 24;
 
@@ -62,22 +68,22 @@ function MiniLayoutPreview({ layout, orientation }: { layout?: LayoutItem[]; ori
 
   return (
     <div
-      className="w-full bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-black/40 border border-white/10 rounded-lg relative overflow-hidden"
+      className="w-full bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-black/40 light:bg-none light:bg-[var(--mf-surface-2)] border border-[var(--mf-bdr)]/10 rounded-lg relative overflow-hidden"
       style={{ aspectRatio: aspect }}
     >
       {items.length === 0 ? (
-        <div className="absolute inset-0 flex items-center justify-center text-white/40">
+        <div className="absolute inset-0 flex items-center justify-center text-[var(--mf-fg)]/40">
           {orientation === "landscape" ? <Monitor size={14} /> : <Smartphone size={12} />}
         </div>
       ) : (
         items.map((w, idx) => {
-          const meta = WIDGET_META[w.type] ?? { color: "rgba(255,255,255,0.2)", Icon: null };
+          const meta = WIDGET_META[w.type] ?? { color: "rgba(120,120,135,0.5)", Icon: null };
           const { Icon } = meta;
           const isCustom = typeof w.type === "string" && w.type.startsWith("custom:");
           return (
             <div
               key={w.i ?? w.id ?? idx}
-              className="absolute rounded-[2px] border border-white/15 backdrop-blur-[1px] flex items-center justify-center"
+              className="absolute rounded-[2px] border border-[var(--mf-bdr)]/15 backdrop-blur-[1px] flex items-center justify-center"
               style={{
                 left: `${(w.x / GRID_COLS) * 100}%`,
                 top: `${(w.y / rows) * 100}%`,
@@ -89,7 +95,7 @@ function MiniLayoutPreview({ layout, orientation }: { layout?: LayoutItem[]; ori
               {Icon && w.w >= 3 && w.h >= 3 && (
                 <Icon
                   size={Math.max(6, Math.min(w.w, w.h) * 0.9)}
-                  className="text-white/80"
+                  className="text-[var(--mf-fg)]/80"
                   strokeWidth={2}
                 />
               )}
@@ -97,7 +103,7 @@ function MiniLayoutPreview({ layout, orientation }: { layout?: LayoutItem[]; ori
           );
         })
       )}
-      <span className="absolute top-1 right-1 text-[8px] font-medium uppercase tracking-wider bg-black/60 border border-white/10 rounded px-1 py-0.5 text-white/70">
+      <span className="absolute top-1 right-1 text-[8px] font-medium uppercase tracking-wider bg-[var(--mf-ovl)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded px-1 py-0.5 text-[var(--mf-fg)]/70">
         {orientation === "landscape" ? t("Quer") : t("Hoch")}
       </span>
     </div>
@@ -222,11 +228,11 @@ export default function EditorHome() {
       <div className="max-w-[1100px] mx-auto px-8 py-10">
         {/* Großer Header wie vorher */}
         <div className="mb-8">
-          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/40 mb-2">
+          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 mb-2">
             {t("Control Center")}
           </div>
           <h1 className="text-3xl font-semibold">{t("Willkommen zurück.")}</h1>
-          <p className="text-white/50 mt-2 max-w-xl">
+          <p className="text-[var(--mf-fg)]/50 mt-2 max-w-xl">
             {t("Alles, was deine Magic Frames rendern, steuerst du von hier aus. Wähle links einen Bereich oder spring direkt in einen View unten.")}
           </p>
         </div>
@@ -265,7 +271,7 @@ export default function EditorHome() {
         <section className="mb-10">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold">{t("System & Status")}</h2>
-            <span className="text-[11px] text-white/40">{t("Live")}</span>
+            <span className="text-[11px] text-[var(--mf-fg)]/40">{t("Live")}</span>
           </div>
           <StatusStrip status={status} />
         </section>
@@ -275,25 +281,25 @@ export default function EditorHome() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-semibold">{t("Deine Views")}</h2>
-              <p className="text-sm text-white/40">
+              <p className="text-sm text-[var(--mf-fg)]/40">
                 {t("Klick, um ihn zu bearbeiten.")}
               </p>
             </div>
             <Link
               href="/editor/views"
-              className="text-sm text-white/60 hover:text-white flex items-center gap-1"
+              className="text-sm text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] flex items-center gap-1"
             >
               {t("Alle anzeigen")} <ArrowRight size={14} />
             </Link>
           </div>
           {dashboards === null ? (
-            <div className="text-white/40 text-sm">{t("Wird geladen…")}</div>
+            <div className="text-[var(--mf-fg)]/40 text-sm">{t("Wird geladen…")}</div>
           ) : dashboards.length === 0 ? (
-            <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-8 text-center">
-              <p className="text-white/60 mb-4">{t("Noch keine Views angelegt.")}</p>
+            <div className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-8 text-center">
+              <p className="text-[var(--mf-fg)]/60 mb-4">{t("Noch keine Views angelegt.")}</p>
               <Link
                 href="/editor/views"
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full text-sm font-medium"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium"
               >
                 <Plus size={14} /> {t("Ersten View erstellen")}
               </Link>
@@ -304,29 +310,29 @@ export default function EditorHome() {
                 <Link
                   key={d.id}
                   href={`/editor/views/${encodeURIComponent(d.id)}`}
-                  className="group bg-zinc-900/60 border border-white/10 hover:border-blue-500/40 rounded-2xl p-3 transition-colors flex flex-col"
+                  className="group bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 hover:border-blue-500/40 rounded-2xl p-3 transition-colors flex flex-col"
                 >
                   <MiniLayoutPreview
                     layout={d.layout}
                     orientation={d.orientation ?? "portrait"}
                   />
                   <div className="font-semibold text-sm mt-2.5 truncate">{d.name}</div>
-                  <div className="text-[10px] text-white/40 mt-0.5 font-mono truncate">
+                  <div className="text-[10px] text-[var(--mf-fg)]/40 mt-0.5 font-mono truncate">
                     /view/{d.id}
                   </div>
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--mf-bdr)]/5">
                     <a
                       href={`/view/${encodeURIComponent(d.id)}`}
                       target="_blank"
                       rel="noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-[10px] text-white/40 hover:text-white flex items-center gap-1"
+                      className="text-[10px] text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] flex items-center gap-1"
                     >
                       <ExternalLink size={10} /> {t("Öffnen")}
                     </a>
                     <ArrowRight
                       size={12}
-                      className="text-white/30 group-hover:text-white/80 transition-colors"
+                      className="text-[var(--mf-fg)]/30 group-hover:text-[var(--mf-fg)]/80 transition-colors"
                     />
                   </div>
                 </Link>
@@ -390,14 +396,14 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="bg-zinc-900/60 border border-white/10 hover:border-white/30 rounded-2xl p-5 transition-colors block group"
+      className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 hover:border-[var(--mf-bdr)]/30 rounded-2xl p-5 transition-colors block group"
     >
-      <div className="flex items-center gap-2 text-white/50 text-sm">
-        <span className="text-white/60 group-hover:text-white">{icon}</span>
+      <div className="flex items-center gap-2 text-[var(--mf-fg)]/50 text-sm">
+        <span className="text-[var(--mf-fg)]/60 group-hover:text-[var(--mf-fg)]">{icon}</span>
         {t(label)}
       </div>
       <div className="text-2xl font-semibold mt-2">{value}</div>
-      {hint && <div className="text-xs text-white/40 mt-1">{hint}</div>}
+      {hint && <div className="text-xs text-[var(--mf-fg)]/40 mt-1">{hint}</div>}
     </Link>
   );
 }
@@ -423,15 +429,15 @@ function SectionCard({
   return (
     <Wrapper
       {...props}
-      className="bg-zinc-900/60 border border-white/10 hover:border-white/30 rounded-2xl p-4 transition-colors block group"
+      className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 hover:border-[var(--mf-bdr)]/30 rounded-2xl p-4 transition-colors block group"
     >
       <div className="flex items-center justify-between">
-        <span className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/70 group-hover:text-white">
+        <span className="w-8 h-8 rounded-lg bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 flex items-center justify-center text-[var(--mf-fg)]/70 group-hover:text-[var(--mf-fg)]">
           {icon}
         </span>
       </div>
       <div className="mt-3 font-semibold">{t(title)}</div>
-      <div className="text-xs text-white/40 mt-1 leading-relaxed">{t(desc)}</div>
+      <div className="text-xs text-[var(--mf-fg)]/40 mt-1 leading-relaxed">{t(desc)}</div>
     </Wrapper>
   );
 }
@@ -556,7 +562,7 @@ function StatusPill({
         ? "border-amber-500/30 bg-amber-500/5 text-amber-300 hover:bg-amber-500/10"
         : tone === "info"
           ? "border-blue-500/30 bg-blue-500/5 text-blue-300 hover:bg-blue-500/10"
-          : "border-white/10 bg-white/5 text-white/50 hover:bg-white/10";
+          : "border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/5 text-[var(--mf-fg)]/50 hover:bg-[var(--mf-elev)]/10";
   return (
     <Link
       href={href}

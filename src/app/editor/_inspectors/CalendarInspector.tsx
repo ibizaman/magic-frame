@@ -18,51 +18,63 @@ export default function CalendarInspector({
     <div className="space-y-4">
        <FeedsEditor widget={activeWidget} updateConfig={updateConfig} />
        <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">{t("Darstellungs-Design")}</label>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Darstellungs-Design")}</label>
           <select
              value={activeWidget.config?.design || 'cards'}
              onChange={(e) => updateConfig(activeWidget.i, 'design', e.target.value)}
-             className="w-full bg-white/5 border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-white/20"
+             className="w-full bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-[var(--mf-bdr)]/20"
           >
              <option value="cards">{t("Moderne Kacheln (Glassmorphism)")}</option>
              <option value="minimal">{t("Minimalistisch (Nur Linien)")}</option>
           </select>
        </div>
        <div>
-          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Uhrzeit-Format")}</label>
+          <select
+             value={activeWidget.config?.calendarTimeFormat || 'auto'}
+             onChange={(e) => updateConfig(activeWidget.i, 'calendarTimeFormat', e.target.value)}
+             className="w-full bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-[var(--mf-bdr)]/20"
+          >
+             <option value="auto">{t("Automatisch (nach Sprache)")}</option>
+             <option value="24h">{t("24 Stunden")}</option>
+             <option value="12h">{t("12 Stunden (AM/PM)")}</option>
+          </select>
+       </div>
+       <div>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
              <span>{t("Max. Termine anzeigen")}</span>
              <span className="text-blue-400">{activeWidget.config?.limit || 5}</span>
           </label>
           <input
              type="range" min="1" max="15" value={activeWidget.config?.limit || 5}
              onChange={(e) => updateConfig(activeWidget.i, 'limit', parseInt(e.target.value))}
-             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
           />
        </div>
        <div>
-          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
              <span>{t("Hintergrund Kacheln (Deckkraft)")}</span>
              <span className="text-blue-400">{activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}%</span>
           </label>
           <input
              type="range" min="0" max="100" value={activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}
              onChange={(e) => updateConfig(activeWidget.i, 'cardOpacity', parseInt(e.target.value))}
-             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
           />
        </div>
        <div>
-          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
              <span>{t("Tage im Voraus (Zeitfenster)")}</span>
              <span className="text-green-400">{activeWidget.config?.days || 30}</span>
           </label>
           <input
              type="range" min="1" max="90" value={activeWidget.config?.days || 30}
              onChange={(e) => updateConfig(activeWidget.i, 'days', parseInt(e.target.value))}
-             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-green-500 bg-white/10"
+             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-green-500 bg-[var(--mf-elev)]/10"
           />
        </div>
        <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">{t("Akzentfarbe (Hex, z.B. #FF0055)")}</label>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Akzentfarbe (Hex, z.B. #FF0055)")}</label>
           <div className="flex gap-3">
              <input
                 type="color" value={activeWidget.config?.color || '#ffffff'}
@@ -72,7 +84,7 @@ export default function CalendarInspector({
              <input
                 type="text" value={activeWidget.config?.color || '#ffffff'}
                 onChange={(e) => updateConfig(activeWidget.i, 'color', e.target.value)}
-                className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg px-3 focus:outline-none"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg px-3 focus:outline-none"
              />
           </div>
        </div>
@@ -82,15 +94,15 @@ export default function CalendarInspector({
                 type="checkbox"
                 checked={activeWidget.config?.hideOnEmpty || false}
                 onChange={(e) => updateConfig(activeWidget.i, 'hideOnEmpty', e.target.checked)}
-                className="appearance-none w-5 h-5 border border-white/20 rounded bg-black checked:bg-violet-500 checked:border-violet-500 transition-colors"
+                className="appearance-none w-5 h-5 border border-[var(--mf-bdr)]/20 rounded bg-[var(--mf-surface)] checked:bg-violet-500 checked:border-violet-500 transition-colors"
              />
              {activeWidget.config?.hideOnEmpty && (
-                <svg className="w-3.5 h-3.5 text-white absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg className="w-3.5 h-3.5 text-[var(--mf-fg)] absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
              )}
           </div>
-          <span className="text-sm text-white/80 group-hover:text-white transition-colors">{t("Widget kompett ausblenden, wenn leer")}</span>
+          <span className="text-sm text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Widget kompett ausblenden, wenn leer")}</span>
        </label>
 
        <label className="flex items-center gap-3 cursor-pointer mt-2 group">
@@ -99,15 +111,15 @@ export default function CalendarInspector({
                 type="checkbox"
                 checked={(activeWidget.config as any)?.hideWeekday || false}
                 onChange={(e) => updateConfig(activeWidget.i, 'hideWeekday', e.target.checked)}
-                className="appearance-none w-5 h-5 border border-white/20 rounded bg-black checked:bg-violet-500 checked:border-violet-500 transition-colors"
+                className="appearance-none w-5 h-5 border border-[var(--mf-bdr)]/20 rounded bg-[var(--mf-surface)] checked:bg-violet-500 checked:border-violet-500 transition-colors"
              />
              {(activeWidget.config as any)?.hideWeekday && (
-                <svg className="w-3.5 h-3.5 text-white absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg className="w-3.5 h-3.5 text-[var(--mf-fg)] absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
              )}
           </div>
-          <span className="text-sm text-white/80 group-hover:text-white transition-colors">{t("Wochentag ausblenden")}</span>
+          <span className="text-sm text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Wochentag ausblenden")}</span>
        </label>
     </div>
   );
@@ -190,12 +202,12 @@ function FeedsEditor({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-white/80 block text-violet-400">
+      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block text-violet-400">
         {t("Kalender-Quellen")}
       </label>
 
       {feeds.length === 0 && (
-        <p className="text-[11px] text-white/40">
+        <p className="text-[11px] text-[var(--mf-fg)]/40">
           {t("Noch kein Feed. Wähle unten einen Typ und klick hinzufügen.")}
         </p>
       )}
@@ -203,7 +215,7 @@ function FeedsEditor({
       {feeds.map((feed, idx) => (
         <div
           key={idx}
-          className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2"
+          className="bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded-xl p-3 space-y-2"
           style={{ borderLeft: `3px solid ${feed.color}` }}
         >
           <div className="flex items-center gap-2">
@@ -216,7 +228,7 @@ function FeedsEditor({
                 next[idx] = { ...feed, label: e.target.value };
                 write(next);
               }}
-              className="flex-1 bg-black border border-white/10 text-white text-sm rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
+              className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
             />
             <input
               type="color"
@@ -226,7 +238,7 @@ function FeedsEditor({
                 next[idx] = { ...feed, color: e.target.value };
                 write(next);
               }}
-              className="h-9 w-9 rounded-md cursor-pointer bg-black border border-white/10 p-0"
+              className="h-9 w-9 rounded-md cursor-pointer bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 p-0"
             />
             <button
               onClick={() => write(feeds.filter((_, i) => i !== idx))}
@@ -244,7 +256,7 @@ function FeedsEditor({
                 next[idx] = { ...feed, type: e.target.value as FeedType };
                 write(next);
               }}
-              className="bg-black border border-white/10 text-white/80 text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500 shrink-0"
+              className="bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/80 text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500 shrink-0"
             >
               <option value="ical">{t("iCal / Webcal")}</option>
               <option value="google">{t("Google-Konto")}</option>
@@ -277,7 +289,7 @@ function FeedsEditor({
               },
             ])
           }
-          className="h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-violet-500/40 rounded-md transition-colors"
+          className="h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-violet-500/40 rounded-md transition-colors"
         >
           + iCal
         </button>
@@ -295,7 +307,7 @@ function FeedsEditor({
               },
             ])
           }
-          className="h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-red-500/40 rounded-md transition-colors"
+          className="h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-red-500/40 rounded-md transition-colors"
         >
           + Google
         </button>
@@ -313,7 +325,7 @@ function FeedsEditor({
               },
             ])
           }
-          className="h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-sky-500/40 rounded-md transition-colors"
+          className="h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-sky-500/40 rounded-md transition-colors"
         >
           + Microsoft
         </button>
@@ -338,7 +350,7 @@ function FeedBody({
         value={feed.url ?? ""}
         placeholder="https://p01-calendars.icloud.com/…"
         onChange={(e) => onChange({ url: e.target.value })}
-        className="flex-1 bg-black border border-white/10 text-white/80 text-xs font-mono rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
+        className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/80 text-xs font-mono rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
       />
     );
   }
@@ -400,7 +412,7 @@ function ProviderFeedBody({
       {providerAccounts.length === 0 ? (
         <a
           href="/editor/integrations"
-          className="block text-xs text-center text-white/60 hover:text-white bg-black/40 border border-white/10 rounded-md h-9 leading-9 hover:border-violet-500/40"
+          className="block text-xs text-center text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-md h-9 leading-9 hover:border-violet-500/40"
         >
           {feed.type === "google"
             ? t("Noch kein Google-Konto verbunden → Integrationen öffnen")
@@ -410,7 +422,7 @@ function ProviderFeedBody({
         <select
           value={feed.accountId ?? ""}
           onChange={(e) => onChange({ accountId: e.target.value, calendarId: "" })}
-          className="w-full bg-black border border-white/10 text-white text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500"
+          className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500"
         >
           <option value="">{t("— Konto wählen —")}</option>
           {providerAccounts.map((acc) => (
@@ -426,7 +438,7 @@ function ProviderFeedBody({
           value={feed.calendarId ?? ""}
           onChange={(e) => onChange({ calendarId: e.target.value })}
           disabled={loading || !!error}
-          className="w-full bg-black border border-white/10 text-white text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+          className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs rounded-md px-2 h-9 focus:outline-none focus:border-violet-500 disabled:opacity-50"
         >
           <option value="">
             {loading

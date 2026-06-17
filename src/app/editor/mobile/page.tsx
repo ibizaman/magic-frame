@@ -351,13 +351,13 @@ function MobileEditorInner() {
     : null;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
-      <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur border-b border-white/10 px-4 py-3 flex items-center gap-3">
+    <div className="min-h-screen bg-[var(--mf-surface)] text-[var(--mf-fg)] flex flex-col">
+      <header className="sticky top-0 z-20 bg-[var(--mf-surface)]/90 backdrop-blur border-b border-[var(--mf-bdr)]/10 px-4 py-3 flex items-center gap-3">
         <MagicFrameLogo className="w-8 h-8 shrink-0" />
         <select
           value={currentDashboardId}
           onChange={(e) => handleDashboardChange(e.target.value)}
-          className="flex-1 bg-black border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 min-w-0"
+          className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 min-w-0"
         >
           {dashboards.map((db) => (
             <option key={db.id} value={db.id}>
@@ -381,7 +381,7 @@ function MobileEditorInner() {
         </button>
         <button
           onClick={() => setShowMenu(true)}
-          className="shrink-0 p-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white/80 hover:text-white border border-white/10"
+          className="shrink-0 p-2.5 rounded-full bg-[var(--mf-surface-2)] hover:bg-[var(--mf-surface-2)] text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] border border-[var(--mf-bdr)]/10"
           title={t("Menü")}
         >
           <Menu size={18} />
@@ -401,11 +401,11 @@ function MobileEditorInner() {
 
       <main className="flex-1 overflow-y-auto p-4 pb-28">
         {layout.length === 0 ? (
-          <div className="text-center text-white/50 py-16">
+          <div className="text-center text-[var(--mf-fg)]/50 py-16">
             <p className="mb-4">{t("Keine Widgets auf diesem Dashboard.")}</p>
             <button
               onClick={() => setShowAddWidget(true)}
-              className="bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-full text-sm font-medium"
+              className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-full text-sm font-medium"
             >
               {t("Erstes Modul hinzufügen")}
             </button>
@@ -416,7 +416,7 @@ function MobileEditorInner() {
               <li
                 key={w.i}
                 onClick={() => setActiveSettingsId(w.i)}
-                className="flex items-center gap-3 bg-zinc-900 border border-white/10 rounded-xl p-3 active:bg-zinc-800 cursor-pointer"
+                className="flex items-center gap-3 bg-[var(--mf-surface-2)] border border-[var(--mf-bdr)]/10 rounded-xl p-3 active:bg-[var(--mf-surface-2)] cursor-pointer"
               >
                 <div className="flex flex-col shrink-0">
                   <button
@@ -425,7 +425,7 @@ function MobileEditorInner() {
                       moveWidget(w.i, -1);
                     }}
                     disabled={idx === 0}
-                    className="p-1 text-white/40 hover:text-white disabled:opacity-20"
+                    className="p-1 text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] disabled:opacity-20"
                     title={t("Nach oben")}
                   >
                     ▲
@@ -436,22 +436,22 @@ function MobileEditorInner() {
                       moveWidget(w.i, 1);
                     }}
                     disabled={idx === layout.length - 1}
-                    className="p-1 text-white/40 hover:text-white disabled:opacity-20"
+                    className="p-1 text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] disabled:opacity-20"
                     title={t("Nach unten")}
                   >
                     ▼
                   </button>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white truncate">
+                  <div className="font-medium text-[var(--mf-fg)] truncate">
                     {widgetTitle(w.type, w.label, t)}
                   </div>
-                  <div className="text-xs text-white/50 truncate">
+                  <div className="text-xs text-[var(--mf-fg)]/50 truncate">
                     {w.type.replace("Widget.tsx", "")} · {w.w}×{w.h} · Pos {w.x},
                     {w.y}
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-white/30 shrink-0" />
+                <ChevronRight size={18} className="text-[var(--mf-fg)]/30 shrink-0" />
               </li>
             ))}
           </ul>
@@ -468,18 +468,18 @@ function MobileEditorInner() {
 
       {showMenu && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 bg-[var(--mf-backdrop)]/60 backdrop-blur-sm z-[9998] flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setShowMenu(false)}
         >
           <div
-            className="bg-zinc-900 border-t sm:border border-white/10 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md"
+            className="bg-[var(--mf-surface-2)] border-t sm:border border-[var(--mf-bdr)]/10 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-5 border-b border-white/10">
-              <h3 className="font-semibold text-white">{t("Menü")}</h3>
+            <div className="flex justify-between items-center p-5 border-b border-[var(--mf-bdr)]/10">
+              <h3 className="font-semibold text-[var(--mf-fg)]">{t("Menü")}</h3>
               <button
                 onClick={() => setShowMenu(false)}
-                className="p-1 text-white/50 hover:text-white"
+                className="p-1 text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
               >
                 <X size={18} />
               </button>
@@ -525,7 +525,7 @@ function MobileEditorInner() {
                   setShowDashboardSettings(true);
                 }}
               />
-              <div className="h-px bg-white/10 my-2" />
+              <div className="h-px bg-[var(--mf-elev)]/10 my-2" />
               <MenuItem
                 icon={<ExternalLink size={18} />}
                 label={t("View öffnen")}
@@ -541,7 +541,7 @@ function MobileEditorInner() {
                   window.location.href = "/editor?forceDesktop=1";
                 }}
               />
-              <div className="h-px bg-white/10 my-2" />
+              <div className="h-px bg-[var(--mf-elev)]/10 my-2" />
               <MenuItem
                 icon={<LogOut size={18} />}
                 label={t("Abmelden")}
@@ -640,7 +640,7 @@ function MenuItem({
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
         danger
           ? "text-red-400 hover:bg-red-500/10"
-          : "text-white/90 hover:bg-white/5"
+          : "text-[var(--mf-fg)]/90 hover:bg-[var(--mf-elev)]/5"
       }`}
     >
       <span className="shrink-0">{icon}</span>

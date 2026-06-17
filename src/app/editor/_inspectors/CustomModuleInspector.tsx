@@ -60,24 +60,24 @@ export default function CustomModuleInspector({ widget, updateConfig }: Props) {
     );
   }
   if (!mod) {
-    return <div className="text-sm text-white/40">{t("Lade…")}</div>;
+    return <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>;
   }
 
   const config = (widget.config as any) ?? {};
 
   return (
     <div className="space-y-4">
-      <div className="text-xs text-white/50 bg-black/30 border border-white/10 rounded-lg p-3 flex items-start gap-2">
+      <div className="text-xs text-[var(--mf-fg)]/50 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg p-3 flex items-start gap-2">
         <span className="text-base leading-none">{mod.iconEmoji}</span>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-white/80">{mod.label}</div>
+          <div className="font-semibold text-[var(--mf-fg)]/80">{mod.label}</div>
           {mod.description && <p className="mt-1 text-[12px]">{mod.description}</p>}
-          <code className="block mt-1 text-[10px] font-mono text-white/40">{mod.type}</code>
+          <code className="block mt-1 text-[10px] font-mono text-[var(--mf-fg)]/40">{mod.type}</code>
         </div>
       </div>
 
       {mod.fields.length === 0 ? (
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-[var(--mf-fg)]/50">
           {t("Dieses Modul hat keine konfigurierbaren Felder.")}
         </p>
       ) : (
@@ -85,9 +85,9 @@ export default function CustomModuleInspector({ widget, updateConfig }: Props) {
           const v = config[f.key] ?? f.default ?? "";
           return (
             <div key={f.key}>
-              <label className="text-sm font-medium text-white/80 block mb-2">
+              <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
                 {f.label}
-                {f.required ? "" : <span className="text-white/40 text-xs"> ({t("optional")})</span>}
+                {f.required ? "" : <span className="text-[var(--mf-fg)]/40 text-xs"> ({t("optional")})</span>}
               </label>
               {f.type === "textarea" ? (
                 <textarea
@@ -95,7 +95,7 @@ export default function CustomModuleInspector({ widget, updateConfig }: Props) {
                   onChange={(e) => updateConfig(widget.i, f.key, e.target.value)}
                   placeholder={f.placeholder ?? ""}
                   rows={4}
-                  className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500 font-mono"
+                  className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500 font-mono"
                 />
               ) : f.type === "boolean" ? (
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -105,7 +105,7 @@ export default function CustomModuleInspector({ widget, updateConfig }: Props) {
                     onChange={(e) => updateConfig(widget.i, f.key, e.target.checked)}
                     className="accent-indigo-500 w-4 h-4 cursor-pointer"
                   />
-                  <span className="text-sm text-white/80">{f.placeholder ?? f.label}</span>
+                  <span className="text-sm text-[var(--mf-fg)]/80">{f.placeholder ?? f.label}</span>
                 </label>
               ) : f.type === "number" ? (
                 <input
@@ -115,7 +115,7 @@ export default function CustomModuleInspector({ widget, updateConfig }: Props) {
                     updateConfig(widget.i, f.key, e.target.value === "" ? "" : Number(e.target.value))
                   }
                   placeholder={f.placeholder ?? ""}
-                  className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
                 />
               ) : f.type === "color" ? (
                 <div className="flex items-center gap-2">
@@ -123,19 +123,19 @@ export default function CustomModuleInspector({ widget, updateConfig }: Props) {
                     type="color"
                     value={v || "#888888"}
                     onChange={(e) => updateConfig(widget.i, f.key, e.target.value)}
-                    className="h-9 w-12 rounded border border-white/10 bg-black cursor-pointer"
+                    className="h-9 w-12 rounded border border-[var(--mf-bdr)]/10 bg-[var(--mf-surface)] cursor-pointer"
                   />
                   <input
                     type="text"
                     value={v}
                     onChange={(e) => updateConfig(widget.i, f.key, e.target.value)}
                     placeholder="#rrggbb"
-                    className="flex-1 bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500 font-mono"
                   />
                   {v && (
                     <button
                       onClick={() => updateConfig(widget.i, f.key, "")}
-                      className="text-xs text-white/40 hover:text-white px-2 h-9"
+                      className="text-xs text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] px-2 h-9"
                     >
                       ×
                     </button>
@@ -147,10 +147,10 @@ export default function CustomModuleInspector({ widget, updateConfig }: Props) {
                   value={v}
                   onChange={(e) => updateConfig(widget.i, f.key, e.target.value)}
                   placeholder={f.placeholder ?? ""}
-                  className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-indigo-500"
                 />
               )}
-              {f.help && <p className="text-[11px] text-white/40 mt-1">{f.help}</p>}
+              {f.help && <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">{f.help}</p>}
             </div>
           );
         })

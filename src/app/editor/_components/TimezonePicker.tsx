@@ -138,7 +138,7 @@ export default function TimezonePicker({
 
   const baseClass =
     className ||
-    "w-full bg-black border border-white/10 text-white font-mono text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-500";
+    "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-mono text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-500";
 
   return (
     <div ref={containerRef} className="relative">
@@ -184,7 +184,7 @@ export default function TimezonePicker({
             setQuery("");
             inputRef.current?.focus();
           }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-base leading-none"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] text-base leading-none"
           aria-label={t("Eintrag löschen")}
           tabIndex={-1}
         >
@@ -192,7 +192,7 @@ export default function TimezonePicker({
         </button>
       )}
       {open && matches.length > 0 && (
-        <div className="absolute z-30 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-zinc-900 border border-white/10 rounded-lg shadow-2xl">
+        <div className="absolute z-30 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-[var(--mf-surface-2)] border border-[var(--mf-bdr)]/10 rounded-lg shadow-2xl">
           {matches.map((z, idx) => (
             <button
               key={z}
@@ -208,14 +208,14 @@ export default function TimezonePicker({
                 e.preventDefault();
                 commit(z);
               }}
-              className={`w-full text-left px-3 py-1.5 border-b border-white/5 last:border-0 flex items-baseline justify-between gap-3 ${
-                idx === highlightIdx ? "bg-white/10" : "hover:bg-white/5"
+              className={`w-full text-left px-3 py-1.5 border-b border-[var(--mf-bdr)]/5 last:border-0 flex items-baseline justify-between gap-3 ${
+                idx === highlightIdx ? "bg-[var(--mf-elev)]/10" : "hover:bg-[var(--mf-elev)]/5"
               }`}
             >
-              <span className="text-white text-sm truncate">
+              <span className="text-[var(--mf-fg)] text-sm truncate">
                 {lastSegment(z)}
               </span>
-              <span className="text-white/40 text-[10px] font-mono truncate shrink-0">
+              <span className="text-[var(--mf-fg)]/40 text-[10px] font-mono truncate shrink-0">
                 {z}
               </span>
             </button>
@@ -223,7 +223,7 @@ export default function TimezonePicker({
         </div>
       )}
       {open && matches.length === 0 && (
-        <div className="absolute z-30 left-0 right-0 mt-1 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl px-3 py-2 text-[11px] text-white/40">
+        <div className="absolute z-30 left-0 right-0 mt-1 bg-[var(--mf-surface-2)] border border-[var(--mf-bdr)]/10 rounded-lg shadow-2xl px-3 py-2 text-[11px] text-[var(--mf-fg)]/40">
           {t("Keine passende Zeitzone")}
         </div>
       )}

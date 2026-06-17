@@ -20,7 +20,9 @@ import ShoppingListWidget from "@/components/widgets/ShoppingListWidget";
 import TodosWidget from "@/components/widgets/TodosWidget";
 import ImageWidget from "@/components/widgets/ImageWidget";
 import SensorWidget from "@/components/widgets/SensorWidget";
+import CameraWidget from "@/components/widgets/CameraWidget";
 import { CustomWidget } from "@/lib/modules/runtime";
+import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -48,6 +50,175 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
   const [rowHeight, setRowHeight] = useState(40);
   const [userHiddenWidgets, setUserHiddenWidgets] = useState<Record<string, boolean>>({});
   const [autoHiddenWidgets, setAutoHiddenWidgets] = useState<Record<string, boolean>>({});
+  // #6: widgets with showWhenEntity are shown/hidden from a LIVE HA entity state.
+  // We listen via the SSE bridge (same broadcaster the HA widget uses) → instant,
+  // no polling. autoHideSeconds turns it into a pulse (show on trigger, hide after N s).
+  const [triggerHiddenWidgets, setTriggerHiddenWidgets] = useState<Record<string, boolean>>({});
+  // Per-view settings (orientation, autoRefreshHours, …) from /api/layout/get.
+  const [viewSettings, setViewSettings] = useState<any>(null);
+
+  // Trigger configs from the current layout. The entity list feeds the live
+  // subscription; per-widget config drives visibility. Rebuilt each render but
+  // cheap, and the SSE hook + effect both key off stable values (idsKey/layout).
+  const triggerConfigs = (layout || [])
+    .map((w: any) => ({
+      i: w.i,
+      ent: (w.config?.showWhenEntity || "").trim(),
+      st: (w.config?.showWhenState ?? "").trim(),
+      autoHide: Math.max(0, Number(w.config?.autoHideSeconds) || 0),
+    }))
+    .filter((tg: any) => tg.ent);
+  // Button widgets with an HA auto-trigger: HA "presses" one of the button's
+  // slots (haTriggerButton 1-4), which runs THAT slot's own action + targets via
+  // the existing WIDGET_ACTION path — same as a tap. No separate group to keep.
+  const buttonTriggers = (layout || [])
+    .filter((w: any) => w.type === "ButtonWidget.tsx" && (w.config?.haTriggerEntity || "").trim())
+    .map((w: any) => {
+      const slot = w.config.haTriggerButton || "1";
+      const suffix = slot === "1" ? "" : slot;
+      return {
+        i: w.i,
+        ent: (w.config.haTriggerEntity || "").trim(),
+        st: (w.config.haTriggerState ?? "").trim(),
+        action: w.config[`actionType${suffix}`] || "toggle",
+        targets: Array.isArray(w.config[`targets${suffix}`]) ? w.config[`targets${suffix}`] : [],
+        autoHide: Math.max(0, Number(w.config.haTriggerAutoHide) || 0),
+      };
+    });
+
+  const triggerEntityIds = Array.from(
+    new Set([
+      ...triggerConfigs.map((tg: any) => tg.ent),
+      ...buttonTriggers.map((b: any) => b.ent),
+    ]),
+  );
+
+  // Live states for ALL trigger entities (per-widget + button), pushed over SSE
+  // the moment they change in HA. enabled=false (no triggers) opens no stream.
+  const { states: liveTriggerStates } = useHaLiveStates(triggerEntityIds, triggerEntityIds.length > 0);
+
+  // Edge-detection + auto-hide timers live in refs so they survive re-renders
+  // without being effect dependencies (which would reset the timers).
+  const triggerMatchRef = useRef<Record<string, boolean>>({});
+  const autoHideTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // Derive each trigger widget's visibility from the live states.
+  //  - autoHide = 0 → "show while active": visible exactly while the entity matches.
+  //  - autoHide > 0 → "pulse": on the rising edge (became matching) show it, then
+  //    auto-hide after N seconds, regardless of the entity going inactive again —
+  //    so a doorbell that's "on" for only a moment still shows the cam for N s.
+  useEffect(() => {
+    if (triggerConfigs.length === 0) {
+      setTriggerHiddenWidgets((prev) => (Object.keys(prev).length ? {} : prev));
+      return;
+    }
+    const updates: Record<string, boolean> = {};
+    const startHidden: string[] = [];
+    for (const tg of triggerConfigs) {
+      const cur = String(liveTriggerStates[tg.ent]?.state ?? "").toLowerCase();
+      const match = tg.st
+        ? cur === tg.st.toLowerCase()
+        : !!cur && !["off", "unavailable", "unknown", "none", ""].includes(cur);
+      const prevMatch = triggerMatchRef.current[tg.i] ?? false;
+      triggerMatchRef.current[tg.i] = match;
+
+      if (tg.autoHide > 0) {
+        // Pulse: only the rising edge reveals it; a timer hides it again.
+        if (match && !prevMatch) {
+          updates[tg.i] = false; // show now
+          if (autoHideTimersRef.current[tg.i]) clearTimeout(autoHideTimersRef.current[tg.i]);
+          autoHideTimersRef.current[tg.i] = setTimeout(() => {
+            setTriggerHiddenWidgets((p) => ({ ...p, [tg.i]: true }));
+            delete autoHideTimersRef.current[tg.i];
+          }, tg.autoHide * 1000);
+        } else {
+          startHidden.push(tg.i); // hidden until first trigger; keep state after
+        }
+      } else {
+        // Show-while-active: visibility mirrors the live match.
+        updates[tg.i] = !match;
+      }
+    }
+
+    setTriggerHiddenWidgets((prev) => {
+      const next = { ...prev };
+      for (const id of startHidden) if (!(id in next)) next[id] = true;
+      Object.assign(next, updates);
+      // Drop bookkeeping for widgets that no longer carry a trigger.
+      for (const k of Object.keys(next)) {
+        if (!triggerConfigs.some((tg: any) => tg.i === k)) delete next[k];
+      }
+      const same =
+        Object.keys(next).length === Object.keys(prev).length &&
+        Object.keys(next).every((k) => prev[k] === next[k]);
+      return same ? prev : next;
+    });
+  }, [liveTriggerStates, layout]);
+
+  // Button HA auto-trigger: on the rising edge of the entity match, dispatch the
+  // button's action (show/hide/toggle) onto its target GROUP via WIDGET_ACTION —
+  // the exact path a tap uses. autoHide fires the inverse action after N seconds
+  // (a doorbell shows the group, then hides it again on its own).
+  const buttonTriggerMatchRef = useRef<Record<string, boolean>>({});
+  const buttonAutoHideTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    if (buttonTriggers.length === 0) return;
+    for (const bt of buttonTriggers) {
+      const cur = String(liveTriggerStates[bt.ent]?.state ?? "").toLowerCase();
+      const match = bt.st
+        ? cur === bt.st.toLowerCase()
+        : !!cur && !["off", "unavailable", "unknown", "none", ""].includes(cur);
+      const prevMatch = buttonTriggerMatchRef.current[bt.i] ?? false;
+      buttonTriggerMatchRef.current[bt.i] = match;
+
+      // Only the rising edge fires — avoids re-firing on every SSE delta.
+      if (match && !prevMatch) {
+        if (bt.action === "refresh") {
+          // HA-triggered full reload — refresh a display from an entity (e.g.
+          // an input_boolean pulse to clear the cache on all wall panels).
+          if (typeof window !== "undefined") window.location.reload();
+        } else if (bt.targets.length > 0) {
+          window.dispatchEvent(
+            new CustomEvent("WIDGET_ACTION", { detail: { targets: bt.targets, actionType: bt.action } }),
+          );
+          if (bt.autoHide > 0) {
+            if (buttonAutoHideTimersRef.current[bt.i]) clearTimeout(buttonAutoHideTimersRef.current[bt.i]);
+            const inverse = bt.action === "show" ? "hide" : bt.action === "hide" ? "show" : "toggle";
+            buttonAutoHideTimersRef.current[bt.i] = setTimeout(() => {
+              window.dispatchEvent(
+                new CustomEvent("WIDGET_ACTION", { detail: { targets: bt.targets, actionType: inverse } }),
+              );
+              delete buttonAutoHideTimersRef.current[bt.i];
+            }, bt.autoHide * 1000);
+          }
+        }
+      }
+    }
+  }, [liveTriggerStates, layout]);
+
+  // Clear pending auto-hide timers on unmount (the ref objects are stable).
+  useEffect(() => {
+    const widgetTimers = autoHideTimersRef.current;
+    const btnTimers = buttonAutoHideTimersRef.current;
+    return () => {
+      for (const id of Object.keys(widgetTimers)) clearTimeout(widgetTimers[id]);
+      for (const id of Object.keys(btnTimers)) clearTimeout(btnTimers[id]);
+    };
+  }, []);
+
+  // Per-view auto-refresh: a full reload every N hours clears the in-page cache
+  // (image blobs, accumulated DOM) that piles up on long-running wall displays
+  // — Tizen / tablets especially. Set per view in View Settings
+  // (settings.autoRefreshHours); 0 / unset = off. Timer resets on value change.
+  useEffect(() => {
+    const hours = Number(viewSettings?.autoRefreshHours) || 0;
+    if (hours <= 0) return;
+    const id = setTimeout(() => {
+      if (typeof window !== "undefined") window.location.reload();
+    }, hours * 3600 * 1000);
+    return () => clearTimeout(id);
+  }, [viewSettings?.autoRefreshHours]);
 
   useEffect(() => {
      if (typeof window !== "undefined") {
@@ -154,6 +325,10 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
              // Quota exceeded / private mode — just skip caching.
            }
         }
+
+        if (data.settings) {
+          setViewSettings((prev: any) => (objectsEqual(prev, data.settings) ? prev : data.settings));
+        }
       } else {
          // Fallback if empty database
          setLayout([
@@ -233,6 +408,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     if (type === 'TodosWidget.tsx') return <TodosWidget config={config} />;
     if (type === 'ImageWidget.tsx') return <ImageWidget config={config} dashboardId={dashboardId} />;
     if (type === 'SensorWidget.tsx') return <SensorWidget config={config} />;
+    if (type === 'CameraWidget.tsx') return <CameraWidget config={config} />;
     if (type === 'CalendarWidget.tsx') return <CalendarWidget
         config={config}
         onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
@@ -271,10 +447,11 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
            isDraggable={false}  // Static for the live dashboard
            isResizable={false}  // Static for the live dashboard
            compactType={null}
-           preventCollision={true}
+           allowOverlap={true}
+           preventCollision={false}
          >
-           {layout.map(w => {
-             const isCardBased = 
+           {layout.map((w, index) => {
+             const isCardBased =
                (w.type === 'HomeAssistantWidget.tsx') ||
                (w.type === 'HANotificationWidget.tsx') ||
                (w.type === 'CalendarWidget.tsx' && w.config?.design !== 'minimal');
@@ -284,8 +461,11 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
              const justifyClass = isCardBased ? 'justify-start' : 'justify-center';
 
               return (
-               <div key={w.i}>
-                 <div className={`w-full h-full flex ${justifyClass} flex-col ${paddingClass} rounded-3xl overflow-hidden transition-opacity duration-500 ${(userHiddenWidgets[w.i] || autoHiddenWidgets[w.i]) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+               <div
+                 key={w.i}
+                 style={{ zIndex: typeof w.config?.zIndex === "number" ? w.config.zIndex : index }}
+               >
+                 <div className={`w-full h-full flex ${justifyClass} flex-col ${paddingClass} rounded-3xl overflow-hidden transition-opacity duration-500 ${(userHiddenWidgets[w.i] || autoHiddenWidgets[w.i] || triggerHiddenWidgets[w.i]) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                       style={{ 
                         containerType: 'size',
                         backgroundColor: `rgba(0,0,0, ${outerBgOpacity})`, 

@@ -76,23 +76,23 @@ export default function IntegrationsPage() {
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-[900px] mx-auto px-8 py-10">
         <div className="mb-8">
-          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/40 mb-2">
+          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 mb-2">
             {t("Integrationen")}
           </div>
           <h1 className="text-3xl font-semibold">{t("Daten- & Medienquellen")}</h1>
-          <p className="text-white/50 mt-2 max-w-xl text-sm">
+          <p className="text-[var(--mf-fg)]/50 mt-2 max-w-xl text-sm">
             {t("Home Assistant gilt global für alle Views. Das Wallpaper konfigurierst du direkt im View-Editor (Button „Wallpaper\").")}
           </p>
         </div>
 
-        <section className="mb-10 bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+        <section className="mb-10 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-2xl shrink-0">
               🏡
             </div>
             <div className="flex-1">
               <h2 className="font-semibold text-lg">{t("Home Assistant")}</h2>
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-[var(--mf-fg)]/50">
                 {t("URL + Long-Lived Access Token. Gilt global. Token-Generator: HA-UI → Profil (unten links) → Long-Lived Access Tokens.")}
               </p>
             </div>
@@ -100,7 +100,7 @@ export default function IntegrationsPage() {
 
           <form onSubmit={saveHa} className="space-y-4">
             <label className="block">
-              <span className="text-xs font-medium text-white/70 block mb-1.5">
+              <span className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-1.5">
                 {t("Home-Assistant-URL")}
               </span>
               <input
@@ -109,11 +109,11 @@ export default function IntegrationsPage() {
                 onChange={(e) => setHaUrl(e.target.value)}
                 placeholder="http://192.168.0.50:8123"
                 disabled={haLoading}
-                className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-medium text-white/70 block mb-1.5">
+              <span className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-1.5">
                 {t("Long-Lived Access Token")}
               </span>
               <input
@@ -123,14 +123,14 @@ export default function IntegrationsPage() {
                 placeholder="eyJ0eXAiOiJKV1Qi…"
                 disabled={haLoading}
                 autoComplete="off"
-                className="w-full bg-black border border-white/10 text-white text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
               />
-              <p className="text-[11px] text-white/40 mt-1">
+              <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                 {t("Wird verschlüsselt am Server gespeichert und beim HA-Proxy eingesetzt. Niemals im Frontend-Bundle.")}
               </p>
             </label>
             <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-white/40">
+              <span className="text-xs text-[var(--mf-fg)]/40">
                 {haUrl && haToken
                   ? t("Verbindung konfiguriert.")
                   : t("Nicht konfiguriert — HA-Widgets bleiben leer.")}
@@ -156,45 +156,45 @@ export default function IntegrationsPage() {
           </form>
         </section>
 
-        <section className="mb-10 bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+        <section className="mb-10 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-2xl shrink-0">
               🖼️
             </div>
             <div className="flex-1">
               <h2 className="font-semibold text-lg">{t("Immich (global)")}</h2>
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-[var(--mf-fg)]/50">
                 {t("Globale Immich-Verbindung für Wallpaper + Bild-Widget. Pro View/Widget überschreibbar — wer dort eigene Daten einträgt, nutzt die.")}
               </p>
             </div>
           </div>
           <form onSubmit={saveImmich} className="space-y-4">
             <label className="block">
-              <span className="text-xs font-medium text-white/70 block mb-1.5">{t("Immich-URL")}</span>
+              <span className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-1.5">{t("Immich-URL")}</span>
               <input
                 type="url"
                 value={immichUrl}
                 onChange={(e) => setImmichUrl(e.target.value)}
                 placeholder="http://192.168.0.50:2283"
-                className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-medium text-white/70 block mb-1.5">{t("API-Key (Read Only)")}</span>
+              <span className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-1.5">{t("API-Key (Read Only)")}</span>
               <input
                 type="password"
                 value={immichApiKey}
                 onChange={(e) => setImmichApiKey(e.target.value)}
                 placeholder="•••••••••••••••••••••"
                 autoComplete="off"
-                className="w-full bg-black border border-white/10 text-white text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
               />
-              <p className="text-[11px] text-white/40 mt-1">
+              <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                 {t("Wird am Server gespeichert. Views ohne eigene Immich-Daten nutzen diese Verbindung.")}
               </p>
             </label>
             <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-white/40">
+              <span className="text-xs text-[var(--mf-fg)]/40">
                 {immichUrl && immichApiKey
                   ? t("Globale Verbindung konfiguriert.")
                   : t("Optional — nur nötig, wenn Views keine eigenen Daten haben.")}
@@ -228,12 +228,12 @@ export default function IntegrationsPage() {
 
         <OpenWeatherMapSection />
 
-        <section className="mt-10 bg-zinc-900/40 border border-dashed border-white/10 rounded-2xl p-6">
+        <section className="mt-10 bg-[var(--mf-surface-2)]/40 light:bg-[var(--mf-surface)] border border-dashed border-[var(--mf-bdr)]/10 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-2">
-            <Plug size={16} className="text-white/50" />
+            <Plug size={16} className="text-[var(--mf-fg)]/50" />
             <h3 className="font-semibold">{t("Weitere Quellen")}</h3>
           </div>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-[var(--mf-fg)]/50">
             {t("iCal-Feeds werden weiterhin direkt pro Kalender-Widget im View-Editor konfiguriert. Generische MQTT- und REST-Integrationen kommen mit dem Modul-Market.")}
           </p>
         </section>
@@ -307,14 +307,14 @@ function CalendarAccountsSection() {
   }
 
   return (
-    <section className="mb-10 bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+    <section className="mb-10 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">
       <div className="flex items-start gap-4 mb-6">
         <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-2xl shrink-0">
           <CalendarIcon size={22} className="text-purple-300" />
         </div>
         <div className="flex-1">
           <h2 className="font-semibold text-lg">{t("Kalender-Konten")}</h2>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-[var(--mf-fg)]/50">
             {t("Verbinde Google oder Microsoft 365, um echte Kalenderdaten im Kalender-Widget anzuzeigen. iCal-URLs bleiben als separate Feed-Art erhalten.")}
           </p>
         </div>
@@ -341,14 +341,14 @@ function CalendarAccountsSection() {
 
       <div className="space-y-2 mb-4">
         {accounts === null ? (
-          <div className="text-sm text-white/40">{t("Lade Konten…")}</div>
+          <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade Konten…")}</div>
         ) : accounts.length === 0 ? (
-          <div className="text-sm text-white/40">{t("Noch keine Konten verbunden.")}</div>
+          <div className="text-sm text-[var(--mf-fg)]/40">{t("Noch keine Konten verbunden.")}</div>
         ) : (
           accounts.map((acc) => (
             <div
               key={acc.id}
-              className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+              className="flex items-center gap-3 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2"
             >
               <div
                 className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${
@@ -360,10 +360,10 @@ function CalendarAccountsSection() {
                 {acc.provider === "google" ? "G" : "MS"}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-white truncate">
+                <div className="text-sm text-[var(--mf-fg)] truncate">
                   {acc.accountName || acc.accountEmail || t("(unbenannt)")}
                 </div>
-                <div className="text-[11px] text-white/40 truncate">
+                <div className="text-[11px] text-[var(--mf-fg)]/40 truncate">
                   {acc.accountEmail || t("kein E-Mail ermittelbar")} ·
                   {acc.provider === "google" ? " Google Calendar" : " Microsoft 365"}
                 </div>
@@ -387,7 +387,7 @@ function CalendarAccountsSection() {
           className={`flex items-center justify-between gap-2 rounded-lg px-4 h-11 text-sm font-semibold transition-colors border ${
             googleConfigured
               ? "bg-red-600/10 border-red-500/40 text-red-200 hover:bg-red-600/20"
-              : "bg-zinc-800/60 border-white/10 text-white/40 pointer-events-none"
+              : "bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/40 pointer-events-none"
           }`}
           aria-disabled={!googleConfigured}
         >
@@ -404,7 +404,7 @@ function CalendarAccountsSection() {
           className={`flex items-center justify-between gap-2 rounded-lg px-4 h-11 text-sm font-semibold transition-colors border ${
             microsoftConfigured
               ? "bg-sky-600/10 border-sky-500/40 text-sky-200 hover:bg-sky-600/20"
-              : "bg-zinc-800/60 border-white/10 text-white/40 pointer-events-none"
+              : "bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/40 pointer-events-none"
           }`}
           aria-disabled={!microsoftConfigured}
         >
@@ -497,18 +497,18 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
   }
 
   const fieldCls =
-    "w-full bg-black border border-white/10 text-white text-xs rounded-md px-2 h-9 focus:outline-none focus:border-purple-500";
+    "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs rounded-md px-2 h-9 focus:outline-none focus:border-purple-500";
 
   return (
     <details className="mt-4 group">
-      <summary className="cursor-pointer select-none flex items-center gap-2 text-sm text-white/70 hover:text-white">
+      <summary className="cursor-pointer select-none flex items-center gap-2 text-sm text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)]">
         <KeyRound size={14} className="text-purple-300" />
         {t("OAuth-Zugangsdaten einrichten (Klick-Verbinden aktivieren)")}
-        <ChevronDown size={14} className="text-white/40 transition-transform group-open:rotate-180" />
+        <ChevronDown size={14} className="text-[var(--mf-fg)]/40 transition-transform group-open:rotate-180" />
       </summary>
 
-      <div className="mt-3 bg-black/30 border border-white/10 rounded-xl p-4 space-y-4">
-        <p className="text-[11px] text-white/50 leading-relaxed">
+      <div className="mt-3 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl p-4 space-y-4">
+        <p className="text-[11px] text-[var(--mf-fg)]/50 leading-relaxed">
           {t("Einmalig eine OAuth-App bei Google Cloud bzw. Microsoft Entra anlegen, dann Client-ID + Secret hier eintragen — danach läuft das Verbinden per Klick & Zustimmung. Trage bei der App-Registrierung diese Redirect-URIs ein:")}
         </p>
 
@@ -551,7 +551,7 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
               {t("Speichern")}
             </button>
             <button type="button" onClick={reset}
-              className="px-3 h-9 rounded-lg text-xs text-white/50 hover:text-white hover:bg-white/5">
+              className="px-3 h-9 rounded-lg text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5">
               {t("Zurücksetzen")}
             </button>
           </div>
@@ -564,10 +564,10 @@ function OAuthCredentialsForm({ onSaved }: { onSaved: () => void }) {
 function RedirectRow({ label, uri, copied, onCopy }: { label: string; uri: string; copied: boolean; onCopy: () => void }) {
   const t = useT();
   return (
-    <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-md px-2 py-1.5">
-      <span className="text-[10px] uppercase tracking-wider text-white/40 w-16 shrink-0">{label}</span>
-      <code className="flex-1 text-[11px] font-mono text-white/70 truncate">{uri}</code>
-      <button onClick={onCopy} className="text-xs text-white/50 hover:text-white bg-white/5 hover:bg-white/10 rounded px-2 h-6 flex items-center gap-1 shrink-0">
+    <div className="flex items-center gap-2 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-md px-2 py-1.5">
+      <span className="text-[10px] uppercase tracking-wider text-[var(--mf-fg)]/40 w-16 shrink-0">{label}</span>
+      <code className="flex-1 text-[11px] font-mono text-[var(--mf-fg)]/70 truncate">{uri}</code>
+      <button onClick={onCopy} className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded px-2 h-6 flex items-center gap-1 shrink-0">
         {copied ? <Check size={11} /> : <Copy size={11} />}
         {copied ? t("kopiert") : t("Kopieren")}
       </button>
@@ -606,14 +606,14 @@ function HAListsSection() {
   }, []);
 
   return (
-    <section className="mb-10 bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+    <section className="mb-10 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">
       <div className="flex items-start gap-4 mb-4">
         <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-300 shrink-0">
           <ListChecks size={22} />
         </div>
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold text-lg">{t("Home Assistant Listen")}</h2>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-[var(--mf-fg)]/50">
             {t("Listen aus deinem Home Assistant (Domain todo.*) als Quelle für Einkaufslisten- und Todos-Widgets. Im Widget-Inspector wählst du dann pro Widget die Quelle.")}
           </p>
         </div>
@@ -629,22 +629,22 @@ function HAListsSection() {
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 text-white rounded-md px-3 h-8 disabled:opacity-40"
+          className="flex items-center gap-1.5 text-xs font-medium bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-3 h-8 disabled:opacity-40"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           {t("Listen aktualisieren")}
         </button>
         {lists && (
-          <span className="text-[11px] text-white/40">
+          <span className="text-[11px] text-[var(--mf-fg)]/40">
             {lists.length} {lists.length === 1 ? t("Liste") : t("Listen")} {t("gefunden")}
           </span>
         )}
       </div>
 
       {loading && !lists ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : lists && lists.length === 0 ? (
-        <p className="text-sm text-white/50 bg-black/30 border border-white/10 rounded-lg p-3">
+        <p className="text-sm text-[var(--mf-fg)]/50 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg p-3">
           {t("Keine todo.* Entities in Home Assistant gefunden. Prüfe ob die HA-Verbindung oben aktiv ist und ob mindestens eine Todo-Liste/Einkaufsliste in HA existiert.")}
         </p>
       ) : (
@@ -652,15 +652,15 @@ function HAListsSection() {
           {lists?.map((l) => (
             <li
               key={l.entityId}
-              className="flex items-center justify-between bg-black/30 border border-white/10 rounded-lg px-3 py-2"
+              className="flex items-center justify-between bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2"
             >
               <div className="min-w-0 flex-1">
-                <div className="text-sm text-white truncate">{l.name}</div>
-                <code className="text-[11px] font-mono text-white/40 truncate block">
+                <div className="text-sm text-[var(--mf-fg)] truncate">{l.name}</div>
+                <code className="text-[11px] font-mono text-[var(--mf-fg)]/40 truncate block">
                   {l.entityId}
                 </code>
               </div>
-              <div className="text-[11px] text-white/50 shrink-0 ml-3">
+              <div className="text-[11px] text-[var(--mf-fg)]/50 shrink-0 ml-3">
                 {l.itemCount} {l.itemCount === 1 ? t("Eintrag") : t("Einträge")}
               </div>
             </li>
@@ -735,7 +735,7 @@ function TodoistSection() {
   }
 
   return (
-    <section className="mb-10 bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+    <section className="mb-10 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">
       <div className="flex items-start gap-4 mb-4">
         <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-2xl shrink-0">
           📋
@@ -754,7 +754,7 @@ function TodoistSection() {
               </span>
             )}
           </h2>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-[var(--mf-fg)]/50">
             {t("Deine Todoist-Projekte als Quelle für Todos- und Einkaufslisten-Widgets — der Token aus deinem Todoist-Konto reicht.")}
           </p>
         </div>
@@ -772,10 +772,10 @@ function TodoistSection() {
       )}
 
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : hasToken && !editing ? (
         <div className="flex items-center gap-2 mb-3">
-          <div className="text-sm text-white/70 flex-1">
+          <div className="text-sm text-[var(--mf-fg)]/70 flex-1">
             {connected ? (
               <span>
                 <strong>{projects.length}</strong>{" "}
@@ -790,7 +790,7 @@ function TodoistSection() {
               setEditing(true);
               setToken("");
             }}
-            className="text-xs bg-white/10 hover:bg-white/15 text-white rounded-md px-3 h-8"
+            className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-3 h-8"
           >
             {t("Token ändern")}
           </button>
@@ -811,7 +811,7 @@ function TodoistSection() {
         </div>
       ) : (
         <div>
-          <ol className="text-sm text-white/70 space-y-2 mb-4">
+          <ol className="text-sm text-[var(--mf-fg)]/70 space-y-2 mb-4">
             <li className="flex items-start gap-2">
               <span className="w-5 h-5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-200 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
               <div className="flex-1">
@@ -823,7 +823,7 @@ function TodoistSection() {
                 >
                   {t("Todoist Developer-Settings öffnen")} <ExternalLink size={12} />
                 </a>
-                <p className="text-[11px] text-white/40 mt-0.5">
+                <p className="text-[11px] text-[var(--mf-fg)]/40 mt-0.5">
                   {t("Loggt dich in Todoist ein (falls noch nicht passiert) und öffnet die Integrationen-Seite.")}
                 </p>
               </div>
@@ -842,7 +842,7 @@ function TodoistSection() {
             </li>
           </ol>
           <label className="block">
-            <span className="text-xs font-medium text-white/70 block mb-1.5">
+            <span className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-1.5">
               {t("Todoist API-Token")}
             </span>
             <div className="flex items-center gap-2">
@@ -851,12 +851,12 @@ function TodoistSection() {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="0123456789abcdef…"
-                className="flex-1 bg-black border border-white/10 text-white text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-rose-500"
+                className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-rose-500"
               />
               <button
                 type="button"
                 onClick={() => setReveal((v) => !v)}
-                className="text-xs text-white/60 hover:text-white px-2.5 h-10 rounded-md bg-white/5 hover:bg-white/10 flex items-center gap-1"
+                className="text-xs text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] px-2.5 h-10 rounded-md bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 flex items-center gap-1"
               >
                 {reveal ? <EyeOff size={12} /> : <Eye size={12} />}
                 {reveal ? t("verbergen") : t("anzeigen")}
@@ -877,12 +877,12 @@ function TodoistSection() {
                   setEditing(false);
                   setToken("");
                 }}
-                className="text-sm text-white/60 hover:text-white px-3 h-9"
+                className="text-sm text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] px-3 h-9"
               >
                 {t("Abbrechen")}
               </button>
             )}
-            <span className="text-[11px] text-white/30 ml-auto">
+            <span className="text-[11px] text-[var(--mf-fg)]/30 ml-auto">
               {t("(OAuth-Anmeldung wäre mehr Setup-Aufwand für gleich viel Nutzen — Token ist 1-Klick.)")}
             </span>
           </div>
@@ -894,13 +894,13 @@ function TodoistSection() {
           {projects.map((p) => (
             <li
               key={p.id}
-              className="flex items-center justify-between bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm"
+              className="flex items-center justify-between bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2 text-sm"
             >
-              <span className="text-white/80 truncate">
+              <span className="text-[var(--mf-fg)]/80 truncate">
                 {p.isInbox && <span className="mr-1">📥</span>}
                 {p.name}
               </span>
-              <code className="text-[11px] font-mono text-white/40 shrink-0 ml-2">
+              <code className="text-[11px] font-mono text-[var(--mf-fg)]/40 shrink-0 ml-2">
                 {p.id}
               </code>
             </li>
@@ -964,7 +964,7 @@ function OpenWeatherMapSection() {
   }
 
   return (
-    <section className="mb-10 bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+    <section className="mb-10 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">
       <div className="flex items-start gap-4 mb-4">
         <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl shrink-0">
           ☀️
@@ -983,7 +983,7 @@ function OpenWeatherMapSection() {
               </span>
             )}
           </h2>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-[var(--mf-fg)]/50">
             {t("Alternativer Wetter-Provider. Optional — der Default (Open-Meteo) braucht keinen Key. Free-Tier: 1000 Calls/Tag.")}
           </p>
         </div>
@@ -996,10 +996,10 @@ function OpenWeatherMapSection() {
       )}
 
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : configured && !editing ? (
         <div className="flex items-center gap-2 mb-3">
-          <div className="text-sm text-white/70 flex-1">
+          <div className="text-sm text-[var(--mf-fg)]/70 flex-1">
             {fromEnv
               ? t("Key aus Umgebungsvariable OPENWEATHERMAP_API_KEY (read-only). UI-Override jederzeit möglich.")
               : t("API-Key gespeichert, OWM-Provider ist nutzbar.")}
@@ -1009,7 +1009,7 @@ function OpenWeatherMapSection() {
               setEditing(true);
               setKey("");
             }}
-            className="text-xs bg-white/10 hover:bg-white/15 text-white rounded-md px-3 h-8"
+            className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-3 h-8"
           >
             {fromEnv ? t("Override setzen") : t("Key ändern")}
           </button>
@@ -1028,7 +1028,7 @@ function OpenWeatherMapSection() {
         </div>
       ) : (
         <div>
-          <ol className="text-sm text-white/70 space-y-2 mb-4">
+          <ol className="text-sm text-[var(--mf-fg)]/70 space-y-2 mb-4">
             <li className="flex items-start gap-2">
               <span className="w-5 h-5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-200 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
               <div className="flex-1">
@@ -1040,7 +1040,7 @@ function OpenWeatherMapSection() {
                 >
                   {t("OpenWeatherMap API-Keys-Seite öffnen")} <ExternalLink size={12} />
                 </a>
-                <p className="text-[11px] text-white/40 mt-0.5">
+                <p className="text-[11px] text-[var(--mf-fg)]/40 mt-0.5">
                   {t("Account anlegen falls noch nicht passiert. Free-Tier reicht (1000 Calls/Tag).")}
                 </p>
               </div>
@@ -1059,12 +1059,12 @@ function OpenWeatherMapSection() {
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
                 placeholder={t("API-Key einfügen…")}
-                className="w-full bg-black border border-white/10 text-white text-sm rounded-md px-3 pr-9 h-9 focus:outline-none focus:border-amber-500/60 font-mono"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-md px-3 pr-9 h-9 focus:outline-none focus:border-amber-500/60 font-mono"
               />
               <button
                 type="button"
                 onClick={() => setReveal((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)]/70"
                 tabIndex={-1}
               >
                 {reveal ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -1083,13 +1083,13 @@ function OpenWeatherMapSection() {
                   setEditing(false);
                   setKey("");
                 }}
-                className="text-xs bg-white/10 hover:bg-white/15 text-white rounded-md px-3 h-9"
+                className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-3 h-9"
               >
                 {t("Abbrechen")}
               </button>
             )}
           </div>
-          <p className="text-[11px] text-white/40 mt-2">
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2">
             {t("Nach dem Speichern dauert es ~5-10 Minuten bis OpenWeatherMap deinen neuen Key freischaltet. Bis dahin kommen 401-Fehler.")}
           </p>
         </div>

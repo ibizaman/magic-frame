@@ -14,7 +14,7 @@ type Props = {
 type Album = { id: string; albumName: string; assetCount: number };
 
 const INPUT =
-  "w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500";
+  "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500";
 
 export function ImageInspector({ widget, updateConfig }: Props) {
   const t = useT();
@@ -59,7 +59,7 @@ export function ImageInspector({ widget, updateConfig }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-sm font-medium text-white/80 block mb-2">{t("Immich-Quelle")}</label>
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Immich-Quelle")}</label>
         <select
           value={source}
           onChange={(e) => updateConfig(widget.i, "immichSource", e.target.value)}
@@ -68,7 +68,7 @@ export function ImageInspector({ widget, updateConfig }: Props) {
           <option value="global">{t("Global (Einstellungen)")}</option>
           <option value="view">{t("Vom View (Wallpaper)")}</option>
         </select>
-        <p className="text-xs text-white/40 mt-1.5 px-1 leading-relaxed">
+        <p className="text-xs text-[var(--mf-fg)]/40 mt-1.5 px-1 leading-relaxed">
           {source === "view"
             ? t("Nutzt die Immich-Daten aus dem Wallpaper dieses Views.")
             : t("Nutzt die globale Immich-Verbindung (Einstellungen → Integrationen).")}
@@ -76,13 +76,13 @@ export function ImageInspector({ widget, updateConfig }: Props) {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-white/80 mb-2 flex items-center justify-between">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex items-center justify-between">
           <span>{t("Album")}</span>
           <button
             type="button"
             onClick={loadAlbums}
             disabled={loading}
-            className="text-xs text-white/50 hover:text-white inline-flex items-center gap-1 disabled:opacity-50"
+            className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] inline-flex items-center gap-1 disabled:opacity-50"
           >
             <RefreshCw size={12} className={loading ? "animate-spin" : ""} /> {t("Neu laden")}
           </button>
@@ -101,7 +101,7 @@ export function ImageInspector({ widget, updateConfig }: Props) {
             ))}
           </select>
         ) : (
-          <p className="text-xs text-white/40 px-1">
+          <p className="text-xs text-[var(--mf-fg)]/40 px-1">
             {loading
               ? t("Lade Alben…")
               : error
@@ -114,7 +114,7 @@ export function ImageInspector({ widget, updateConfig }: Props) {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-white/80 block mb-2">{t("Bildanzeige")}</label>
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Bildanzeige")}</label>
         <select
           value={fit}
           onChange={(e) => updateConfig(widget.i, "fit", e.target.value)}
@@ -128,7 +128,7 @@ export function ImageInspector({ widget, updateConfig }: Props) {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
           <span>{t("Bildwechsel Intervall (Sekunden)")}</span>
           <span className="text-blue-400">{intervalSec}s</span>
         </label>
@@ -139,12 +139,12 @@ export function ImageInspector({ widget, updateConfig }: Props) {
           step="5"
           value={intervalSec}
           onChange={(e) => updateConfig(widget.i, "intervalSec", parseInt(e.target.value))}
-          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
           <span>{t("Ecken-Rundung")}</span>
           <span className="text-blue-400">{cornerRadius}px</span>
         </label>
@@ -155,9 +155,9 @@ export function ImageInspector({ widget, updateConfig }: Props) {
           step="2"
           value={cornerRadius}
           onChange={(e) => updateConfig(widget.i, "cornerRadius", parseInt(e.target.value))}
-          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
         />
-        <p className="text-xs text-white/40 mt-1.5 px-1">{t("0 = eckig. Passt das Bild an die runden Widget-Ecken an.")}</p>
+        <p className="text-xs text-[var(--mf-fg)]/40 mt-1.5 px-1">{t("0 = eckig. Passt das Bild an die runden Widget-Ecken an.")}</p>
       </div>
     </div>
   );

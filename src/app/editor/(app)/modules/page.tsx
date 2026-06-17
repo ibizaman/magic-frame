@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Clock, CloudSun, Calendar, Power, Bell, Timer, MessageSquare, ShoppingCart, ClipboardList, Code2, FileCode, CheckCircle2, ChevronDown, Upload, Trash2, Eye, EyeOff, Zap } from "lucide-react";
+import { Clock, CloudSun, Calendar, Power, Bell, Timer, MessageSquare, ShoppingCart, ClipboardList, Code2, FileCode, CheckCircle2, ChevronDown, Upload, Trash2, Eye, EyeOff, Zap, Image as ImageIcon, Gauge, Video } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 type CustomModule = {
@@ -38,6 +38,9 @@ const INSTALLED = [
   { key: "messages", label: "Nachrichten", desc: "Quick-Post aus der Companion-App mit TTL.", icon: <MessageSquare size={16} />, accent: "text-fuchsia-300 bg-fuchsia-500/10 border-fuchsia-500/30" },
   { key: "shopping", label: "Einkaufsliste", desc: "Gemeinsame Familienliste, sync mit Apple-Erinnerungen.", icon: <ShoppingCart size={16} />, accent: "text-yellow-300 bg-yellow-500/10 border-yellow-500/30" },
   { key: "todos", label: "Todos", desc: "Aufgaben mit Assignee + Due-Date, Apple-Reminders-Sync.", icon: <ClipboardList size={16} />, accent: "text-indigo-300 bg-indigo-500/10 border-indigo-500/30" },
+  { key: "image", label: "Bild", desc: "Immich-Slideshow oder WebDAV/URL-Bild, mit Ken-Burns & Split-View.", icon: <ImageIcon size={16} />, accent: "text-purple-300 bg-purple-500/10 border-purple-500/30" },
+  { key: "sensor", label: "Sensor", desc: "Mehrere HA-Sensorwerte als Kacheln mit Icon, Farbe & History-Sparkline.", icon: <Gauge size={16} />, accent: "text-teal-300 bg-teal-500/10 border-teal-500/30" },
+  { key: "camera", label: "Kamera", desc: "HA-Kamera-Entities — Snapshot, MJPEG oder WebRTC-Livestream.", icon: <Video size={16} />, accent: "text-rose-300 bg-rose-500/10 border-rose-500/30" },
 ];
 
 export default function ModulesPage() {
@@ -46,11 +49,11 @@ export default function ModulesPage() {
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-[1000px] mx-auto px-8 py-10">
         <div className="mb-8">
-          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/40 mb-2">
+          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 mb-2">
             {t("Module")}
           </div>
           <h1 className="text-3xl font-semibold">{t("Installierte Module")}</h1>
-          <p className="text-white/50 mt-2 max-w-xl text-sm">
+          <p className="text-[var(--mf-fg)]/50 mt-2 max-w-xl text-sm">
             {t("Diese Widget-Typen stehen dir zur Verfügung. Eigene Custom-Module kannst du unten direkt als JS-Bundle hochladen — Hot-Loading, kein Container-Restart nötig.")}
           </p>
         </div>
@@ -59,7 +62,7 @@ export default function ModulesPage() {
           {INSTALLED.map((m) => (
             <div
               key={m.key}
-              className="bg-zinc-900/60 border border-white/10 rounded-2xl p-4"
+              className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-4"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className={`w-9 h-9 rounded-lg border flex items-center justify-center ${m.accent}`}>
@@ -70,7 +73,7 @@ export default function ModulesPage() {
                 </div>
               </div>
               <div className="font-semibold">{t(m.label)}</div>
-              <p className="text-xs text-white/50 mt-1 leading-relaxed">
+              <p className="text-xs text-[var(--mf-fg)]/50 mt-1 leading-relaxed">
                 {t(m.desc)}
               </p>
             </div>
@@ -202,15 +205,15 @@ function CustomModulesSection() {
   }
 
   return (
-    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 mb-4">
+    <div className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6 mb-4">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-300">
           <Upload size={18} />
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="font-semibold">{t("Custom-Module")}</h2>
-          <p className="text-xs text-white/50 mt-0.5">
-            {t("Hochgeladen + sofort aktiv im View-Editor. Build aus deinem Modul-Source mit")} <code className="bg-white/5 px-1 rounded">node scripts/build-module.mjs &lt;file&gt;</code> {t("— Doku in")} <code className="bg-white/5 px-1 rounded">docs/custom-modules.md</code>.
+          <p className="text-xs text-[var(--mf-fg)]/50 mt-0.5">
+            {t("Hochgeladen + sofort aktiv im View-Editor. Build aus deinem Modul-Source mit")} <code className="bg-[var(--mf-elev)]/5 px-1 rounded">node scripts/build-module.mjs &lt;file&gt;</code> {t("— Doku in")} <code className="bg-[var(--mf-elev)]/5 px-1 rounded">docs/custom-modules.md</code>.
           </p>
         </div>
       </div>
@@ -222,19 +225,19 @@ function CustomModulesSection() {
       )}
 
       {/* Upload-Form */}
-      <div className="bg-black/30 border border-white/10 rounded-lg p-4 mb-4">
+      <div className="bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg p-4 mb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div>
-            <label className="block text-[11px] text-white/50 mb-1">module.json (Manifest)</label>
+            <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">module.json (Manifest)</label>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => manifestInputRef.current?.click()}
-                className="shrink-0 bg-white/10 hover:bg-white/15 text-white/80 text-xs rounded-md py-1.5 px-3"
+                className="shrink-0 bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]/80 text-xs rounded-md py-1.5 px-3"
               >
                 {t("Datei wählen")}
               </button>
-              <span className="text-xs text-white/50 truncate flex-1 min-w-0">
+              <span className="text-xs text-[var(--mf-fg)]/50 truncate flex-1 min-w-0">
                 {manifestName || t("Keine Datei ausgewählt")}
               </span>
               <input
@@ -247,16 +250,16 @@ function CustomModulesSection() {
             </div>
           </div>
           <div>
-            <label className="block text-[11px] text-white/50 mb-1">bundle.js</label>
+            <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">bundle.js</label>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => bundleInputRef.current?.click()}
-                className="shrink-0 bg-white/10 hover:bg-white/15 text-white/80 text-xs rounded-md py-1.5 px-3"
+                className="shrink-0 bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]/80 text-xs rounded-md py-1.5 px-3"
               >
                 {t("Datei wählen")}
               </button>
-              <span className="text-xs text-white/50 truncate flex-1 min-w-0">
+              <span className="text-xs text-[var(--mf-fg)]/50 truncate flex-1 min-w-0">
                 {bundleName || t("Keine Datei ausgewählt")}
               </span>
               <input
@@ -280,37 +283,37 @@ function CustomModulesSection() {
 
       {/* Liste */}
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : modules.length === 0 ? (
-        <p className="text-sm text-white/50 bg-black/20 border border-dashed border-white/15 rounded-lg p-4 text-center">
-          {t("Noch keine Custom-Module hochgeladen. Beispiel:")} <code className="bg-white/10 px-1 rounded">examples/modules/hello/</code>
+        <p className="text-sm text-[var(--mf-fg)]/50 bg-[var(--mf-ovl)]/20 light:bg-[var(--mf-surface)] border border-dashed border-[var(--mf-bdr)]/15 rounded-lg p-4 text-center">
+          {t("Noch keine Custom-Module hochgeladen. Beispiel:")} <code className="bg-[var(--mf-elev)]/10 px-1 rounded">examples/modules/hello/</code>
         </p>
       ) : (
         <ul className="space-y-2">
           {modules.map((m) => (
             <li
               key={m.id}
-              className={`border rounded-lg p-3 ${m.enabled ? "bg-emerald-500/5 border-emerald-500/20" : "bg-black/30 border-white/10"}`}
+              className={`border rounded-lg p-3 ${m.enabled ? "bg-emerald-500/5 border-emerald-500/20" : "bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border-[var(--mf-bdr)]/10"}`}
             >
               <div className="flex items-start gap-3">
                 <div className="text-2xl shrink-0 leading-none mt-0.5">{m.iconEmoji}</div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm truncate">{m.label}</span>
-                    <code className="text-[10px] font-mono text-white/40">{m.type}</code>
-                    <span className="text-[10px] uppercase tracking-wider text-white/40">v{m.version}</span>
+                    <code className="text-[10px] font-mono text-[var(--mf-fg)]/40">{m.type}</code>
+                    <span className="text-[10px] uppercase tracking-wider text-[var(--mf-fg)]/40">v{m.version}</span>
                     {!m.enabled && (
-                      <span className="text-[10px] uppercase tracking-wider bg-white/10 px-1.5 py-0.5 rounded text-white/60">{t("aus")}</span>
+                      <span className="text-[10px] uppercase tracking-wider bg-[var(--mf-elev)]/10 px-1.5 py-0.5 rounded text-[var(--mf-fg)]/60">{t("aus")}</span>
                     )}
                   </div>
                   {m.description && (
-                    <p className="text-xs text-white/50 mt-0.5">{m.description}</p>
+                    <p className="text-xs text-[var(--mf-fg)]/50 mt-0.5">{m.description}</p>
                   )}
-                  <div className="text-[10px] text-white/40 mt-1">
+                  <div className="text-[10px] text-[var(--mf-fg)]/40 mt-1">
                     {m.manifest.fields?.length ?? 0} {t("Felder")} · {m.bundleSize} {t("Bytes")} · {t("hochgeladen")} {new Date(m.createdAt).toLocaleDateString()}
                   </div>
                   {showRaw === m.id && (
-                    <pre className="mt-2 text-[10px] bg-black/50 border border-white/10 rounded p-2 overflow-x-auto font-mono">
+                    <pre className="mt-2 text-[10px] bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded p-2 overflow-x-auto font-mono">
                       {JSON.stringify(m.manifest, null, 2)}
                     </pre>
                   )}
@@ -320,14 +323,14 @@ function CustomModulesSection() {
                     onClick={() => toggleEnabled(m)}
                     disabled={busy}
                     title={m.enabled ? t("Deaktivieren") : t("Aktivieren")}
-                    className={`p-1.5 rounded-md ${m.enabled ? "bg-white/5 hover:bg-white/10 text-white/70" : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300"}`}
+                    className={`p-1.5 rounded-md ${m.enabled ? "bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 text-[var(--mf-fg)]/70" : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300"}`}
                   >
                     {m.enabled ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                   <button
                     onClick={() => setShowRaw((cur) => (cur === m.id ? null : m.id))}
                     title={t("Manifest")}
-                    className="p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-white/70"
+                    className="p-1.5 rounded-md bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 text-[var(--mf-fg)]/70"
                   >
                     <FileCode size={14} />
                   </button>
@@ -414,73 +417,73 @@ z.object({ type: z.literal("HelloWidget.tsx"), config: helloConfig })
 function ModuleDevGuide() {
   const t = useT();
   return (
-    <details className="bg-zinc-900/60 border border-white/10 rounded-2xl mt-2 group overflow-hidden">
+    <details className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl mt-2 group overflow-hidden">
       <summary className="flex items-center gap-4 p-6 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
         <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
           <Code2 size={20} />
         </div>
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold text-lg">{t("Eigenes Modul bauen")}</h2>
-          <p className="text-sm text-white/50 mt-1 max-w-2xl">
+          <p className="text-sm text-[var(--mf-fg)]/50 mt-1 max-w-2xl">
             {t("Ein Modul ist ein Widget-Typ (Uhr, Wetter, …). Schreib eine")}
-            <code className="text-white/70 bg-white/5 px-1 rounded mx-1">.tsx</code>{t("-Komponente und trag sie an 7 Stellen ein. Aufklappen für die Anleitung.")}
+            <code className="text-[var(--mf-fg)]/70 bg-[var(--mf-elev)]/5 px-1 rounded mx-1">.tsx</code>{t("-Komponente und trag sie an 7 Stellen ein. Aufklappen für die Anleitung.")}
           </p>
         </div>
-        <ChevronDown size={18} className="text-white/40 shrink-0 transition-transform group-open:rotate-180" />
+        <ChevronDown size={18} className="text-[var(--mf-fg)]/40 shrink-0 transition-transform group-open:rotate-180" />
       </summary>
 
       <div className="px-6 pb-6">
-      <p className="text-sm text-white/50 mb-5 max-w-2xl">
+      <p className="text-sm text-[var(--mf-fg)]/50 mb-5 max-w-2xl">
         {t("Die")} <strong>{t("Typ-ID")}</strong> {t("ist immer der Dateiname, z.B.")}{" "}
-        <code className="text-white/70 bg-white/5 px-1 rounded">HelloWidget.tsx</code>.
+        <code className="text-[var(--mf-fg)]/70 bg-[var(--mf-elev)]/5 px-1 rounded">HelloWidget.tsx</code>.
       </p>
 
       <ol className="space-y-2 mb-6">
         {STEPS.map((s, i) => (
           <li
             key={i}
-            className="flex items-start gap-3 bg-black/30 border border-white/10 rounded-lg px-3 py-2.5"
+            className="flex items-start gap-3 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2.5"
           >
             <span className="w-6 h-6 rounded-md bg-purple-500/15 border border-purple-500/30 text-purple-200 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
               {i + 1}
             </span>
             <div className="min-w-0">
               <code className="text-[12px] font-mono text-cyan-300 break-all">{s.file}</code>
-              <p className="text-[12px] text-white/55 mt-0.5 leading-snug">{t(s.what)}</p>
+              <p className="text-[12px] text-[var(--mf-fg)]/55 mt-0.5 leading-snug">{t(s.what)}</p>
             </div>
           </li>
         ))}
       </ol>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-white/70">
+        <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl p-3 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[var(--mf-fg)]/70">
             <CheckCircle2 size={14} className="text-emerald-300" /> {t("Konventionen")}
           </div>
-          <ul className="text-[12px] text-white/55 space-y-1.5 leading-snug list-disc pl-4">
-            <li><strong className="text-white/70">{t("Größen in")} <code className="bg-white/10 px-1 rounded">em</code></strong> {t("— erbt die Editor-Schriftgröße und skaliert mit „Responsive Auto-Scale“ (cqmin).")}</li>
-            <li><code className="bg-white/10 px-1 rounded">fontFamily</code>, <code className="bg-white/10 px-1 rounded">color</code>, <code className="bg-white/10 px-1 rounded">textShadow</code> {t("kommen vom Wrapper — nicht selbst hart setzen.")}</li>
-            <li>{t("Hintergrund/Glas regelt")} <code className="bg-white/10 px-1 rounded">bgOpacity</code> {t("automatisch.")}</li>
-            <li>{t("Live-Updates via")} <code className="bg-white/10 px-1 rounded">socket.io-client</code> {t("+ Server-Event (siehe Timer-Widget).")}</li>
-            <li>{t("Inspector mit Karten-Listen → Typ in")} <code className="bg-white/10 px-1 rounded">NO_MULTICOL_CONTENT</code> {t("aufnehmen.")}</li>
+          <ul className="text-[12px] text-[var(--mf-fg)]/55 space-y-1.5 leading-snug list-disc pl-4">
+            <li><strong className="text-[var(--mf-fg)]/70">{t("Größen in")} <code className="bg-[var(--mf-elev)]/10 px-1 rounded">em</code></strong> {t("— erbt die Editor-Schriftgröße und skaliert mit „Responsive Auto-Scale“ (cqmin).")}</li>
+            <li><code className="bg-[var(--mf-elev)]/10 px-1 rounded">fontFamily</code>, <code className="bg-[var(--mf-elev)]/10 px-1 rounded">color</code>, <code className="bg-[var(--mf-elev)]/10 px-1 rounded">textShadow</code> {t("kommen vom Wrapper — nicht selbst hart setzen.")}</li>
+            <li>{t("Hintergrund/Glas regelt")} <code className="bg-[var(--mf-elev)]/10 px-1 rounded">bgOpacity</code> {t("automatisch.")}</li>
+            <li>{t("Live-Updates via")} <code className="bg-[var(--mf-elev)]/10 px-1 rounded">socket.io-client</code> {t("+ Server-Event (siehe Timer-Widget).")}</li>
+            <li>{t("Inspector mit Karten-Listen → Typ in")} <code className="bg-[var(--mf-elev)]/10 px-1 rounded">NO_MULTICOL_CONTENT</code> {t("aufnehmen.")}</li>
           </ul>
         </div>
 
-        <details className="bg-black/40 border border-white/10 rounded-xl p-3 group">
-          <summary className="flex items-center gap-2 text-xs font-semibold text-white/70 cursor-pointer select-none">
+        <details className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl p-3 group">
+          <summary className="flex items-center gap-2 text-xs font-semibold text-[var(--mf-fg)]/70 cursor-pointer select-none">
             <FileCode size={14} className="text-cyan-300" /> {t("Minimal-Beispiel „HelloWidget“ anzeigen")}
           </summary>
-          <pre className="mt-3 text-[10.5px] leading-relaxed font-mono text-white/70 overflow-x-auto whitespace-pre [&::-webkit-scrollbar]:h-1.5">
+          <pre className="mt-3 text-[10.5px] leading-relaxed font-mono text-[var(--mf-fg)]/70 overflow-x-auto whitespace-pre [&::-webkit-scrollbar]:h-1.5">
 {CODE_EXAMPLE}
           </pre>
         </details>
       </div>
 
-      <p className="text-[11px] text-white/40 mt-4 leading-relaxed">
+      <p className="text-[11px] text-[var(--mf-fg)]/40 mt-4 leading-relaxed">
         {t("Vollständige Referenz inkl. Props-Contract, Live-Sync, Checkliste und dem geplanten Market-Manifest:")}{" "}
-        <code className="text-white/60 bg-white/5 px-1 rounded">docs/module-development.md</code>{" "}
+        <code className="text-[var(--mf-fg)]/60 bg-[var(--mf-elev)]/5 px-1 rounded">docs/module-development.md</code>{" "}
         {t("im Repo. Einfachstes Vorbild im Code:")}{" "}
-        <code className="text-white/60 bg-white/5 px-1 rounded">src/components/widgets/ClockWidget.tsx</code>.
+        <code className="text-[var(--mf-fg)]/60 bg-[var(--mf-elev)]/5 px-1 rounded">src/components/widgets/ClockWidget.tsx</code>.
       </p>
       </div>
     </details>

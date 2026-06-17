@@ -13,6 +13,8 @@ import {
   LogOut,
   Menu,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 import MagicFrameLogo from "@/components/MagicFrameLogo";
 import { LocaleProvider, useT } from "@/lib/i18n/LocaleProvider";
@@ -56,6 +58,9 @@ function EditorAppLayoutInner({
   const pathname = usePathname() || "/editor";
   const [email, setEmail] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  // Editor light/dark theme (#21). Persisted per browser; flips the data-theme
+  // attribute on the editor root, which swaps the --mf-* CSS variables.
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
     fetch("/api/auth/me", { cache: "no-store" })
@@ -73,19 +78,36 @@ function EditorAppLayoutInner({
     window.location.href = "/login";
   }
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("mf-editor-theme");
+      if (saved === "light" || saved === "dark") setTheme(saved);
+    } catch {}
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem("mf-editor-theme", next);
+      } catch {}
+      return next;
+    });
+  };
+
   const sidebarContent = (
     <>
-      <div className="h-14 flex items-center gap-2 px-4 border-b border-white/10 shrink-0">
+      <div className="h-14 flex items-center gap-2 px-4 border-b border-[var(--mf-bdr)]/10 shrink-0">
         <MagicFrameLogo className="w-8 h-8" />
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold leading-none">Magic Frame</div>
-          <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mt-1">
+          <div className="text-[10px] uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mt-1">
             {t("Control Center")}
           </div>
         </div>
         <button
           onClick={() => setOpen(false)}
-          className="md:hidden w-9 h-9 flex items-center justify-center rounded-md text-white/60 hover:text-white hover:bg-white/5"
+          className="md:hidden w-9 h-9 flex items-center justify-center rounded-md text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5"
           aria-label={t("Menü schließen")}
         >
           <X size={17} />
@@ -102,15 +124,15 @@ function EditorAppLayoutInner({
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 active
                   ? "bg-blue-500/15 text-blue-200 border border-blue-500/30"
-                  : "text-white/70 hover:text-white hover:bg-white/5 border border-transparent"
+                  : "text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 border border-transparent"
               }`}
             >
-              <span className={active ? "text-blue-300" : "text-white/50"}>
+              <span className={active ? "text-blue-300" : "text-[var(--mf-fg)]/50"}>
                 {item.icon}
               </span>
               <span className="flex-1 truncate">{t(item.label)}</span>
               {item.badge && (
-                <span className="text-[9px] uppercase tracking-wider bg-white/10 text-white/60 px-1.5 py-0.5 rounded">
+                <span className="text-[9px] uppercase tracking-wider bg-[var(--mf-elev)]/10 text-[var(--mf-fg)]/60 px-1.5 py-0.5 rounded">
                   {t(item.badge)}
                 </span>
               )}
@@ -119,18 +141,25 @@ function EditorAppLayoutInner({
         })}
       </nav>
 
-      <div className="border-t border-white/10 p-3 space-y-2 shrink-0">
-        <div className="px-3 py-2 rounded-lg bg-white/5 border border-white/10">
-          <div className="text-[10px] uppercase tracking-widest text-white/40">
+      <div className="border-t border-[var(--mf-bdr)]/10 p-3 space-y-2 shrink-0">
+        <div className="px-3 py-2 rounded-lg bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10">
+          <div className="text-[10px] uppercase tracking-widest text-[var(--mf-fg)]/40">
             {t("Angemeldet als")}
           </div>
-          <div className="text-xs text-white/80 truncate mt-0.5">
+          <div className="text-xs text-[var(--mf-fg)]/80 truncate mt-0.5">
             {email ?? "…"}
           </div>
         </div>
         <button
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors"
+        >
+          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+          {theme === "dark" ? t("Heller Modus") : t("Dunkler Modus")}
+        </button>
+        <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors"
         >
           <LogOut size={15} />
           {t("Abmelden")}
@@ -140,8 +169,8 @@ function EditorAppLayoutInner({
   );
 
   return (
-    <div className="h-screen flex bg-zinc-950 text-white overflow-hidden">
-      <aside className="hidden md:flex w-60 shrink-0 border-r border-white/10 bg-black/40 flex-col">
+    <div data-theme={theme} className="h-screen flex bg-[var(--mf-surface)] light:bg-[#eef2f7] text-[var(--mf-fg)] overflow-hidden">
+      <aside className="hidden md:flex w-60 shrink-0 border-r border-[var(--mf-bdr)]/10 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] flex-col">
         {sidebarContent}
       </aside>
 
@@ -152,20 +181,20 @@ function EditorAppLayoutInner({
         >
           <aside
             onClick={(e) => e.stopPropagation()}
-            className="w-72 max-w-[85vw] h-full bg-zinc-950 border-r border-white/10 flex flex-col shadow-2xl animate-in slide-in-from-left"
+            className="w-72 max-w-[85vw] h-full bg-[var(--mf-surface)] border-r border-[var(--mf-bdr)]/10 flex flex-col shadow-2xl animate-in slide-in-from-left"
           >
             {sidebarContent}
           </aside>
-          <div className="flex-1 bg-black/60 backdrop-blur-sm" />
+          <div className="flex-1 bg-[var(--mf-backdrop)]/60 backdrop-blur-sm" />
         </div>
       )}
 
       <main className="flex-1 flex flex-col overflow-hidden min-w-0">
         <UpdateBanner />
-        <div className="md:hidden h-12 shrink-0 border-b border-white/10 bg-black/40 flex items-center gap-2 px-3">
+        <div className="md:hidden h-12 shrink-0 border-b border-[var(--mf-bdr)]/10 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] flex items-center gap-2 px-3">
           <button
             onClick={() => setOpen(true)}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors"
             aria-label={t("Menü öffnen")}
           >
             <Menu size={17} />

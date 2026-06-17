@@ -16,7 +16,7 @@ type Props = {
 type Slot = { entityId?: string; icon?: string; label?: string; color?: string; unit?: string; decimals?: number };
 
 const INPUT =
-  "w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500";
+  "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500";
 
 export function SensorInspector({ widget, updateConfig }: Props) {
   const t = useT();
@@ -49,7 +49,7 @@ export function SensorInspector({ widget, updateConfig }: Props) {
     <div className="space-y-4">
       <div className="space-y-3">
         <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">{t("Darstellung")}</label>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Darstellung")}</label>
           <select
             value={design}
             onChange={(e) => updateConfig(widget.i, "design", e.target.value)}
@@ -61,7 +61,7 @@ export function SensorInspector({ widget, updateConfig }: Props) {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">{t("Kachel-Theme")}</label>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Kachel-Theme")}</label>
           <select
             value={cfg.cardTheme === "light" ? "light" : "dark"}
             onChange={(e) => updateConfig(widget.i, "cardTheme", e.target.value)}
@@ -74,25 +74,25 @@ export function SensorInspector({ widget, updateConfig }: Props) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-white/50 mb-1.5 flex justify-between">
+            <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
               <span>{t("Deckkraft")}</span>
               <span className="text-blue-400">{cfg.cardOpacity ?? 40}%</span>
             </label>
             <input
               type="range" min="0" max="100" step="5" value={cfg.cardOpacity ?? 40}
               onChange={(e) => updateConfig(widget.i, "cardOpacity", parseInt(e.target.value))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
             />
           </div>
           <div>
-            <label className="text-xs text-white/50 mb-1.5 flex justify-between">
+            <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
               <span>{t("Unschärfe")}</span>
               <span className="text-blue-400">{cfg.cardBlur ?? 12}px</span>
             </label>
             <input
               type="range" min="0" max="40" step="2" value={cfg.cardBlur ?? 12}
               onChange={(e) => updateConfig(widget.i, "cardBlur", parseInt(e.target.value))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
             />
           </div>
         </div>
@@ -105,33 +105,33 @@ export function SensorInspector({ widget, updateConfig }: Props) {
               onChange={(e) => updateConfig(widget.i, "iconFrame", e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+            <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
           </div>
-          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Icon mit Rahmen")}</span>
+          <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Icon mit Rahmen")}</span>
         </label>
 
         <div>
-          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
             <span>{t("Icon-Größe")}</span>
             <span className="text-blue-400">{Math.round((cfg.iconSize ?? 1) * 100)}%</span>
           </label>
           <input
             type="range" min="0.6" max="2.4" step="0.1" value={cfg.iconSize ?? 1}
             onChange={(e) => updateConfig(widget.i, "iconSize", parseFloat(e.target.value))}
-            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
           />
         </div>
 
         {iconFrame && (
           <div>
-            <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+            <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
               <span>{t("Kasten-Größe")}</span>
               <span className="text-blue-400">{Math.round((cfg.frameScale ?? 1) * 100)}%</span>
             </label>
             <input
               type="range" min="0.6" max="2" step="0.1" value={cfg.frameScale ?? 1}
               onChange={(e) => updateConfig(widget.i, "frameScale", parseFloat(e.target.value))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
             />
           </div>
         )}
@@ -139,7 +139,7 @@ export function SensorInspector({ widget, updateConfig }: Props) {
 
       <div className="space-y-3">
         {slots.length === 0 && (
-          <p className="text-xs text-white/40 px-1">{t("Noch keine Sensoren — unten hinzufügen.")}</p>
+          <p className="text-xs text-[var(--mf-fg)]/40 px-1">{t("Noch keine Sensoren — unten hinzufügen.")}</p>
         )}
         {slots.map((slot, idx) => (
           <AccordionCard
@@ -154,13 +154,13 @@ export function SensorInspector({ widget, updateConfig }: Props) {
                 <button
                   onClick={(e) => { e.stopPropagation(); moveSlot(idx, -1); }}
                   disabled={idx === 0}
-                  className="text-white/40 hover:text-white disabled:opacity-20 px-1.5 py-0.5 text-xs"
+                  className="text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] disabled:opacity-20 px-1.5 py-0.5 text-xs"
                   title={t("Nach oben")}
                 >▲</button>
                 <button
                   onClick={(e) => { e.stopPropagation(); moveSlot(idx, 1); }}
                   disabled={idx === slots.length - 1}
-                  className="text-white/40 hover:text-white disabled:opacity-20 px-1.5 py-0.5 text-xs"
+                  className="text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] disabled:opacity-20 px-1.5 py-0.5 text-xs"
                   title={t("Nach unten")}
                 >▼</button>
               </div>
@@ -183,24 +183,24 @@ export function SensorInspector({ widget, updateConfig }: Props) {
               />
 
               <div>
-                <label className="text-xs text-white/50 block mb-1.5">{t("Icon-Farbe")}</label>
+                <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Icon-Farbe")}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
                     value={slot.color || "#14b8a6"}
                     onChange={(e) => updateSlot(idx, "color", e.target.value)}
-                    className="h-9 w-14 bg-black border border-white/10 rounded-lg cursor-pointer"
+                    className="h-9 w-14 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg cursor-pointer"
                   />
                   {slot.color ? (
                     <button
                       type="button"
                       onClick={() => updateSlot(idx, "color", undefined)}
-                      className="text-xs text-white/50 hover:text-white"
+                      className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
                     >
                       {t("Standard")}
                     </button>
                   ) : (
-                    <span className="text-xs text-white/40">{t("Standard (keine Farbe)")}</span>
+                    <span className="text-xs text-[var(--mf-fg)]/40">{t("Standard (keine Farbe)")}</span>
                   )}
                 </div>
               </div>
@@ -214,7 +214,7 @@ export function SensorInspector({ widget, updateConfig }: Props) {
               />
 
               <div>
-                <label className="text-xs text-white/50 block mb-1.5">{t("Einheit / Nachkommastellen")}</label>
+                <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Einheit / Nachkommastellen")}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
@@ -245,12 +245,12 @@ export function SensorInspector({ widget, updateConfig }: Props) {
       <button
         type="button"
         onClick={addSlot}
-        className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 text-[var(--mf-fg)] py-2.5 rounded-lg text-sm font-medium transition-colors"
       >
         <Plus size={16} /> {t("Sensor hinzufügen")}
       </button>
 
-      <div className="border-t border-white/10 pt-4 space-y-3">
+      <div className="border-t border-[var(--mf-bdr)]/10 pt-4 space-y-3">
         <label className="flex items-center gap-3 cursor-pointer group">
           <div className="relative">
             <input
@@ -259,22 +259,22 @@ export function SensorInspector({ widget, updateConfig }: Props) {
               onChange={(e) => updateConfig(widget.i, "showSparkline", e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+            <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
           </div>
-          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Verlauf anzeigen (Sparkline)")}</span>
+          <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Verlauf anzeigen (Sparkline)")}</span>
         </label>
         {cfg.showSparkline === true && (
           <div>
-            <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+            <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
               <span>{t("Zeitraum")}</span>
               <span className="text-blue-400">{cfg.sparklineHours ?? 6}h</span>
             </label>
             <input
               type="range" min="1" max="48" step="1" value={cfg.sparklineHours ?? 6}
               onChange={(e) => updateConfig(widget.i, "sparklineHours", parseInt(e.target.value))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
             />
-            <p className="text-xs text-white/40 mt-1.5 px-1">
+            <p className="text-xs text-[var(--mf-fg)]/40 mt-1.5 px-1">
               {t("Nur Zahlen-Entities (Sensoren) haben einen sinnvollen Verlauf. HA-History muss aktiv sein.")}
             </p>
           </div>

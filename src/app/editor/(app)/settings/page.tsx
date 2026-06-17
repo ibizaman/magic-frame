@@ -170,12 +170,12 @@ export default function SettingsPage() {
   return (
     <div className="flex-1 flex overflow-hidden">
       {/* Desktop: Full-height Sub-Sidebar (analog zum View-Editor) */}
-      <aside className="hidden md:flex flex-col w-56 lg:w-64 shrink-0 border-r border-white/10 bg-black/20 overflow-y-auto">
-        <div className="px-4 pt-5 pb-3 border-b border-white/5">
-          <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40 mb-1">
+      <aside className="hidden md:flex flex-col w-56 lg:w-64 shrink-0 border-r border-[var(--mf-bdr)]/10 bg-[var(--mf-ovl)]/20 light:bg-[var(--mf-surface)] overflow-y-auto">
+        <div className="px-4 pt-5 pb-3 border-b border-[var(--mf-bdr)]/5">
+          <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 mb-1">
             {t("Einstellungen")}
           </div>
-          <div className="text-sm font-semibold text-white/80">
+          <div className="text-sm font-semibold text-[var(--mf-fg)]/80">
             {t("Globale App-Settings")}
           </div>
         </div>
@@ -186,11 +186,11 @@ export default function SettingsPage() {
               onClick={() => setActive(s.id)}
               className={`w-full flex items-center gap-2.5 text-sm px-3 h-9 rounded-lg transition-colors text-left ${
                 active === s.id
-                  ? "bg-white/10 text-white"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  ? "bg-[var(--mf-elev)]/10 text-[var(--mf-fg)]"
+                  : "text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5"
               }`}
             >
-              <span className={active === s.id ? "text-white" : "text-white/40"}>
+              <span className={active === s.id ? "text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/40"}>
                 {s.icon}
               </span>
               {s.label}
@@ -202,7 +202,7 @@ export default function SettingsPage() {
       {/* Content-Pane */}
       <div className="flex-1 overflow-y-auto">
         {/* Mobile: Horizontale Pills oben */}
-        <nav className="md:hidden px-4 pt-4 pb-2 border-b border-white/10 bg-black/20 -mx-px overflow-x-auto sticky top-0 z-10">
+        <nav className="md:hidden px-4 pt-4 pb-2 border-b border-[var(--mf-bdr)]/10 bg-[var(--mf-ovl)]/20 light:bg-[var(--mf-surface)] -mx-px overflow-x-auto sticky top-0 z-10">
           <div className="flex gap-1.5 min-w-max">
             {sections.map((s) => (
               <button
@@ -210,8 +210,8 @@ export default function SettingsPage() {
                 onClick={() => setActive(s.id)}
                 className={`flex items-center gap-1.5 text-sm px-3 h-9 rounded-full border whitespace-nowrap transition-colors ${
                   active === s.id
-                    ? "bg-white/15 border-white/30 text-white"
-                    : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                    ? "bg-[var(--mf-elev)]/15 border-[var(--mf-bdr)]/30 text-[var(--mf-fg)]"
+                    : "bg-[var(--mf-elev)]/5 border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)]"
                 }`}
               >
                 {s.icon}
@@ -224,7 +224,7 @@ export default function SettingsPage() {
         <div className="max-w-[900px] px-6 md:px-10 py-8 md:py-10">
           <div className="mb-6">
             <h1 className="text-2xl md:text-3xl font-semibold">{activeSection.label}</h1>
-            <p className="text-white/50 mt-1.5 text-sm">{activeSection.desc}</p>
+            <p className="text-[var(--mf-fg)]/50 mt-1.5 text-sm">{activeSection.desc}</p>
           </div>
           <div className="space-y-4">{activeSection.render()}</div>
         </div>
@@ -258,11 +258,11 @@ function LanguageCard() {
       title="Sprache"
       desc="Sprache der Oberfläche. Pro Browser merkbar + als Default für alle Displays gespeichert."
     >
-      <div className="inline-flex rounded-lg bg-black/40 border border-white/10 p-0.5">
+      <div className="inline-flex rounded-lg bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 p-0.5">
         <button
           onClick={() => pick("de")}
           className={`px-4 h-9 rounded-md text-sm font-medium transition-colors ${
-            locale === "de" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
+            locale === "de" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
           }`}
         >
           {t("Deutsch")}
@@ -270,7 +270,7 @@ function LanguageCard() {
         <button
           onClick={() => pick("en")}
           className={`px-4 h-9 rounded-md text-sm font-medium transition-colors ${
-            locale === "en" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
+            locale === "en" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
           }`}
         >
           {t("Englisch")}
@@ -299,7 +299,7 @@ function Card({
 }) {
   const t = useT();
   const tints: Record<string, string> = {
-    white: "bg-white/5 border-white/10 text-white/70",
+    white: "bg-[var(--mf-elev)]/5 border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/70",
     emerald: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
     blue: "bg-blue-500/10 border-blue-500/30 text-blue-300",
     amber: "bg-amber-500/10 border-amber-500/30 text-amber-300",
@@ -307,7 +307,7 @@ function Card({
     rose: "bg-rose-500/10 border-rose-500/30 text-rose-300",
   };
   return (
-    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+    <div className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">
       <div className="flex items-start gap-4">
         <div
           className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ${tints[iconTint]}`}
@@ -324,14 +324,14 @@ function Card({
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
                     : badge.tone === "amber"
                       ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
-                      : "bg-white/5 border-white/10 text-white/40"
+                      : "bg-[var(--mf-elev)]/5 border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/40"
                 }`}
               >
                 {t(badge.label)}
               </span>
             )}
           </div>
-          {desc && <p className="text-sm text-white/50 mt-1">{t(desc)}</p>}
+          {desc && <p className="text-sm text-[var(--mf-fg)]/50 mt-1">{t(desc)}</p>}
           {children && <div className="mt-4">{children}</div>}
         </div>
       </div>
@@ -356,7 +356,7 @@ function Banner({ kind, msg }: { kind: "ok" | "err"; msg: string }) {
 }
 
 const inputCls =
-  "w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors";
+  "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors";
 
 /* ---------- Shortcut-Token (bestehend) ---------- */
 
@@ -405,17 +405,17 @@ function ShortcutTokenCard() {
       badge={{ label: "Aktiv", tone: "emerald" }}
       desc="Dein persönlicher API-Key für externe Clients (iOS-Shortcuts, Android-Tasker, curl, die kommende Companion-App)."
     >
-      <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2 mb-3">
-        <code className="flex-1 text-xs font-mono text-white/80 truncate">
+      <div className="flex items-center gap-2 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2 mb-3">
+        <code className="flex-1 text-xs font-mono text-[var(--mf-fg)]/80 truncate">
           {loading ? t("lade…") : revealed && token ? token : token ? "••••••••••••••••••••••••••••" : "—"}
         </code>
-        <button onClick={() => setRevealed((v) => !v)} className="text-xs text-white/50 hover:text-white px-2 h-7">
+        <button onClick={() => setRevealed((v) => !v)} className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-2 h-7">
           {revealed ? t("verbergen") : t("anzeigen")}
         </button>
         <button
           onClick={copy}
           disabled={!token}
-          className="text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-md px-2 h-7 flex items-center gap-1 disabled:opacity-40"
+          className="text-xs text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded-md px-2 h-7 flex items-center gap-1 disabled:opacity-40"
         >
           {copied ? <Check size={12} /> : <Copy size={12} />}
           {copied ? t("kopiert") : t("Kopieren")}
@@ -430,12 +430,12 @@ function ShortcutTokenCard() {
           {t("Rotate")}
         </button>
       </div>
-      <div className="text-xs text-white/60 space-y-1">
-        <div className="font-semibold text-white/80 mb-1">{t("Beispiel: Timer aus iOS-Shortcut starten")}</div>
-        <div className="bg-black/40 border border-white/10 rounded p-2 font-mono text-[11px] text-white/70 break-all">
+      <div className="text-xs text-[var(--mf-fg)]/60 space-y-1">
+        <div className="font-semibold text-[var(--mf-fg)]/80 mb-1">{t("Beispiel: Timer aus iOS-Shortcut starten")}</div>
+        <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded p-2 font-mono text-[11px] text-[var(--mf-fg)]/70 break-all">
           POST {base}/api/timers?key=TOKEN&label=Pasta&minutes=10
         </div>
-        <p className="text-white/40 mt-2">
+        <p className="text-[var(--mf-fg)]/40 mt-2">
           {t("Alle Endpoints, Socket-Events und Beispiele:")}{" "}
           <a href="/docs/companion-api.md" className="text-emerald-400 hover:underline">docs/companion-api.md</a> {t("(im Repo).")}
         </p>
@@ -456,9 +456,9 @@ function IOSCompanionCard() {
       badge={{ label: "Bald", tone: "amber" }}
       desc="Native iOS-App für Schnellzugriff auf Timer, Nachrichten, Einkaufsliste und To-dos. Liegt parallel in einem eigenen Repo und nutzt den Companion-API-Token oben."
     >
-      <div className="text-xs text-white/60 leading-relaxed space-y-2">
+      <div className="text-xs text-[var(--mf-fg)]/60 leading-relaxed space-y-2">
         <p>{t("Bis die App im App Store ist, funktioniert die gleiche API bereits über iOS-Shortcuts, Android-Tasker oder curl.")}</p>
-        <ul className="list-disc pl-5 text-white/50 space-y-0.5">
+        <ul className="list-disc pl-5 text-[var(--mf-fg)]/50 space-y-0.5">
           <li>{t("Timer starten/stoppen vom Sperrbildschirm")}</li>
           <li>{t("Nachrichten an einzelne Displays pushen")}</li>
           <li>{t("Einkaufsliste & To-dos synchron — auch via Home Assistant Lists (siehe unten)")}</li>
@@ -480,16 +480,16 @@ type HAListEntity = { entityId: string; name: string; itemCount: number };
 function ExternalIntegrationsHint() {
   const t = useT();
   return (
-    <div className="bg-zinc-900/40 border border-dashed border-white/15 rounded-2xl p-5">
+    <div className="bg-[var(--mf-surface-2)]/40 light:bg-[var(--mf-surface)] border border-dashed border-[var(--mf-bdr)]/15 rounded-2xl p-5">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/60 shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 flex items-center justify-center text-[var(--mf-fg)]/60 shrink-0">
           <Globe2 size={18} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-white/80">
+          <div className="font-semibold text-[var(--mf-fg)]/80">
             {t("Externe Service-Verknüpfungen")}
           </div>
-          <p className="text-sm text-white/50 mt-1">
+          <p className="text-sm text-[var(--mf-fg)]/50 mt-1">
             {t("Home Assistant, Kalender-Konten (Google/Microsoft), Home-Assistant-Listen und Todoist findest du jetzt unter")}{" "}
             <a
               href="/editor/integrations"
@@ -547,22 +547,22 @@ function HAListsCard() {
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 text-white rounded-md px-3 h-8 disabled:opacity-40"
+          className="flex items-center gap-1.5 text-xs font-medium bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-3 h-8 disabled:opacity-40"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           {t("Listen aktualisieren")}
         </button>
         {lists && (
-          <span className="text-[11px] text-white/40">
+          <span className="text-[11px] text-[var(--mf-fg)]/40">
             {lists.length} {lists.length === 1 ? t("Liste") : t("Listen")} {t("gefunden")}
           </span>
         )}
       </div>
 
       {loading && !lists ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : lists && lists.length === 0 ? (
-        <p className="text-sm text-white/50 bg-black/30 border border-white/10 rounded-lg p-3">
+        <p className="text-sm text-[var(--mf-fg)]/50 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg p-3">
           {t("Keine todo.* Entities in Home Assistant gefunden. Prüfe ob die HA-Verbindung in Integrationen aktiv ist und ob mindestens eine Todo-Liste/Einkaufsliste in HA existiert.")}
         </p>
       ) : (
@@ -570,15 +570,15 @@ function HAListsCard() {
           {lists?.map((l) => (
             <li
               key={l.entityId}
-              className="flex items-center justify-between bg-black/30 border border-white/10 rounded-lg px-3 py-2"
+              className="flex items-center justify-between bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2"
             >
               <div className="min-w-0 flex-1">
-                <div className="text-sm text-white truncate">{l.name}</div>
-                <code className="text-[11px] font-mono text-white/40 truncate block">
+                <div className="text-sm text-[var(--mf-fg)] truncate">{l.name}</div>
+                <code className="text-[11px] font-mono text-[var(--mf-fg)]/40 truncate block">
                   {l.entityId}
                 </code>
               </div>
-              <div className="text-[11px] text-white/50 shrink-0 ml-3">
+              <div className="text-[11px] text-[var(--mf-fg)]/50 shrink-0 ml-3">
                 {l.itemCount} {l.itemCount === 1 ? t("Eintrag") : t("Einträge")}
               </div>
             </li>
@@ -673,7 +673,7 @@ function TodoistCard() {
       )}
 
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : (
         <>
           {error && (
@@ -684,7 +684,7 @@ function TodoistCard() {
 
           {hasToken && !editing ? (
             <div className="flex items-center gap-2 mb-3">
-              <div className="text-sm text-white/70 flex-1">
+              <div className="text-sm text-[var(--mf-fg)]/70 flex-1">
                 {connected ? (
                   <span>
                     {t("Token aktiv. ")}
@@ -700,7 +700,7 @@ function TodoistCard() {
                   setEditing(true);
                   setToken("");
                 }}
-                className="text-xs bg-white/10 hover:bg-white/15 text-white rounded-md px-3 h-8"
+                className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] rounded-md px-3 h-8"
               >
                 {t("Token ändern")}
               </button>
@@ -722,7 +722,7 @@ function TodoistCard() {
             </div>
           ) : (
             <div className="mb-3">
-              <label className="block text-[11px] text-white/50 mb-1">
+              <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                 {t("Todoist API-Token")}
               </label>
               <div className="flex items-center gap-2">
@@ -737,12 +737,12 @@ function TodoistCard() {
                 <button
                   type="button"
                   onClick={() => setReveal((v) => !v)}
-                  className="text-xs text-white/50 hover:text-white px-2 h-9 rounded-md bg-white/5 hover:bg-white/10"
+                  className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-2 h-9 rounded-md bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10"
                 >
                   {reveal ? t("verbergen") : t("anzeigen")}
                 </button>
               </div>
-              <div className="text-[11px] text-white/40 mt-1">
+              <div className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                 {t("In der Todoist-App: Einstellungen → Integrationen → Entwickler → API-Token kopieren.")}
               </div>
               <div className="flex items-center gap-2 mt-3">
@@ -759,7 +759,7 @@ function TodoistCard() {
                       setEditing(false);
                       setToken("");
                     }}
-                    className="text-sm text-white/60 hover:text-white px-3 h-9"
+                    className="text-sm text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] px-3 h-9"
                   >
                     {t("Abbrechen")}
                   </button>
@@ -773,13 +773,13 @@ function TodoistCard() {
               {projects.map((p) => (
                 <li
                   key={p.id}
-                  className="flex items-center justify-between bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm"
+                  className="flex items-center justify-between bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2 text-sm"
                 >
-                  <span className="text-white/80 truncate">
+                  <span className="text-[var(--mf-fg)]/80 truncate">
                     {p.isInbox && <span className="mr-1">📥</span>}
                     {p.name}
                   </span>
-                  <code className="text-[11px] font-mono text-white/40 shrink-0 ml-2">
+                  <code className="text-[11px] font-mono text-[var(--mf-fg)]/40 shrink-0 ml-2">
                     {p.id}
                   </code>
                 </li>
@@ -935,7 +935,7 @@ function DDNSCard() {
       )}
 
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-4">
@@ -952,7 +952,7 @@ function DDNSCard() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label className="flex items-center gap-2 text-sm text-white/80 col-span-1 sm:col-span-2">
+            <label className="flex items-center gap-2 text-sm text-[var(--mf-fg)]/80 col-span-1 sm:col-span-2">
               <input
                 type="checkbox"
                 checked={cfg.enabled}
@@ -963,7 +963,7 @@ function DDNSCard() {
             </label>
 
             <div>
-              <label className="block text-[11px] text-white/50 mb-1">{t("Provider")}</label>
+              <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">{t("Provider")}</label>
               <select
                 value={cfg.provider}
                 onChange={(e) => setCfg({ ...cfg, provider: e.target.value })}
@@ -978,7 +978,7 @@ function DDNSCard() {
             </div>
 
             <div>
-              <label className="block text-[11px] text-white/50 mb-1">{t("Intervall (Minuten)")}</label>
+              <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">{t("Intervall (Minuten)")}</label>
               <input
                 type="number"
                 min={1}
@@ -990,7 +990,7 @@ function DDNSCard() {
             </div>
 
             {activeProvider && (
-              <div className="sm:col-span-2 text-[12px] text-white/50 -mt-1 mb-1">
+              <div className="sm:col-span-2 text-[12px] text-[var(--mf-fg)]/50 -mt-1 mb-1">
                 {t(activeProvider.description)}
               </div>
             )}
@@ -1004,9 +1004,9 @@ function DDNSCard() {
               const wide = isPw || f.type === "url" || f.key === "updateUrl";
               return (
                 <div key={fieldId} className={wide ? "sm:col-span-2" : ""}>
-                  <label className="block text-[11px] text-white/50 mb-1">
+                  <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                     {t(f.label)}
-                    {f.required ? "" : <span className="text-white/30"> ({t("optional")})</span>}
+                    {f.required ? "" : <span className="text-[var(--mf-fg)]/30"> ({t("optional")})</span>}
                   </label>
                   {isPw ? (
                     <div className="flex items-center gap-2">
@@ -1022,7 +1022,7 @@ function DDNSCard() {
                         onClick={() =>
                           setReveal((r) => ({ ...r, [fieldId]: !r[fieldId] }))
                         }
-                        className="text-xs text-white/50 hover:text-white px-2 h-9 rounded-md bg-white/5 hover:bg-white/10"
+                        className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-2 h-9 rounded-md bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10"
                       >
                         {revealed ? t("verbergen") : t("anzeigen")}
                       </button>
@@ -1037,7 +1037,7 @@ function DDNSCard() {
                     />
                   )}
                   {f.help && (
-                    <div className="text-[11px] text-white/40 mt-1">{t(f.help)}</div>
+                    <div className="text-[11px] text-[var(--mf-fg)]/40 mt-1">{t(f.help)}</div>
                   )}
                 </div>
               );
@@ -1055,7 +1055,7 @@ function DDNSCard() {
             <button
               onClick={updateNow}
               disabled={updating || !allRequiredFilled}
-              className="flex items-center gap-1.5 text-sm font-medium text-white/80 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg px-3 h-9 disabled:opacity-40"
+              className="flex items-center gap-1.5 text-sm font-medium text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded-lg px-3 h-9 disabled:opacity-40"
             >
               <RefreshCw size={13} className={updating ? "animate-spin" : ""} />
               {t("Jetzt aktualisieren")}
@@ -1244,7 +1244,7 @@ function CaddyCard() {
       ))}
 
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-4">
@@ -1284,11 +1284,11 @@ function CaddyCard() {
           )}
 
           {/* Mode-Toggle: managed vs custom */}
-          <div className="inline-flex rounded-lg bg-black/40 border border-white/10 p-0.5 mb-4">
+          <div className="inline-flex rounded-lg bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 p-0.5 mb-4">
             <button
               onClick={() => setCfg({ ...cfg, mode: "managed" })}
               className={`px-3 h-8 rounded-md text-xs font-medium transition-colors ${
-                cfg.mode === "managed" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
+                cfg.mode === "managed" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
               }`}
             >
               {t("Konfiguriert")}
@@ -1296,7 +1296,7 @@ function CaddyCard() {
             <button
               onClick={() => setCfg({ ...cfg, mode: "custom" })}
               className={`px-3 h-8 rounded-md text-xs font-medium transition-colors ${
-                cfg.mode === "custom" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
+                cfg.mode === "custom" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
               }`}
             >
               {t("Custom-Caddyfile")}
@@ -1305,7 +1305,7 @@ function CaddyCard() {
 
           {cfg.mode === "custom" ? (
             <div>
-              <label className="block text-[11px] text-white/50 mb-1">
+              <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                 {t("Eigenes Caddyfile (Power-User)")}
               </label>
               <textarea
@@ -1316,13 +1316,13 @@ function CaddyCard() {
                 className={`${inputCls} font-mono text-[12px] h-auto min-h-[200px]`}
                 spellCheck={false}
               />
-              <div className="text-[11px] text-white/40 mt-1">
+              <div className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                 {t("Wird beim Speichern direkt an Caddy übergeben (atomares Validate + Load). Bei Syntaxfehler bleibt die alte Config aktiv.")}
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex items-center gap-2 text-sm text-white/80 sm:col-span-2">
+              <label className="flex items-center gap-2 text-sm text-[var(--mf-fg)]/80 sm:col-span-2">
                 <input
                   type="checkbox"
                   checked={cfg.enabled}
@@ -1333,7 +1333,7 @@ function CaddyCard() {
               </label>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] text-white/50 mb-1">{t("Domain (FQDN)")}</label>
+                <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">{t("Domain (FQDN)")}</label>
                 <input
                   type="text"
                   value={cfg.domain}
@@ -1344,7 +1344,7 @@ function CaddyCard() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] text-white/50 mb-1">
+                <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                   {t("Zusätzliche Domains (optional)")}
                 </label>
                 <div className="flex items-center gap-2">
@@ -1364,7 +1364,7 @@ function CaddyCard() {
                   <button
                     type="button"
                     onClick={addExtra}
-                    className="text-sm text-white/80 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg px-3 h-9 shrink-0"
+                    className="text-sm text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded-lg px-3 h-9 shrink-0"
                   >
                     {t("Hinzufügen")}
                   </button>
@@ -1374,7 +1374,7 @@ function CaddyCard() {
                     {cfg.extraDomains.map((d) => (
                       <span
                         key={d}
-                        className="inline-flex items-center gap-1 text-[12px] bg-white/5 border border-white/10 rounded px-2 py-0.5"
+                        className="inline-flex items-center gap-1 text-[12px] bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded px-2 py-0.5"
                       >
                         {d}
                         <button
@@ -1384,7 +1384,7 @@ function CaddyCard() {
                               extraDomains: cfg.extraDomains.filter((x) => x !== d),
                             })
                           }
-                          className="text-white/40 hover:text-rose-400 ml-1"
+                          className="text-[var(--mf-fg)]/40 hover:text-rose-400 ml-1"
                         >
                           ×
                         </button>
@@ -1395,7 +1395,7 @@ function CaddyCard() {
               </div>
 
               <div>
-                <label className="block text-[11px] text-white/50 mb-1">
+                <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                   {t("ACME-Email (Let's Encrypt)")}
                 </label>
                 <input
@@ -1408,7 +1408,7 @@ function CaddyCard() {
               </div>
 
               <div>
-                <label className="block text-[11px] text-white/50 mb-1">
+                <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                   {t("Challenge-Modus")}
                 </label>
                 <select
@@ -1426,7 +1426,7 @@ function CaddyCard() {
               {cfg.challenge === "dns" && (
                 <>
                   <div className="sm:col-span-2">
-                    <label className="block text-[11px] text-white/50 mb-1">
+                    <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                       {t("DNS-Provider (für DNS-01)")}
                     </label>
                     <select
@@ -1454,9 +1454,9 @@ function CaddyCard() {
                     const revealed = !!reveal[fid];
                     return (
                       <div key={fid} className={isPw ? "sm:col-span-2" : ""}>
-                        <label className="block text-[11px] text-white/50 mb-1">
+                        <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">
                           {t(f.label)}
-                          {!f.required && <span className="text-white/30"> ({t("optional")})</span>}
+                          {!f.required && <span className="text-[var(--mf-fg)]/30"> ({t("optional")})</span>}
                         </label>
                         {isPw ? (
                           <div className="flex items-center gap-2">
@@ -1474,7 +1474,7 @@ function CaddyCard() {
                               onClick={() =>
                                 setReveal((r) => ({ ...r, [fid]: !r[fid] }))
                               }
-                              className="text-xs text-white/50 hover:text-white px-2 h-9 rounded-md bg-white/5 hover:bg-white/10"
+                              className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-2 h-9 rounded-md bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10"
                             >
                               {revealed ? t("verbergen") : t("anzeigen")}
                             </button>
@@ -1490,14 +1490,14 @@ function CaddyCard() {
                             className={inputCls}
                           />
                         )}
-                        {f.help && <div className="text-[11px] text-white/40 mt-1">{t(f.help)}</div>}
+                        {f.help && <div className="text-[11px] text-[var(--mf-fg)]/40 mt-1">{t(f.help)}</div>}
                       </div>
                     );
                   })}
                 </>
               )}
 
-              <label className="flex items-center gap-2 text-sm text-white/80 sm:col-span-2">
+              <label className="flex items-center gap-2 text-sm text-[var(--mf-fg)]/80 sm:col-span-2">
                 <input
                   type="checkbox"
                   checked={cfg.redirectHttp}
@@ -1520,21 +1520,21 @@ function CaddyCard() {
             <button
               onClick={reloadNow}
               disabled={saving}
-              className="flex items-center gap-1.5 text-sm font-medium text-white/80 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg px-3 h-9 disabled:opacity-40"
+              className="flex items-center gap-1.5 text-sm font-medium text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded-lg px-3 h-9 disabled:opacity-40"
             >
               <RefreshCw size={13} className={saving ? "animate-spin" : ""} />
               {t("Nur Reload")}
             </button>
             <button
               onClick={() => setShowFile((v) => !v)}
-              className="text-sm text-white/50 hover:text-white px-3 h-9 ml-auto"
+              className="text-sm text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-3 h-9 ml-auto"
             >
               {showFile ? t("Caddyfile ausblenden") : t("Caddyfile anzeigen")}
             </button>
           </div>
 
           {showFile && caddyfile && (
-            <pre className="mt-3 text-[11px] bg-black/50 border border-white/10 rounded p-3 overflow-x-auto font-mono whitespace-pre">
+            <pre className="mt-3 text-[11px] bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded p-3 overflow-x-auto font-mono whitespace-pre">
               {caddyfile}
             </pre>
           )}
@@ -1699,7 +1699,7 @@ function TwoFactorCard() {
       )}
 
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : !enabled && !setupOpen ? (
         <button
           onClick={startSetup}
@@ -1710,7 +1710,7 @@ function TwoFactorCard() {
         </button>
       ) : !enabled && setupOpen && setup ? (
         <div className="space-y-4">
-          <div className="text-sm text-white/70">
+          <div className="text-sm text-[var(--mf-fg)]/70">
             {t("Scanne den QR-Code mit deiner Authenticator-App und gib dann den 6-stelligen Code aus der App ein.")}
           </div>
           <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -1720,9 +1720,9 @@ function TwoFactorCard() {
               alt={t("2FA QR")}
               className="bg-white p-2 rounded-lg w-44 h-44 shrink-0"
             />
-            <div className="text-xs text-white/60 space-y-2">
+            <div className="text-xs text-[var(--mf-fg)]/60 space-y-2">
               <div>{t("Oder Secret manuell eingeben:")}</div>
-              <code className="block font-mono text-[11px] bg-black/50 border border-white/10 rounded p-2 break-all">
+              <code className="block font-mono text-[11px] bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded p-2 break-all">
                 {setup.secretFormatted}
               </code>
             </div>
@@ -1749,7 +1749,7 @@ function TwoFactorCard() {
             <button
               onClick={cancelSetup}
               disabled={busy}
-              className="text-white/60 hover:text-white text-sm px-3 h-9"
+              className="text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] text-sm px-3 h-9"
             >
               {t("Abbrechen")}
             </button>
@@ -1758,12 +1758,12 @@ function TwoFactorCard() {
       ) : (
         // enabled
         <div className="space-y-4">
-          <div className="text-sm text-white/60">
+          <div className="text-sm text-[var(--mf-fg)]/60">
             {t("2FA ist aktiv.")} {remaining > 0 ? t("Verbleibende Recovery-Codes: ") + remaining : t("Keine Recovery-Codes mehr — bitte neu erzeugen.")}
           </div>
 
-          <div className="border border-white/10 rounded-lg p-3 bg-black/20">
-            <div className="text-xs text-white/50 mb-2">{t("Neue Recovery-Codes erzeugen (alte werden ungültig)")}</div>
+          <div className="border border-[var(--mf-bdr)]/10 rounded-lg p-3 bg-[var(--mf-ovl)]/20 light:bg-[var(--mf-surface)]">
+            <div className="text-xs text-[var(--mf-fg)]/50 mb-2">{t("Neue Recovery-Codes erzeugen (alte werden ungültig)")}</div>
             <div className="flex items-center gap-2">
               <input
                 type="password"
@@ -1776,7 +1776,7 @@ function TwoFactorCard() {
               <button
                 onClick={regenerateCodes}
                 disabled={busy || !regenPw}
-                className="bg-white/10 hover:bg-white/15 text-white text-sm font-medium rounded-lg px-3 h-9 disabled:opacity-40 shrink-0"
+                className="bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 text-[var(--mf-fg)] text-sm font-medium rounded-lg px-3 h-9 disabled:opacity-40 shrink-0"
               >
                 {t("Neu erzeugen")}
               </button>
@@ -1813,7 +1813,7 @@ function TwoFactorCard() {
           </div>
           <div className="grid grid-cols-2 gap-1 font-mono text-[13px] mb-3">
             {newCodes.map((c) => (
-              <div key={c} className="bg-black/40 rounded px-2 py-1 text-center">
+              <div key={c} className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] rounded px-2 py-1 text-center">
                 {c}
               </div>
             ))}
@@ -1824,13 +1824,13 @@ function TwoFactorCard() {
                 navigator.clipboard.writeText(newCodes.join("\n"));
                 flash("ok", t("In Zwischenablage kopiert."));
               }}
-              className="text-xs bg-white/10 hover:bg-white/15 rounded px-3 h-8"
+              className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 rounded px-3 h-8"
             >
               <Copy size={12} className="inline mr-1" /> {t("Kopieren")}
             </button>
             <button
               onClick={() => setNewCodes(null)}
-              className="text-xs text-white/60 hover:text-white px-3 h-8"
+              className="text-xs text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] px-3 h-8"
             >
               {t("Ich habe sie gesichert")}
             </button>
@@ -1954,12 +1954,12 @@ function LoginSecurityCard() {
       )}
 
       {loading ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : (
         <>
           {lockouts.length > 0 && (
             <div className="mb-4">
-              <div className="text-xs uppercase tracking-wide text-white/40 mb-2 flex items-center gap-1.5">
+              <div className="text-xs uppercase tracking-wide text-[var(--mf-fg)]/40 mb-2 flex items-center gap-1.5">
                 <AlertOctagon size={12} /> {t("Aktive Sperren")} ({lockouts.length})
               </div>
               <div className="space-y-1.5">
@@ -1973,14 +1973,14 @@ function LoginSecurityCard() {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="font-mono text-rose-200 text-[12px] truncate">{l.scope}</div>
-                        {l.reason && <div className="text-[11px] text-white/50 truncate">{l.reason}</div>}
+                        {l.reason && <div className="text-[11px] text-[var(--mf-fg)]/50 truncate">{l.reason}</div>}
                       </div>
-                      <div className="text-[11px] text-white/50 shrink-0">
+                      <div className="text-[11px] text-[var(--mf-fg)]/50 shrink-0">
                         {t("noch")} {mins} {t("min")}
                       </div>
                       <button
                         onClick={() => clearLock(l.scope)}
-                        className="text-xs bg-white/10 hover:bg-white/15 rounded px-2 h-7 shrink-0"
+                        className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/15 rounded px-2 h-7 shrink-0"
                       >
                         {t("Freigeben")}
                       </button>
@@ -2045,12 +2045,12 @@ function LoginSecurityCard() {
           </button>
 
           <details className="text-sm">
-            <summary className="cursor-pointer text-white/60 hover:text-white">
+            <summary className="cursor-pointer text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)]">
               {t("Letzte Login-Versuche")} ({attempts.length})
             </summary>
-            <div className="mt-2 max-h-64 overflow-y-auto border border-white/10 rounded-lg">
+            <div className="mt-2 max-h-64 overflow-y-auto border border-[var(--mf-bdr)]/10 rounded-lg">
               <table className="w-full text-[12px]">
-                <thead className="bg-white/5 text-white/40 sticky top-0">
+                <thead className="bg-[var(--mf-elev)]/5 text-[var(--mf-fg)]/40 sticky top-0">
                   <tr>
                     <th className="text-left px-2 py-1.5">{t("Zeit")}</th>
                     <th className="text-left px-2 py-1.5">IP</th>
@@ -2060,12 +2060,12 @@ function LoginSecurityCard() {
                 </thead>
                 <tbody>
                   {attempts.map((a) => (
-                    <tr key={a.id} className="border-t border-white/5">
-                      <td className="px-2 py-1 text-white/50">
+                    <tr key={a.id} className="border-t border-[var(--mf-bdr)]/5">
+                      <td className="px-2 py-1 text-[var(--mf-fg)]/50">
                         {new Date(a.at).toLocaleString()}
                       </td>
-                      <td className="px-2 py-1 font-mono text-white/70">{a.ip}</td>
-                      <td className="px-2 py-1 text-white/70 truncate max-w-[180px]">
+                      <td className="px-2 py-1 font-mono text-[var(--mf-fg)]/70">{a.ip}</td>
+                      <td className="px-2 py-1 text-[var(--mf-fg)]/70 truncate max-w-[180px]">
                         {a.email ?? "—"}
                       </td>
                       <td className="px-2 py-1">
@@ -2079,7 +2079,7 @@ function LoginSecurityCard() {
                   ))}
                   {attempts.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="text-center text-white/40 px-2 py-3">
+                      <td colSpan={4} className="text-center text-[var(--mf-fg)]/40 px-2 py-3">
                         —
                       </td>
                     </tr>
@@ -2109,7 +2109,7 @@ function NumField({
 }) {
   return (
     <div>
-      <label className="block text-[11px] text-white/50 mb-1">{label}</label>
+      <label className="block text-[11px] text-[var(--mf-fg)]/50 mb-1">{label}</label>
       <input
         type="number"
         min={min}
@@ -2294,32 +2294,32 @@ function UsersCard() {
     >
       <div className="space-y-2 mb-4">
         {users === null ? (
-          <div className="text-sm text-white/40">{t("Lade Nutzer…")}</div>
+          <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade Nutzer…")}</div>
         ) : users.length === 0 ? (
-          <div className="text-sm text-white/40">{t("Keine Nutzer.")}</div>
+          <div className="text-sm text-[var(--mf-fg)]/40">{t("Keine Nutzer.")}</div>
         ) : (
           users.map((u) => (
             <div
               key={u.id}
-              className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+              className="flex items-center gap-3 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2"
             >
               <div
                 className={`w-8 h-8 rounded-md flex items-center justify-center text-[10px] font-bold uppercase shrink-0 ${
                   u.role === "admin"
                     ? "bg-blue-500/20 text-blue-300"
-                    : "bg-white/10 text-white/60"
+                    : "bg-[var(--mf-elev)]/10 text-[var(--mf-fg)]/60"
                 }`}
               >
                 {u.role === "admin" ? "ADM" : "VIE"}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-white truncate">
+                <div className="text-sm text-[var(--mf-fg)] truncate">
                   {u.email}
                   {u.id === currentUserId && (
-                    <span className="text-[10px] text-white/40 ml-2">{t("(du)")}</span>
+                    <span className="text-[10px] text-[var(--mf-fg)]/40 ml-2">{t("(du)")}</span>
                   )}
                 </div>
-                <div className="text-[11px] text-white/40">
+                <div className="text-[11px] text-[var(--mf-fg)]/40">
                   {u.role === "admin" ? t("Administrator") : t("Nur ansehen")}
                   {u.hasShortcutToken && ` · ${t("Shortcut-Token aktiv")}`}
                 </div>
@@ -2358,7 +2358,7 @@ function UsersCard() {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+            className="bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
           >
             <option value="admin">{t("Admin")}</option>
             <option value="viewer">{t("Nur ansehen")}</option>
@@ -2373,8 +2373,8 @@ function UsersCard() {
           </button>
         </form>
       ) : (
-        <p className="text-xs text-white/40">
-          {t("Du bist als")} <strong className="text-white/70">{t("Nur-Ansehen")}</strong> {t("angemeldet —")}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("Du bist als")} <strong className="text-[var(--mf-fg)]/70">{t("Nur-Ansehen")}</strong> {t("angemeldet —")}
           {t("Nutzer-Verwaltung ist Admins vorbehalten.")}
         </p>
       )}
@@ -2425,7 +2425,7 @@ function ServerCard() {
       desc="Host-Info, Build-Version, Uptime, Datenbank-Status."
     >
       {loading || !info ? (
-        <div className="text-sm text-white/40">{t("Lade Server-Status…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade Server-Status…")}</div>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
@@ -2456,7 +2456,7 @@ function ServerCard() {
           </div>
           <button
             onClick={load}
-            className="mt-4 flex items-center gap-2 text-xs text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-md px-3 h-8"
+            className="mt-4 flex items-center gap-2 text-xs text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded-md px-3 h-8"
           >
             <RefreshCw size={12} /> {t("Aktualisieren")}
           </button>
@@ -2485,10 +2485,10 @@ function Stat({
         ? "text-red-300"
         : tone === "warn"
           ? "text-amber-300"
-          : "text-white/90";
+          : "text-[var(--mf-fg)]/90";
   return (
-    <div className="bg-black/30 border border-white/10 rounded-lg px-3 py-2 min-w-0">
-      <div className="text-[10px] uppercase tracking-wider text-white/40 mb-0.5">{t(label)}</div>
+    <div className="bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2 min-w-0">
+      <div className="text-[10px] uppercase tracking-wider text-[var(--mf-fg)]/40 mb-0.5">{t(label)}</div>
       <div className={`text-sm font-medium truncate flex items-center gap-1 ${toneCls}`}>
         {icon}
         {t(value)}
@@ -2524,7 +2524,7 @@ function SessionCard() {
       desc="Sicherheits-Status deiner Anmeldung."
     >
       {!info ? (
-        <div className="text-sm text-white/40">{t("Lade…")}</div>
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lade…")}</div>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-4">
@@ -2547,17 +2547,17 @@ function SessionCard() {
 
           <button
             onClick={logout}
-            className="flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-medium text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10"
+            className="flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-medium text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 border border-[var(--mf-bdr)]/10"
           >
             <LogOut size={14} /> {t("Auf diesem Gerät abmelden")}
           </button>
 
-          <div className="mt-4 bg-black/30 border border-white/10 rounded-lg p-3 text-[11px] text-white/40 leading-relaxed">
-            <strong className="text-white/60">{t("Alle Geräte abmelden / Secret rotieren:")}</strong>{" "}
+          <div className="mt-4 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg p-3 text-[11px] text-[var(--mf-fg)]/40 leading-relaxed">
+            <strong className="text-[var(--mf-fg)]/60">{t("Alle Geräte abmelden / Secret rotieren:")}</strong>{" "}
             {t("Das Session-Secret ist bewusst nur per Umgebungsvariable")}{" "}
-            <code className="bg-white/10 px-1 rounded text-white/60">SESSION_SECRET</code>{" "}
+            <code className="bg-[var(--mf-elev)]/10 px-1 rounded text-[var(--mf-fg)]/60">SESSION_SECRET</code>{" "}
             {t("(≥ 32 Zeichen) setzbar — ein Rotieren per Klick wäre ein Sicherheitsrisiko. Beim Ändern + Redeploy werden alle bestehenden Sessions automatisch ungültig (alte Cookies sind nicht mehr entschlüsselbar). Gleiches gilt für")}{" "}
-            <code className="bg-white/10 px-1 rounded text-white/60">COOKIE_SECURE=true</code>{" "}
+            <code className="bg-[var(--mf-elev)]/10 px-1 rounded text-[var(--mf-fg)]/60">COOKIE_SECURE=true</code>{" "}
             {t("(erzwingt HTTPS-only-Cookies).")}
           </div>
         </>

@@ -30,14 +30,14 @@ export default function ClockInspector({
   return (
     <div className="space-y-4">
        <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">{t("Zeitzone")}</label>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Zeitzone")}</label>
           <TimezonePicker
              value={activeWidget.config?.timezone || ''}
              onChange={(v) => updateConfig(activeWidget.i, 'timezone', v)}
              placeholder={t("Automatisch / Lokal")}
              clearable
           />
-          <p className="text-[11px] text-white/40 mt-1">
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
              {t("Leer = Browser-Zeit. Tippen filtert die Liste (z.B. berlin → Europe/Berlin).")}
           </p>
        </div>
@@ -46,11 +46,11 @@ export default function ClockInspector({
 
        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-             <label className="text-sm font-medium text-white/80 block mb-2">{t("Uhrzeitformat")}</label>
+             <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Uhrzeitformat")}</label>
              <select
                 value={(activeWidget.config as any)?.timeFormat || 'auto'}
                 onChange={(e) => updateConfig(activeWidget.i, 'timeFormat', e.target.value)}
-                className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
              >
                 <option value="auto">{t("Automatisch (nach Sprache)")}</option>
                 <option value="24h">{t("24 Stunden (18:32)")}</option>
@@ -58,11 +58,11 @@ export default function ClockInspector({
              </select>
           </div>
           <div>
-             <label className="text-sm font-medium text-white/80 block mb-2">{t("Datumsformat")}</label>
+             <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Datumsformat")}</label>
              <select
                 value={(activeWidget.config as any)?.dateFormat || 'auto'}
                 onChange={(e) => updateConfig(activeWidget.i, 'dateFormat', e.target.value)}
-                className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
              >
                 <option value="auto">{t("Automatisch (nach Sprache)")}</option>
                 <option value="de-DE">{t("Deutsch (Di., 27. Mai)")}</option>
@@ -73,11 +73,11 @@ export default function ClockInspector({
        </div>
 
        <div>
-          <label className="text-sm font-medium text-white/80 block mb-2">{t("Textausrichtung")}</label>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Textausrichtung")}</label>
           <select
              value={activeWidget.config?.align || 'left'}
              onChange={(e) => updateConfig(activeWidget.i, 'align', e.target.value)}
-             className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
+             className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-blue-500 cursor-pointer"
           >
              <option value="left">{t("Links")}</option>
              <option value="center">{t("Mittig")}</option>
@@ -92,9 +92,9 @@ export default function ClockInspector({
                 onChange={(e) => updateConfig(activeWidget.i, 'hideSeconds', e.target.checked)}
                 className="sr-only peer"
              />
-             <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+             <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
           </div>
-          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Sekunden ausblenden")}</span>
+          <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Sekunden ausblenden")}</span>
        </label>
        <label className="flex items-center gap-3 cursor-pointer group">
           <div className="relative">
@@ -104,12 +104,12 @@ export default function ClockInspector({
                 onChange={(e) => updateConfig(activeWidget.i, 'hideDate', e.target.checked)}
                 className="sr-only peer"
              />
-             <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+             <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
           </div>
-          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Datum ausblenden")}</span>
+          <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Datum ausblenden")}</span>
        </label>
 
-       <div className="border-t border-white/10 pt-4 mt-2 mb-2">
+       <div className="border-t border-[var(--mf-bdr)]/10 pt-4 mt-2 mb-2">
           <label className="flex items-center gap-3 cursor-pointer group">
              <div className="relative">
                 <input
@@ -118,28 +118,28 @@ export default function ClockInspector({
                    onChange={(e) => updateConfig(activeWidget.i, 'showMiniWeather', e.target.checked)}
                    className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
              </div>
              <span className="text-sm font-medium text-cyan-400 group-hover:text-cyan-300 transition-colors">{t("Wetter-Multiwidget Modus (Kompaktes Wetter hier aktivieren)")}</span>
           </label>
        </div>
 
        {activeWidget.config?.showMiniWeather && (
-          <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-4">
+          <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] p-4 rounded-xl border border-[var(--mf-bdr)]/5 space-y-4">
               <div className="relative">
-                 <label className="text-xs font-medium text-white/80 block mb-2 text-cyan-400">{t("Ort suchen (Auto-Ausfüllen)")}</label>
+                 <label className="text-xs font-medium text-[var(--mf-fg)]/80 block mb-2 text-cyan-400">{t("Ort suchen (Auto-Ausfüllen)")}</label>
                  <input
                     type="text" value={citySearchQuery} placeholder={t("z.B. München...")}
                     onChange={(e) => searchCity(e.target.value)}
-                    className="w-full bg-black border border-cyan-500/30 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-400 transition-colors"
+                    className="w-full bg-[var(--mf-surface)] border border-cyan-500/30 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-400 transition-colors"
                  />
-                 {isSearchingCity && <div className="absolute right-3 top-10 text-xs text-white/50">{t("Sucht...")}</div>}
+                 {isSearchingCity && <div className="absolute right-3 top-10 text-xs text-[var(--mf-fg)]/50">{t("Sucht...")}</div>}
 
                  {citySearchResults.length > 0 && (
-                    <div className="absolute z-10 w-full mt-2 bg-zinc-800 border border-white/10 rounded-lg shadow-2xl max-h-[250px] overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-2 bg-[var(--mf-surface-2)] border border-[var(--mf-bdr)]/10 rounded-lg shadow-2xl max-h-[250px] overflow-y-auto">
                        {citySearchResults.map(city => (
                           <div key={city.id}
-                               className="p-3 hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
+                               className="p-3 hover:bg-[var(--mf-elev)]/10 cursor-pointer border-b border-[var(--mf-bdr)]/5 last:border-0"
                                onClick={() => {
                                   updateConfig(activeWidget.i, 'lat', city.latitude.toString());
                                   updateConfig(activeWidget.i, 'lon', city.longitude.toString());
@@ -148,8 +148,8 @@ export default function ClockInspector({
                                   setCitySearchQuery("");
                                }}
                           >
-                             <div className="font-bold text-white">{city.name}</div>
-                             <div className="text-xs text-white/60 mt-0.5">{city.admin1 ? `${city.admin1}, ` : ''}{city.country}</div>
+                             <div className="font-bold text-[var(--mf-fg)]">{city.name}</div>
+                             <div className="text-xs text-[var(--mf-fg)]/60 mt-0.5">{city.admin1 ? `${city.admin1}, ` : ''}{city.country}</div>
                           </div>
                        ))}
                     </div>
@@ -157,27 +157,27 @@ export default function ClockInspector({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <div>
-                    <label className="text-xs font-medium text-white/40 block mb-2">{t("Latitude (Auto)")}</label>
+                    <label className="text-xs font-medium text-[var(--mf-fg)]/40 block mb-2">{t("Latitude (Auto)")}</label>
                     <input
                        type="text" value={activeWidget.config?.lat || ''} disabled
-                       className="w-full bg-white/5 border border-transparent text-white/50 font-sans text-xs rounded p-2"
+                       className="w-full bg-[var(--mf-elev)]/5 border border-transparent text-[var(--mf-fg)]/50 font-sans text-xs rounded p-2"
                     />
                  </div>
                  <div>
-                    <label className="text-xs font-medium text-white/40 block mb-2">{t("Longitude (Auto)")}</label>
+                    <label className="text-xs font-medium text-[var(--mf-fg)]/40 block mb-2">{t("Longitude (Auto)")}</label>
                     <input
                        type="text" value={activeWidget.config?.lon || ''} disabled
-                       className="w-full bg-white/5 border border-transparent text-white/50 font-sans text-xs rounded p-2"
+                       className="w-full bg-[var(--mf-elev)]/5 border border-transparent text-[var(--mf-fg)]/50 font-sans text-xs rounded p-2"
                     />
                  </div>
               </div>
-              <div className="mt-4 border-t border-white/10 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mt-4 border-t border-[var(--mf-bdr)]/10 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <div>
-                    <label className="text-sm font-medium text-white/80 block mb-2">{t("Icon Stil (Wetter)")}</label>
+                    <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Icon Stil (Wetter)")}</label>
                     <select
                        value={(activeWidget.config as any)?.iconSet || 'lucide'}
                        onChange={(e) => updateConfig(activeWidget.i, 'iconSet', e.target.value)}
-                       className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer"
+                       className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer"
                     >
                        <option value="lucide">{t("Lucide (Klar, Umriss)")}</option>
                        <option value="solid">{t("Solid (Gefüllt, Flach)")}</option>
@@ -186,11 +186,11 @@ export default function ClockInspector({
                     </select>
                  </div>
                  <div>
-                    <label className="text-sm font-medium text-white/80 block mb-2">{t("Temperatur-Einheit")}</label>
+                    <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Temperatur-Einheit")}</label>
                     <select
                        value={(activeWidget.config as any)?.unitTemp || 'celsius'}
                        onChange={(e) => updateConfig(activeWidget.i, 'unitTemp', e.target.value)}
-                       className="w-full bg-black border border-white/10 text-white font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer"
+                       className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer"
                     >
                        <option value="celsius">{t("Celsius (°C)")}</option>
                        <option value="fahrenheit">{t("Fahrenheit (°F)")}</option>
@@ -207,9 +207,9 @@ export default function ClockInspector({
                           onChange={(e) => updateConfig(activeWidget.i, 'showHumidity', e.target.checked)}
                           className="sr-only peer"
                        />
-                       <div className="w-9 h-5 bg-black/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                       <div className="w-9 h-5 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
                     </div>
-                    <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{t("Luftfeuchte")}</span>
+                    <span className="text-xs font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Luftfeuchte")}</span>
                  </label>
                  <label className="flex items-center gap-3 cursor-pointer group">
                     <div className="relative">
@@ -219,9 +219,9 @@ export default function ClockInspector({
                           onChange={(e) => updateConfig(activeWidget.i, 'showWind', e.target.checked)}
                           className="sr-only peer"
                        />
-                       <div className="w-9 h-5 bg-black/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                       <div className="w-9 h-5 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
                     </div>
-                    <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{t("Wind")}</span>
+                    <span className="text-xs font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Wind")}</span>
                  </label>
                  <label className="flex items-center gap-3 cursor-pointer group">
                     <div className="relative">
@@ -231,9 +231,9 @@ export default function ClockInspector({
                           onChange={(e) => updateConfig(activeWidget.i, 'showUv', e.target.checked)}
                           className="sr-only peer"
                        />
-                       <div className="w-9 h-5 bg-black/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
+                       <div className="w-9 h-5 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
                     </div>
-                    <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{t("UV-Index")}</span>
+                    <span className="text-xs font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("UV-Index")}</span>
                  </label>
               </div>
 
@@ -241,7 +241,7 @@ export default function ClockInspector({
                   mit der Clock-Schriftgröße mit. */}
               {(activeWidget.config?.showHumidity || activeWidget.config?.showWind || (activeWidget.config as any)?.showUv) && (
                  <div className="pt-1">
-                    <label className="text-xs font-medium text-white/60 flex justify-between mb-1.5">
+                    <label className="text-xs font-medium text-[var(--mf-fg)]/60 flex justify-between mb-1.5">
                        <span>{t("Schriftgröße Luftfeuchte / Wind / UV")}</span>
                        <span className="text-cyan-300">{(activeWidget.config as any)?.statsSize ?? 12} px</span>
                     </label>
@@ -249,7 +249,7 @@ export default function ClockInspector({
                        type="range" min="8" max="32" step="1"
                        value={(activeWidget.config as any)?.statsSize ?? 12}
                        onChange={(e) => updateConfig(activeWidget.i, 'statsSize', parseInt(e.target.value))}
-                       className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-cyan-500 bg-white/10"
+                       className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-cyan-500 bg-[var(--mf-elev)]/10"
                     />
                  </div>
               )}
@@ -269,13 +269,13 @@ function ExtraTimezones({ widget, updateConfig }: { widget: any; updateConfig: (
    };
 
    return (
-      <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-         <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-white/50 mb-2">
+      <div className="bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded-xl p-3">
+         <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/50 mb-2">
             {t("Weitere Zeitzonen (Worldclock)")}
          </div>
          <div className="space-y-2">
             {list.length === 0 && (
-               <p className="text-[11px] text-white/40 italic">
+               <p className="text-[11px] text-[var(--mf-fg)]/40 italic">
                   {t("Leer = nur die Haupt-Uhr oben wird angezeigt.")}
                </p>
             )}
@@ -290,7 +290,7 @@ function ExtraTimezones({ widget, updateConfig }: { widget: any; updateConfig: (
                         next[idx] = { ...entry, label: e.target.value };
                         update(next);
                      }}
-                     className="w-20 bg-black border border-white/10 text-white text-xs rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
+                     className="w-20 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
                   />
                   <div className="flex-1 min-w-0">
                      <TimezonePicker
@@ -301,7 +301,7 @@ function ExtraTimezones({ widget, updateConfig }: { widget: any; updateConfig: (
                            update(next);
                         }}
                         placeholder="America/New_York"
-                        className="w-full bg-black border border-white/10 text-white text-xs font-mono rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
+                        className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs font-mono rounded-md px-2 h-8 focus:outline-none focus:border-blue-500"
                      />
                   </div>
                   <button
@@ -315,12 +315,12 @@ function ExtraTimezones({ widget, updateConfig }: { widget: any; updateConfig: (
             ))}
             <button
                onClick={() => update([...list, { tz: "", label: "" }])}
-               className="w-full h-9 text-xs font-medium text-white/70 hover:text-white border border-dashed border-white/15 hover:border-white/30 rounded-md transition-colors"
+               className="w-full h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-[var(--mf-bdr)]/30 rounded-md transition-colors"
             >
                {t("+ Zeitzone hinzufügen")}
             </button>
          </div>
-         <p className="text-[11px] text-white/40 mt-2 leading-relaxed">
+         <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2 leading-relaxed">
             {t("IANA-Format (z.B. Europe/Berlin, America/New_York). Label ist optional.")}
          </p>
       </div>

@@ -74,6 +74,13 @@ export default function WallpaperEngine({
     const source = config?.source || 'unsplash';
     const query = config?.query || 'nature,dark';
 
+    if (source === 'color') {
+      // Solid-colour wallpaper — nothing to load, no slideshow.
+      setImages([]);
+      setIsReady(true);
+      return;
+    }
+
     if (source === 'url') {
       setImages([{ id: 'fixed', url: query }]);
       setIsReady(true);
@@ -166,6 +173,12 @@ export default function WallpaperEngine({
     });
     return () => { for (const img of loaders) img.src = ""; };
   }, [currentIndex, images, splitMode]);
+
+  // Solid-colour wallpaper — skip the entire image / crossfade pipeline
+  // (and its Tizen quirks). Just paint the chosen colour.
+  if ((config?.source) === 'color') {
+    return <div className="absolute inset-0 z-0" style={{ backgroundColor: config?.bgColor || '#0f172a' }} />;
+  }
 
   if (images.length === 0) return <div className="absolute inset-0 bg-black z-0" />;
 

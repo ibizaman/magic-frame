@@ -89,15 +89,15 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
   return (
     <div className="space-y-2">
       {label && (
-        <div className="text-xs font-medium text-white/70">{label}</div>
+        <div className="text-xs font-medium text-[var(--mf-fg)]/70">{label}</div>
       )}
 
       <div className="flex items-center gap-2">
-        <div className="w-10 h-10 rounded-lg bg-black border border-white/10 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 flex items-center justify-center shrink-0">
           {value ? (
             <Icon icon={value} width={22} height={22} />
           ) : (
-            <span className="text-white/30 text-xs">—</span>
+            <span className="text-[var(--mf-fg)]/30 text-xs">—</span>
           )}
         </div>
         <input
@@ -105,7 +105,7 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder ?? "mdi:lightbulb"}
-          className="flex-1 bg-black border border-white/10 text-white text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-cyan-500"
+          className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-cyan-500"
         />
       </div>
 
@@ -115,10 +115,10 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
           (~150k icons across ~100 sets).
           Pills are fixed-width (w-14) so MDI / Lucide / All read as a
           rhythmic, balanced segmented control regardless of label length.
-          Container uses bg-white/5 + border for visibility on every parent
+          Container uses bg-[var(--mf-elev)]/5 + border for visibility on every parent
           background (deep-black inspector, lighter accordion card, etc.). */}
       <div className="flex items-center gap-1.5">
-        <div className="flex shrink-0 bg-white/5 border border-white/10 rounded-lg p-0.5 text-[10px] font-medium">
+        <div className="flex shrink-0 bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded-lg p-0.5 text-[10px] font-medium">
           {(["mdi", "lucide", "all"] as SetFilter[]).map((f) => {
             const isActive = setFilter === f;
             const labelText = f === "mdi" ? "MDI" : f === "lucide" ? "Lucide" : t("Alle");
@@ -130,7 +130,7 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
                 className={`w-14 h-7 rounded-md transition-colors text-center ${
                   isActive
                     ? "bg-cyan-500/20 text-cyan-200"
-                    : "text-white/50 hover:text-white"
+                    : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
                 }`}
               >
                 {labelText}
@@ -139,18 +139,18 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
           })}
         </div>
         <div className="relative flex-1">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--mf-fg)]/40 pointer-events-none" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("Icon suchen (Iconify)…")}
-            className="w-full bg-white/5 border border-white/10 text-white text-xs rounded-lg pl-8 pr-8 h-8 focus:outline-none focus:border-cyan-500"
+            className="w-full bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs rounded-lg pl-8 pr-8 h-8 focus:outline-none focus:border-cyan-500"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-white/40 hover:text-white"
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)]"
               title={t("Suche löschen")}
             >
               <X size={12} />
@@ -161,11 +161,11 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
 
       {showResults ? (
         loading ? (
-          <div className="text-xs text-white/40 py-2 px-1">{t("Sucht…")}</div>
+          <div className="text-xs text-[var(--mf-fg)]/40 py-2 px-1">{t("Sucht…")}</div>
         ) : results.length === 0 ? (
-          <div className="text-xs text-white/40 py-2 px-1">{t("Keine Treffer für")} „{query}"</div>
+          <div className="text-xs text-[var(--mf-fg)]/40 py-2 px-1">{t("Keine Treffer für")} „{query}"</div>
         ) : (
-          <div className="grid grid-cols-6 gap-1 max-h-48 overflow-y-auto bg-black/30 border border-white/10 rounded-lg p-1.5">
+          <div className="grid grid-cols-6 gap-1 max-h-48 overflow-y-auto bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg p-1.5">
             {results.map((id) => (
               <button
                 key={id}
@@ -174,7 +174,7 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
                 className={`aspect-square rounded-md flex items-center justify-center transition-colors ${
                   value === id
                     ? "bg-cyan-500/20 border border-cyan-500/50"
-                    : "hover:bg-white/5 border border-transparent"
+                    : "hover:bg-[var(--mf-elev)]/5 border border-transparent"
                 }`}
               >
                 <Icon icon={id} width={20} height={20} />
@@ -184,7 +184,7 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
         )
       ) : (
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-white/40 px-1 mb-1">
+          <div className="text-[10px] uppercase tracking-wider text-[var(--mf-fg)]/40 px-1 mb-1">
             {t("Schnellauswahl")}
           </div>
           <div className="grid grid-cols-6 gap-1">
@@ -196,7 +196,7 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
                 className={`aspect-square rounded-md flex items-center justify-center transition-colors ${
                   value === id
                     ? "bg-cyan-500/20 border border-cyan-500/50 text-cyan-200"
-                    : "bg-black/40 border border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+                    : "bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5"
                 }`}
               >
                 <Icon icon={id} width={18} height={18} />

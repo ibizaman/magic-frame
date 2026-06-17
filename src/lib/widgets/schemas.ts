@@ -26,6 +26,15 @@ const baseConfig = z
     offsetY: z.number().optional(),
     responsiveText: z.boolean().optional(),
     defaultHidden: z.boolean().optional(),
+    // #6: Widget nur einblenden, wenn eine HA-Entity einen bestimmten State hat
+    // (z.B. Kamera nur bei "Bewegung erkannt" / Türklingel). Leer = immer sichtbar.
+    // Generisch für ALLE Widgets (baseConfig); der View hört live via SSE und
+    // blendet ein/aus. Instant, kein Polling (HA-Bridge broadcaster).
+    showWhenEntity: z.string().optional(),
+    showWhenState: z.string().optional(),
+    // Puls-Modus: >0 = beim Auslösen X Sekunden zeigen, dann automatisch wieder
+    // ausblenden (z.B. Türklingel). 0/leer = sichtbar solange die Entity aktiv ist.
+    autoHideSeconds: z.number().optional(),
     align: z.enum(["left", "center", "right"]).optional(),
   })
   .passthrough();
@@ -73,6 +82,9 @@ const calendarConfig = baseConfig.extend({
   days: z.number().optional(),
   hideOnEmpty: z.boolean().optional(),
   hideWeekday: z.boolean().optional(),
+  // #33: Uhrzeit-Format der Termine. "auto" = nach App-Sprache (12h EN / 24h DE),
+  // wie bisher → ändert für bestehende Layouts nichts. "12h"/"24h" = fester Override.
+  calendarTimeFormat: z.enum(["auto", "12h", "24h"]).optional(),
 });
 
 const buttonConfig = baseConfig
@@ -176,6 +188,21 @@ const sensorConfig = baseConfig
   })
   .passthrough();
 
+// CameraWidget — Home Assistant camera entity (snapshot-refresh MVP).
+// MJPEG and WebRTC streamModes are reserved for follow-up releases.
+const cameraConfig = baseConfig
+  .extend({
+    source: z.enum(["ha", "url"]).optional(),
+    entityId: z.string().optional(),
+    streamUrl: z.string().optional(),
+    refreshIntervalSec: z.number().optional(),
+    aspectRatio: z.enum(["auto", "16:9", "4:3", "1:1"]).optional(),
+    streamMode: z.enum(["snapshot", "mjpeg", "webrtc"]).optional(),
+    clickFullscreen: z.boolean().optional(),
+    caption: z.string().optional(),
+  })
+  .passthrough();
+
 const shoppingConfig = baseConfig
   .extend({
     title: z.string().optional(),
@@ -256,6 +283,9 @@ export const widgetLayoutItemSchema = z.union([
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("SensorWidget.tsx"), config: sensorConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("CameraWidget.tsx"), config: cameraConfig })
     .merge(commonWidgetFields()),
   ]),
 ]);

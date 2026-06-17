@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Light-only variant — lets a class apply only under [data-theme="light"]
+   (e.g. light:bg-none to drop a dark-mode gradient). */
+@custom-variant light (&:is([data-theme="light"], [data-theme="light"] *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -17,6 +21,61 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+/* ── Editor theme tokens (#21 light mode) ──────────────────────────────────
+   Editor chrome (sidebar, topbar, inspector, modals) reads these instead of
+   hardcoded white/black, and they flip on [data-theme] set on the editor root.
+   Opacity steps survive: text-[var(--mf-fg)]/70 stays a 70% tint — of white in
+   dark, of near-black in light. The widget CANVAS keeps its own
+   data-theme="dark" wrapper so the live preview always renders dark. */
+:root,
+[data-theme="dark"] {
+  --mf-surface: #09090b;   /* solid panels — bg-black / bg-zinc-950 */
+  --mf-surface-2: #18181b; /* bg-zinc-900 / bg-zinc-800 */
+  --mf-fg: #ffffff;        /* text-white base (+ /opacity steps) */
+  --mf-elev: #ffffff;      /* bg-white/N overlay base */
+  --mf-ovl: #000000;       /* bg-black/N panel-tint base */
+  --mf-bdr: #ffffff;       /* border-white/N base */
+  --mf-grid: rgba(255,255,255,0.05); /* editor canvas grid lines */
+  --mf-backdrop: #000000;  /* modal backdrops — dark in both themes */
+  color-scheme: dark;      /* native controls (range tracks, scrollbars) render dark */
+}
+[data-theme="light"] {
+  --mf-surface: #ffffff;       /* cards / panels — pure white, lifts off the body */
+  --mf-surface-2: #f1f5f9;     /* slate-100 — secondary cool surface */
+  --mf-fg: #0f172a;            /* slate-900 — cool near-black text (not flat grey) */
+  --mf-elev: #0f172a;          /* slate-900 — bg-white/N overlays become a cool whisper */
+  --mf-ovl: #dbe2ea;           /* slate-ish — very light cool panel tint (no more matte grey) */
+  --mf-bdr: #334155;           /* slate-700 — cool hairline borders */
+  --mf-grid: rgba(15,23,42,0.06); /* cool grid lines on light canvas */
+  --mf-backdrop: #020617;      /* slate-950 — modal backdrops stay dark */
+  color-scheme: light;         /* native range tracks / scrollbars render light */
+
+  /* Accent-text legibility on light surfaces.
+     The dark theme writes accent text in LIGHT shades (text-blue-300 etc.) on
+     dark glass — those vanish on a light background. Tailwind v4 utilities read
+     these --color-* vars, so re-pointing the light shades (100–400) to a dark,
+     readable shade per hue fixes all ~220 accent texts at once. Tinted fills
+     use -500 (+ opacity) and are left alone, so glass tiles stay subtly coloured
+     while their text turns dark. Scoped to light — the canvas keeps the brights. */
+  --color-blue-100: #1d4ed8;   --color-blue-200: #1d4ed8;   --color-blue-300: #1d4ed8;   --color-blue-400: #1d4ed8;
+  --color-sky-100: #0369a1;    --color-sky-200: #0369a1;    --color-sky-300: #0369a1;    --color-sky-400: #0369a1;
+  --color-cyan-100: #0e7490;   --color-cyan-200: #0e7490;   --color-cyan-300: #0e7490;   --color-cyan-400: #0e7490;
+  --color-teal-100: #0f766e;   --color-teal-200: #0f766e;   --color-teal-300: #0f766e;   --color-teal-400: #0f766e;
+  --color-emerald-100: #047857;--color-emerald-200: #047857;--color-emerald-300: #047857;--color-emerald-400: #047857;
+  --color-green-100: #15803d;  --color-green-200: #15803d;  --color-green-300: #15803d;  --color-green-400: #15803d;
+  --color-lime-100: #4d7c0f;   --color-lime-200: #4d7c0f;   --color-lime-300: #4d7c0f;   --color-lime-400: #4d7c0f;
+  --color-yellow-100: #a16207; --color-yellow-200: #a16207; --color-yellow-300: #a16207; --color-yellow-400: #a16207;
+  --color-amber-100: #b45309;  --color-amber-200: #b45309;  --color-amber-300: #b45309;  --color-amber-400: #b45309;
+  --color-orange-100: #c2410c; --color-orange-200: #c2410c; --color-orange-300: #c2410c; --color-orange-400: #c2410c;
+  --color-red-100: #b91c1c;    --color-red-200: #b91c1c;    --color-red-300: #b91c1c;    --color-red-400: #b91c1c;
+  --color-rose-100: #be123c;   --color-rose-200: #be123c;   --color-rose-300: #be123c;   --color-rose-400: #be123c;
+  --color-pink-100: #be185d;   --color-pink-200: #be185d;   --color-pink-300: #be185d;   --color-pink-400: #be185d;
+  --color-fuchsia-100: #a21caf;--color-fuchsia-200: #a21caf;--color-fuchsia-300: #a21caf;--color-fuchsia-400: #a21caf;
+  --color-purple-100: #7e22ce; --color-purple-200: #7e22ce; --color-purple-300: #7e22ce; --color-purple-400: #7e22ce;
+  --color-violet-100: #6d28d9; --color-violet-200: #6d28d9; --color-violet-300: #6d28d9; --color-violet-400: #6d28d9;
+  --color-indigo-100: #4338ca; --color-indigo-200: #4338ca; --color-indigo-300: #4338ca; --color-indigo-400: #4338ca;
 }
 
 body {

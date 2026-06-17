@@ -143,7 +143,7 @@ export default function HAEntityInput({
 
   const baseClass =
     className ||
-    "w-full bg-black border border-white/10 text-white font-mono text-xs p-2 rounded focus:outline-none focus:border-cyan-500";
+    "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-mono text-xs p-2 rounded focus:outline-none focus:border-cyan-500";
 
   return (
     <div ref={containerRef} className="relative">
@@ -187,7 +187,7 @@ export default function HAEntityInput({
             setQuery("");
             inputRef.current?.focus();
           }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-base leading-none"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] text-base leading-none"
           aria-label={t("Eintrag löschen")}
           tabIndex={-1}
         >
@@ -195,7 +195,7 @@ export default function HAEntityInput({
         </button>
       )}
       {open && (matches.length > 0 || loadError) && (
-        <div className="absolute z-30 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-zinc-900 border border-white/10 rounded-lg shadow-2xl">
+        <div className="absolute z-30 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-[var(--mf-surface-2)] border border-[var(--mf-bdr)]/10 rounded-lg shadow-2xl">
           {loadError && (
             <div className="px-3 py-2 text-[11px] text-amber-300/80">
               {t("Entities konnten nicht geladen werden")}: {loadError}
@@ -207,23 +207,23 @@ export default function HAEntityInput({
               type="button"
               onMouseEnter={() => setHighlightIdx(idx)}
               onClick={() => commit(e.entity_id)}
-              className={`w-full text-left px-3 py-1.5 border-b border-white/5 last:border-0 flex flex-col gap-0.5 ${
-                idx === highlightIdx ? "bg-white/10" : "hover:bg-white/5"
+              className={`w-full text-left px-3 py-1.5 border-b border-[var(--mf-bdr)]/5 last:border-0 flex flex-col gap-0.5 ${
+                idx === highlightIdx ? "bg-[var(--mf-elev)]/10" : "hover:bg-[var(--mf-elev)]/5"
               }`}
             >
               {/* Gestapelt statt nebeneinander: im schmalen Inspector-Feld
                   verdrängte die entity_id sonst den Friendly Name (issue #23).
                   Jetzt beide volle Breite, Friendly Name prominent oben. */}
-              <span className="text-white text-xs truncate w-full">
+              <span className="text-[var(--mf-fg)] text-xs truncate w-full">
                 {e.friendly_name}
               </span>
-              <span className="text-white/40 text-[10px] font-mono truncate w-full">
+              <span className="text-[var(--mf-fg)]/40 text-[10px] font-mono truncate w-full">
                 {e.entity_id}
               </span>
             </button>
           ))}
           {matches.length === 0 && !loadError && (
-            <div className="px-3 py-2 text-[11px] text-white/40">
+            <div className="px-3 py-2 text-[11px] text-[var(--mf-fg)]/40">
               {t("Keine passenden Entities")}
             </div>
           )}

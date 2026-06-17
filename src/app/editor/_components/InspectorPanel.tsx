@@ -19,7 +19,9 @@ import {
 } from "../_inspectors/CompanionInspectors";
 import { ImageInspector } from "../_inspectors/ImageInspector";
 import { SensorInspector } from "../_inspectors/SensorInspector";
+import CameraInspector from "../_inspectors/CameraInspector";
 import CustomModuleInspector from "../_inspectors/CustomModuleInspector";
+import HAEntityInput from "./HAEntityInput";
 
 type InspectorPanelProps = {
   activeWidget: WidgetLayoutItem;
@@ -65,6 +67,7 @@ const NO_MULTICOL_CONTENT = new Set<string>([
   "TodosWidget.tsx",
   "ImageWidget.tsx",
   "SensorWidget.tsx",
+  "CameraWidget.tsx",
 ]);
 
 export default function InspectorPanel(props: InspectorPanelProps) {
@@ -79,29 +82,29 @@ export default function InspectorPanel(props: InspectorPanelProps) {
   const useCols = tab !== "content" || !NO_MULTICOL_CONTENT.has(activeWidget.type);
 
   return (
-    <div className="h-full md:h-auto md:max-h-[88vh] w-full flex flex-col bg-zinc-950 overflow-hidden nodrag md:rounded-2xl md:border md:border-white/10 md:shadow-2xl">
-      <header className="flex items-center gap-3 px-4 h-14 border-b border-white/10 shrink-0">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-blue-300 shrink-0">
+    <div className="h-full md:h-auto md:max-h-[88vh] w-full flex flex-col bg-[var(--mf-surface)] overflow-hidden nodrag md:rounded-2xl md:border md:border-[var(--mf-bdr)]/10 md:shadow-2xl">
+      <header className="flex items-center gap-3 px-4 h-14 border-b border-[var(--mf-bdr)]/10 shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-[var(--mf-bdr)]/10 flex items-center justify-center text-blue-300 shrink-0">
           <SlidersHorizontal size={15} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 font-medium">
             {typeLabel}
           </div>
-          <div className="text-sm font-semibold text-white truncate">
+          <div className="text-sm font-semibold text-[var(--mf-fg)] truncate">
             {widgetTitle(activeWidget.type, activeWidget.label, t)}
           </div>
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-md text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-md text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors"
           title={t("Schließen (Esc)")}
         >
           <X size={15} />
         </button>
       </header>
 
-      <div className="flex border-b border-white/10 shrink-0 px-2 pt-2 gap-1">
+      <div className="flex border-b border-[var(--mf-bdr)]/10 shrink-0 px-2 pt-2 gap-1">
         <TabButton active={tab === "layout"} onClick={() => setTab("layout")} icon={<LayoutGrid size={13} />} label={t("Layout")} />
         <TabButton active={tab === "text"} onClick={() => setTab("text")} icon={<Type size={13} />} label={t("Text & Farbe")} />
         <TabButton active={tab === "content"} onClick={() => setTab("content")} icon={<SlidersHorizontal size={13} />} label={t("Inhalt")} />
@@ -115,10 +118,10 @@ export default function InspectorPanel(props: InspectorPanelProps) {
         </div>
       </div>
 
-      <footer className="shrink-0 border-t border-white/10 px-4 py-3 flex gap-2 bg-zinc-950">
+      <footer className="shrink-0 border-t border-[var(--mf-bdr)]/10 px-4 py-3 flex gap-2 bg-[var(--mf-surface)]">
         <button
           onClick={() => copyWidgetToClipboard(activeWidget)}
-          className="flex-1 flex justify-center items-center gap-2 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white py-2.5 rounded-lg font-medium text-sm transition-colors"
+          className="flex-1 flex justify-center items-center gap-2 bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] py-2.5 rounded-lg font-medium text-sm transition-colors"
         >
           <Copy size={14} /> {t("Kopieren")}
         </button>
@@ -149,8 +152,8 @@ function TabButton({
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3 h-8 text-xs font-medium rounded-t-md transition-colors ${
         active
-          ? "bg-white/5 text-white border-b-2 border-blue-500 -mb-px"
-          : "text-white/50 hover:text-white/80 hover:bg-white/5"
+          ? "bg-[var(--mf-elev)]/5 text-[var(--mf-fg)] border-b-2 border-blue-500 -mb-px"
+          : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]/80 hover:bg-[var(--mf-elev)]/5"
       }`}
     >
       {icon}
@@ -162,7 +165,7 @@ function TabButton({
 function SectionHeader({ title }: { title: string }) {
   const t = useT();
   return (
-    <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-white/40 mb-3">
+    <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-3">
       {t(title)}
     </div>
   );
@@ -183,9 +186,9 @@ function Field({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-white/70">{t(label)}</span>
+        <span className="text-xs text-[var(--mf-fg)]/70">{t(label)}</span>
         {value !== undefined && (
-          <span className={`text-xs font-mono ${accent ?? "text-white/50"}`}>{value}</span>
+          <span className={`text-xs font-mono ${accent ?? "text-[var(--mf-fg)]/50"}`}>{value}</span>
         )}
       </div>
       {children}
@@ -214,16 +217,16 @@ function LayoutTab({
           value={isAutoDefaultLabel(activeWidget.label) ? "" : activeWidget.label}
           onChange={(e) => updateLabel(activeWidget.i, e.target.value)}
           placeholder={widgetTitle(activeWidget.type, "", t)}
-          className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
         />
-        <p className="text-[11px] text-white/40 mt-1.5">
+        <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">
           {t("Eigener Name für dieses Modul — ersetzt den Typ in Canvas & Inspector.")}
         </p>
       </div>
 
       <div>
         <SectionHeader title="Raster-Position" />
-        <div className="grid grid-cols-2 gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
+        <div className="grid grid-cols-2 gap-3 bg-[var(--mf-elev)]/5 p-3 rounded-xl border border-[var(--mf-bdr)]/10">
           <Field label="X" value={activeWidget.x}>
             <input
               type="range"
@@ -231,7 +234,7 @@ function LayoutTab({
               max="23"
               value={activeWidget.x}
               onChange={(e) => updateLayoutGrid(activeWidget.i, "x", parseInt(e.target.value))}
-              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-black/50"
+              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)]"
             />
           </Field>
           <Field label="Y" value={activeWidget.y}>
@@ -241,7 +244,7 @@ function LayoutTab({
               max="30"
               value={activeWidget.y}
               onChange={(e) => updateLayoutGrid(activeWidget.i, "y", parseInt(e.target.value))}
-              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-black/50"
+              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)]"
             />
           </Field>
           <Field label="Breite" value={activeWidget.w}>
@@ -251,7 +254,7 @@ function LayoutTab({
               max="24"
               value={activeWidget.w}
               onChange={(e) => updateLayoutGrid(activeWidget.i, "w", parseInt(e.target.value))}
-              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-black/50"
+              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)]"
             />
           </Field>
           <Field label="Höhe" value={activeWidget.h}>
@@ -261,7 +264,7 @@ function LayoutTab({
               max="24"
               value={activeWidget.h}
               onChange={(e) => updateLayoutGrid(activeWidget.i, "h", parseInt(e.target.value))}
-              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-black/50"
+              className="w-full h-1.5 rounded-lg cursor-pointer accent-blue-500 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)]"
             />
           </Field>
         </div>
@@ -269,7 +272,7 @@ function LayoutTab({
 
       <div>
         <SectionHeader title="Feinjustierung (Pixel)" />
-        <div className="grid grid-cols-2 gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
+        <div className="grid grid-cols-2 gap-3 bg-[var(--mf-elev)]/5 p-3 rounded-xl border border-[var(--mf-bdr)]/10">
           <Field label="X-Offset" value={`${activeWidget.config?.offsetX ?? 0}px`} accent="text-cyan-300">
             <input
               type="range"
@@ -277,7 +280,7 @@ function LayoutTab({
               max="500"
               value={activeWidget.config?.offsetX ?? 0}
               onChange={(e) => updateConfig(activeWidget.i, "offsetX", parseInt(e.target.value))}
-              className="w-full h-1.5 rounded-lg cursor-pointer accent-cyan-500 bg-black/50"
+              className="w-full h-1.5 rounded-lg cursor-pointer accent-cyan-500 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)]"
             />
           </Field>
           <Field label="Y-Offset" value={`${activeWidget.config?.offsetY ?? 0}px`} accent="text-cyan-300">
@@ -287,7 +290,7 @@ function LayoutTab({
               max="500"
               value={activeWidget.config?.offsetY ?? 0}
               onChange={(e) => updateConfig(activeWidget.i, "offsetY", parseInt(e.target.value))}
-              className="w-full h-1.5 rounded-lg cursor-pointer accent-cyan-500 bg-black/50"
+              className="w-full h-1.5 rounded-lg cursor-pointer accent-cyan-500 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)]"
             />
           </Field>
         </div>
@@ -302,15 +305,62 @@ function LayoutTab({
             max="100"
             value={activeWidget.bgOpacity}
             onChange={(e) => updateOpacity(activeWidget.i, parseInt(e.target.value))}
-            className="w-full h-2 rounded-lg cursor-pointer accent-blue-500 bg-white/10"
+            className="w-full h-2 rounded-lg cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
           />
         </Field>
-        <Toggle
-          label="Beim Laden initial ausgeblendet"
-          checked={activeWidget.config?.defaultHidden ?? false}
-          onChange={(v) => updateConfig(activeWidget.i, "defaultHidden", v)}
-          accent="purple"
-        />
+        <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
+          <SectionHeader title="Sichtbarkeit" />
+          <Toggle
+            label="Beim Laden versteckt (per Button einblendbar)"
+            checked={activeWidget.config?.defaultHidden ?? false}
+            onChange={(v) => updateConfig(activeWidget.i, "defaultHidden", v)}
+            accent="purple"
+          />
+
+          <div className="mt-4 rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/[0.02] p-3.5 space-y-3">
+            <div>
+              <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-1.5">
+                {t("Automatisch über Home Assistant")}
+              </div>
+              <p className="text-[11px] text-[var(--mf-fg)]/40 leading-relaxed">
+                {t("Blendet dieses Widget automatisch ein/aus, je nach Status einer HA-Entity. Für Gruppen den Button-Trigger nutzen.")}
+              </p>
+            </div>
+            <Field label="Nur zeigen wenn HA-Entity einen Status hat">
+              <HAEntityInput
+                value={activeWidget.config?.showWhenEntity || ""}
+                onChange={(v) => updateConfig(activeWidget.i, "showWhenEntity", v)}
+                placeholder="binary_sensor.motion"
+                clearable
+              />
+            </Field>
+            {(activeWidget.config?.showWhenEntity || "").trim() !== "" && (
+              <>
+                <Field label="Status (leer = sobald aktiv / an)">
+                  <input
+                    type="text"
+                    value={activeWidget.config?.showWhenState || ""}
+                    onChange={(e) => updateConfig(activeWidget.i, "showWhenState", e.target.value)}
+                    placeholder="on"
+                    className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </Field>
+                <Field label="Auto-ausblenden nach Sek. (0 = solange aktiv)">
+                  <input
+                    type="number"
+                    min="0"
+                    value={activeWidget.config?.autoHideSeconds ?? 0}
+                    onChange={(e) =>
+                      updateConfig(activeWidget.i, "autoHideSeconds", Math.max(0, parseInt(e.target.value) || 0))
+                    }
+                    placeholder="0"
+                    className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </Field>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -333,7 +383,7 @@ function TextTab({ activeWidget, updateConfig }: InspectorPanelProps) {
             max="150"
             value={activeWidget.config?.fontSize || 20}
             onChange={(e) => updateConfig(activeWidget.i, "fontSize", parseInt(e.target.value))}
-            className="w-full h-2 rounded-lg cursor-pointer accent-green-500 bg-white/10"
+            className="w-full h-2 rounded-lg cursor-pointer accent-green-500 bg-[var(--mf-elev)]/10"
           />
         </Field>
         <Toggle
@@ -348,11 +398,11 @@ function TextTab({ activeWidget, updateConfig }: InspectorPanelProps) {
         <SectionHeader title="Schriftart" />
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <span className="text-xs text-white/70 block mb-1.5">{t("Familie")}</span>
+            <span className="text-xs text-[var(--mf-fg)]/70 block mb-1.5">{t("Familie")}</span>
             <select
               value={activeWidget.config?.fontFamily || "var(--font-geist-sans)"}
               onChange={(e) => updateConfig(activeWidget.i, "fontFamily", e.target.value)}
-              className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-2 focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-2 focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="var(--font-geist-sans)">Geist</option>
               <option value="Inter">Inter</option>
@@ -366,11 +416,11 @@ function TextTab({ activeWidget, updateConfig }: InspectorPanelProps) {
             </select>
           </div>
           <div>
-            <span className="text-xs text-white/70 block mb-1.5">{t("Gewicht")}</span>
+            <span className="text-xs text-[var(--mf-fg)]/70 block mb-1.5">{t("Gewicht")}</span>
             <select
               value={activeWidget.config?.fontWeight || "300"}
               onChange={(e) => updateConfig(activeWidget.i, "fontWeight", e.target.value)}
-              className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-2 focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-2 focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="100">100 Thin</option>
               <option value="300">300 Light</option>
@@ -387,19 +437,19 @@ function TextTab({ activeWidget, updateConfig }: InspectorPanelProps) {
         <SectionHeader title="Farbe & Schatten" />
         <div className="space-y-3">
           <div>
-            <span className="text-xs text-white/70 block mb-1.5">{t("Schriftfarbe")}</span>
+            <span className="text-xs text-[var(--mf-fg)]/70 block mb-1.5">{t("Schriftfarbe")}</span>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={activeWidget.config?.color || "#ffffff"}
                 onChange={(e) => updateConfig(activeWidget.i, "color", e.target.value)}
-                className="w-12 h-9 rounded-lg cursor-pointer bg-black border border-white/10"
+                className="w-12 h-9 rounded-lg cursor-pointer bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10"
               />
               <input
                 type="text"
                 value={activeWidget.config?.color || "#ffffff"}
                 onChange={(e) => updateConfig(activeWidget.i, "color", e.target.value)}
-                className="flex-1 bg-black border border-white/10 text-white/80 text-xs font-mono rounded-lg px-2 h-9 focus:outline-none focus:border-blue-500"
+                className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/80 text-xs font-mono rounded-lg px-2 h-9 focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
@@ -410,7 +460,7 @@ function TextTab({ activeWidget, updateConfig }: InspectorPanelProps) {
               max="40"
               value={activeWidget.config?.textShadowBlur || 0}
               onChange={(e) => updateConfig(activeWidget.i, "textShadowBlur", parseInt(e.target.value))}
-              className="w-full h-2 rounded-lg cursor-pointer accent-purple-500 bg-white/10"
+              className="w-full h-2 rounded-lg cursor-pointer accent-purple-500 bg-[var(--mf-elev)]/10"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -421,7 +471,7 @@ function TextTab({ activeWidget, updateConfig }: InspectorPanelProps) {
                 max="50"
                 value={activeWidget.config?.textShadowX ?? 0}
                 onChange={(e) => updateConfig(activeWidget.i, "textShadowX", parseInt(e.target.value))}
-                className="w-full h-1.5 rounded-lg cursor-pointer accent-purple-400 bg-white/10"
+                className="w-full h-1.5 rounded-lg cursor-pointer accent-purple-400 bg-[var(--mf-elev)]/10"
               />
             </Field>
             <Field label="Schatten Y" value={`${activeWidget.config?.textShadowY ?? 4}px`}>
@@ -431,7 +481,7 @@ function TextTab({ activeWidget, updateConfig }: InspectorPanelProps) {
                 max="50"
                 value={activeWidget.config?.textShadowY ?? 4}
                 onChange={(e) => updateConfig(activeWidget.i, "textShadowY", parseInt(e.target.value))}
-                className="w-full h-1.5 rounded-lg cursor-pointer accent-purple-400 bg-white/10"
+                className="w-full h-1.5 rounded-lg cursor-pointer accent-purple-400 bg-[var(--mf-elev)]/10"
               />
             </Field>
           </div>
@@ -518,6 +568,9 @@ function ContentTab(props: InspectorPanelProps) {
       {activeWidget.type === "SensorWidget.tsx" && (
         <SensorInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
+      {activeWidget.type === "CameraWidget.tsx" && (
+        <CameraInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
       {activeWidget.type.startsWith("custom:") && (
         <CustomModuleInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
@@ -553,10 +606,10 @@ function Toggle({
           className="sr-only peer"
         />
         <div
-          className={`w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${accentClass[accent]}`}
+          className={`w-9 h-5 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${accentClass[accent]}`}
         />
       </div>
-      <span className="text-sm text-white/80 group-hover:text-white transition-colors">
+      <span className="text-sm text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
         {t(label)}
       </span>
     </label>

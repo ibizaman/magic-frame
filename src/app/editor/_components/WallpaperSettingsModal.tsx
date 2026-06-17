@@ -61,15 +61,15 @@ export default function WallpaperSettingsModal({
        {variant === "modal" && (
          <div className="flex justify-between items-center mb-6">
             <div>
-               <h3 className="font-bold text-2xl text-white">{t("Wallpaper Engine")}</h3>
-               <p className="text-white/50 text-sm mt-1">{t("Display-Hintergründe konfigurieren")}</p>
+               <h3 className="font-bold text-2xl text-[var(--mf-fg)]">{t("Wallpaper Engine")}</h3>
+               <p className="text-[var(--mf-fg)]/50 text-sm mt-1">{t("Display-Hintergründe konfigurieren")}</p>
             </div>
-            <button onClick={onClose} className="bg-white/10 hover:bg-white/20 text-white rounded-full p-2" title={t("Schließen")}><X size={18} /></button>
+            <button onClick={onClose} className="bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 text-[var(--mf-fg)] rounded-full p-2" title={t("Schließen")}><X size={18} /></button>
          </div>
        )}
 
        {/* Untertabs — der Modal war als eine lange Spalte zu groß. */}
-       <div className="flex gap-1 mb-6 border-b border-white/10">
+       <div className="flex gap-1 mb-6 border-b border-[var(--mf-bdr)]/10">
           {TABS.map(({ key, label }) => (
              <button
                 key={key}
@@ -77,8 +77,8 @@ export default function WallpaperSettingsModal({
                 onClick={() => setTab(key)}
                 className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                    tab === key
-                      ? "border-blue-500 text-white"
-                      : "border-transparent text-white/50 hover:text-white/80"
+                      ? "border-blue-500 text-[var(--mf-fg)]"
+                      : "border-transparent text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]/80"
                 }`}
              >
                 {t(label)}
@@ -91,13 +91,14 @@ export default function WallpaperSettingsModal({
           {tab === "source" && (
             <>
              <div>
-                <label className="text-sm font-medium text-white/80 block mb-2">{t("Provider")}</label>
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Provider")}</label>
                 <select
                    value={wallpaper.source}
                    onChange={(e) => setWallpaper({ ...wallpaper, source: e.target.value })}
-                   className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                   className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                 >
                    <option value="bundled">{t("Mitgelieferte Bilder (Standard)")}</option>
+                   <option value="color">{t("Vollfarbe (einfarbiger Hintergrund)")}</option>
                    <option value="unsplash">{t("Unsplash (Dynamisch via Suchbegriff)")}</option>
                    <option value="url">{t("Feste Bild-URL")}</option>
                    <option value="webdav">{t("Lokaler NAS Ordner (WebDAV)")}</option>
@@ -106,36 +107,56 @@ export default function WallpaperSettingsModal({
              </div>
 
              {wallpaper.source === 'bundled' ? (
-                <div className="bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white/60 leading-relaxed">
+                <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl p-4 text-sm text-[var(--mf-fg)]/60 leading-relaxed">
                    {t("20 mitgelieferte Bilder — kein Setup nötig. Ideal als Start für einen neuen View. Du kannst jederzeit auf eine eigene Quelle (Immich, NAS, URL) wechseln.")}
+                </div>
+             ) : wallpaper.source === 'color' ? (
+                <div className="space-y-3">
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 block">{t("Hintergrundfarbe")}</label>
+                   <div className="flex items-center gap-3">
+                      <input
+                         type="color"
+                         value={wallpaper.bgColor || '#0f172a'}
+                         onChange={(e) => setWallpaper({ ...wallpaper, bgColor: e.target.value })}
+                         className="w-14 h-14 rounded-lg border border-[var(--mf-bdr)]/20 bg-transparent cursor-pointer shrink-0"
+                      />
+                      <input
+                         type="text"
+                         value={wallpaper.bgColor || '#0f172a'}
+                         onChange={(e) => setWallpaper({ ...wallpaper, bgColor: e.target.value })}
+                         placeholder="#0f172a"
+                         className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-mono rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                      />
+                   </div>
+                   <p className="text-[11px] text-[var(--mf-fg)]/40">{t("Einfarbiger Hintergrund statt Bild — keine Slideshow, kein Cache.")}</p>
                 </div>
              ) : wallpaper.source === 'immich' ? (
                 <div className="space-y-4">
                    <div>
-                      <label className="text-sm font-medium text-white/80 block mb-2">{t("Immich Instanz URL (Domain)")}</label>
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Immich Instanz URL (Domain)")}</label>
                       <input
                          type="text" value={wallpaper.immichUrl || ''}
                          onChange={(e) => setWallpaper({ ...wallpaper, immichUrl: e.target.value })}
                          placeholder="http://192.168.178.50:2283"
-                         className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                         className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                       />
                    </div>
                    <div>
-                      <label className="text-sm font-medium text-white/80 block mb-2">{t("API-Key (Read Only)")}</label>
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("API-Key (Read Only)")}</label>
                       <input
                          type="password" value={wallpaper.immichApiKey || ''}
                          onChange={(e) => setWallpaper({ ...wallpaper, immichApiKey: e.target.value })}
                          placeholder="•••••••••••••••••••••"
-                         className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                         className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                       />
                    </div>
 
                    <div>
-                      <label className="text-sm font-medium text-white/80 block mb-2">{t("Immich-Quelle")}</label>
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Immich-Quelle")}</label>
                       <select
                          value={immichMode}
                          onChange={(e) => setWallpaper({ ...wallpaper, immichMode: e.target.value as "album" | "favorites" | "memories" | "people" })}
-                         className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                         className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors cursor-pointer"
                       >
                          <option value="album">{t("Album")}</option>
                          <option value="favorites">{t("Favoriten")}</option>
@@ -144,12 +165,12 @@ export default function WallpaperSettingsModal({
                    </div>
 
                    {immichMode === "favorites" && (
-                      <div className="bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white/60 leading-relaxed">
+                      <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl p-4 text-sm text-[var(--mf-fg)]/60 leading-relaxed">
                          {t("Zeigt alle in Immich favorisierten Fotos (Stern). Kein Album nötig.")}
                       </div>
                    )}
                    {immichMode === "memories" && (
-                      <div className="bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white/60 leading-relaxed">
+                      <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl p-4 text-sm text-[var(--mf-fg)]/60 leading-relaxed">
                          {t("Zeigt deine Immich-Rückblicke („vor X Jahren an diesem Tag“). Aktualisiert sich automatisch.")}
                       </div>
                    )}
@@ -160,7 +181,7 @@ export default function WallpaperSettingsModal({
                            type="button"
                            onClick={() => fetchImmichAlbums()}
                            disabled={isFetchingAlbums || !wallpaper.immichUrl || !wallpaper.immichApiKey}
-                           className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                           className="w-full flex items-center justify-center gap-2 bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 text-[var(--mf-fg)] py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                            {isFetchingAlbums
                              ? <><RefreshCw size={16} className="animate-spin" /> {t("Lade Alben…")}</>
@@ -175,13 +196,13 @@ export default function WallpaperSettingsModal({
 
                         {immichAlbums && immichAlbums.length > 0 && (
                            <div>
-                              <label className="text-sm font-medium text-white/80 block mb-2">
+                              <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
                                  {t("Album auswählen ({n} gefunden)").replace("{n}", String(immichAlbums.length))}
                               </label>
                               <select
                                  value={wallpaper.immichAlbumId || ''}
                                  onChange={(e) => setWallpaper({ ...wallpaper, immichAlbumId: e.target.value })}
-                                 className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                                 className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors cursor-pointer"
                               >
                                  <option value="">{t("— Album wählen —")}</option>
                                  {immichAlbums.map((al) => (
@@ -194,25 +215,25 @@ export default function WallpaperSettingsModal({
                         )}
 
                         {immichAlbums && immichAlbums.length === 0 && !isFetchingAlbums && !immichError && (
-                           <p className="text-xs text-white/40 px-1">
+                           <p className="text-xs text-[var(--mf-fg)]/40 px-1">
                               {t("Noch keine Alben geladen. URL + API-Key eintragen und „Alben laden“ drücken.")}
                            </p>
                         )}
 
                         {wallpaper.immichAlbumId && (
-                           <p className="text-[11px] text-white/30 px-1 font-mono">
+                           <p className="text-[11px] text-[var(--mf-fg)]/30 px-1 font-mono">
                               {t("Ausgewählte ID:")} {wallpaper.immichAlbumId}
                            </p>
                         )}
                      </div>
                    ) : (
                      <div>
-                        <label className="text-sm font-medium text-white/80 block mb-2">{t("Album ID (manuell)")}</label>
+                        <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Album ID (manuell)")}</label>
                         <input
                            type="text" value={wallpaper.immichAlbumId || ''}
                            onChange={(e) => setWallpaper({ ...wallpaper, immichAlbumId: e.target.value })}
                            placeholder={t("z.B. a2f...")}
-                           className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                           className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                         />
                      </div>
                    ))}
@@ -220,31 +241,31 @@ export default function WallpaperSettingsModal({
              ) : wallpaper.source === 'webdav' ? (
                 <div className="space-y-4">
                    <div>
-                      <label className="text-sm font-medium text-white/80 block mb-2">{t("WebDAV Server-URL (z.B. NAS)")}</label>
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("WebDAV Server-URL (z.B. NAS)")}</label>
                       <input
                          type="text" value={wallpaper.webdavUrl || ''}
                          onChange={(e) => setWallpaper({ ...wallpaper, webdavUrl: e.target.value })}
                          placeholder="http://192.168.178.50:5005"
-                         className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                         className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                       />
                    </div>
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                         <label className="text-sm font-medium text-white/80 block mb-2">{t("Benutzername")}</label>
+                         <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Benutzername")}</label>
                          <input
                             type="text" value={wallpaper.webdavUser || ''}
                             onChange={(e) => setWallpaper({ ...wallpaper, webdavUser: e.target.value })}
                             placeholder="admin"
-                            className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                            className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                          />
                       </div>
                       <div>
-                         <label className="text-sm font-medium text-white/80 block mb-2">{t("Passwort")}</label>
+                         <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Passwort")}</label>
                          <input
                             type="password" value={wallpaper.webdavPass || ''}
                             onChange={(e) => setWallpaper({ ...wallpaper, webdavPass: e.target.value })}
                             placeholder="••••••••"
-                            className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                            className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                          />
                       </div>
                    </div>
@@ -253,7 +274,7 @@ export default function WallpaperSettingsModal({
                       <button
                          onClick={() => fetchWebdavFolders(wallpaper.webdavPath || "/")}
                          disabled={isFetchingFolders}
-                         className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-medium transition-colors disabled:opacity-50"
+                         className="w-full bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 text-[var(--mf-fg)] py-3 rounded-xl font-medium transition-colors disabled:opacity-50"
                       >
                          {isFetchingFolders ? t("Verbinde...") : t("NAS Verbinden / Ordner wählen")}
                       </button>
@@ -266,8 +287,8 @@ export default function WallpaperSettingsModal({
                    )}
 
                    {(webdavFolders.length > 0 || wallpaper.webdavPath) && (
-                      <div className="bg-black/50 border border-white/10 rounded-xl overflow-hidden mt-4">
-                         <div className="px-4 py-3 bg-white/5 border-b border-white/10 flex items-center justify-between">
+                      <div className="bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl overflow-hidden mt-4">
+                         <div className="px-4 py-3 bg-[var(--mf-elev)]/5 border-b border-[var(--mf-bdr)]/10 flex items-center justify-between">
                             <span className="text-sm font-mono text-cyan-300 overflow-hidden text-ellipsis whitespace-nowrap mr-2">
                                {wallpaper.webdavPath || "/"}
                             </span>
@@ -279,7 +300,7 @@ export default function WallpaperSettingsModal({
                                      const parent = parts.length > 0 ? parts.join('/') : '/';
                                      fetchWebdavFolders(parent === "" ? "/" : parent);
                                   }}
-                                  className="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-white font-medium flex-shrink-0"
+                                  className="text-xs bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 px-2 py-1 rounded text-[var(--mf-fg)] font-medium flex-shrink-0"
                                >
                                   {t("Zurück")}
                                </button>
@@ -287,13 +308,13 @@ export default function WallpaperSettingsModal({
                          </div>
                          <div className="max-h-[200px] overflow-y-auto">
                             {webdavFolders.length === 0 && !isFetchingFolders ? (
-                               <div className="p-4 text-center text-white/50 text-sm">{t("Keine Unterordner")}</div>
+                               <div className="p-4 text-center text-[var(--mf-fg)]/50 text-sm">{t("Keine Unterordner")}</div>
                             ) : (
                                webdavFolders.map(folder => (
                                   <button
                                      key={folder.filename}
                                      onClick={() => fetchWebdavFolders(folder.filename)}
-                                     className="w-full text-left px-4 py-3 border-b border-white/5 hover:bg-white/5 text-sm text-white/80 flex items-center gap-2 transition-colors last:border-0"
+                                     className="w-full text-left px-4 py-3 border-b border-[var(--mf-bdr)]/5 hover:bg-[var(--mf-elev)]/5 text-sm text-[var(--mf-fg)]/80 flex items-center gap-2 transition-colors last:border-0"
                                   >
                                      <span className="text-yellow-500 opacity-80">📁</span>
                                      <span>{folder.basename}</span>
@@ -306,28 +327,28 @@ export default function WallpaperSettingsModal({
                 </div>
              ) : (
                 <div>
-                   <label className="text-sm font-medium text-white/80 block mb-2">
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
                       {wallpaper.source === 'unsplash' ? t("Suchbegriffe (komma-getrennt)") : t("Bild-URL (https://...)")}
                    </label>
                    <input
                       type="text" value={wallpaper.query}
                       onChange={(e) => setWallpaper({ ...wallpaper, query: e.target.value })}
                       placeholder={wallpaper.source === 'unsplash' ? 'nature, mountains, dark' : 'https://...'}
-                      className="w-full bg-black border border-white/10 text-white rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                      className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                    />
                 </div>
              )}
 
              {(wallpaper.source === 'bundled' || wallpaper.source === 'unsplash' || wallpaper.source === 'webdav' || wallpaper.source === 'immich') && (
                 <div>
-                   <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                       <span>{t("Bildwechsel Intervall (Sekunden)")}</span>
                       <span className="text-blue-400">{wallpaper.intervalSec}s</span>
                    </label>
                    <input
                       type="range" min="10" max="3600" step="10" value={wallpaper.intervalSec}
                       onChange={(e) => setWallpaper({ ...wallpaper, intervalSec: parseInt(e.target.value) })}
-                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
                    />
                 </div>
              )}
@@ -338,23 +359,23 @@ export default function WallpaperSettingsModal({
           {tab === "display" && (
             <>
                 <div>
-                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Aufteilung (Split-View)")}</label>
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Aufteilung (Split-View)")}</label>
                    <select
                       value={wallpaper.splitMode ?? "off"}
                       onChange={(e) => setWallpaper({ ...wallpaper, splitMode: e.target.value as "off" | "auto" | "grid2" | "grid4" })}
-                      className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
                    >
                       <option value="off">{t("Aus (ein Bild)")}</option>
                       <option value="auto">{t("Auto (Hochformat paaren)")}</option>
                       <option value="grid2">{t("2 nebeneinander")}</option>
                       <option value="grid4">{t("2×2 (vier Bilder)")}</option>
                    </select>
-                   <p className="text-[11px] text-white/40 mt-1">
+                   <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                       {t("Auto zeigt Querformat einzeln und legt zwei Hochformat-Bilder nebeneinander — gut für gemischte Alben. Im Split-Modus wird sanft übergeblendet (Crossfade).")}
                    </p>
                 </div>
                 <div>
-                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Übergangseffekt")}</label>
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Übergangseffekt")}</label>
                    <select
                       value={wallpaper.transitionEffect ?? (wallpaper.zoomEffect ? "kenburns" : "crossfade")}
                       onChange={(e) => {
@@ -366,72 +387,72 @@ export default function WallpaperSettingsModal({
                             zoomEffect: next === "kenburns",
                          });
                       }}
-                      className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
                    >
                       <option value="crossfade">{t("Crossfade (sanfte Blende)")}</option>
                       <option value="kenburns">{t("Ken Burns (langsamer Zoom)")}</option>
                       <option value="slide">{t("Slide (Push von rechts)")}</option>
                       <option value="none">{t("Hart (kein Effekt)")}</option>
                    </select>
-                   <p className="text-[11px] text-white/40 mt-1">
+                   <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                       {t("Ken Burns ist effektvoll, aber auf alten TV-Browsern (Tizen) spürbar schwerer. Bei Stottern auf Crossfade oder Hart wechseln.")}
                    </p>
                 </div>
                 {effectiveTransition !== "none" && (
                    <div>
-                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                          <span>{t("Übergangs-Dauer")}</span>
                          <span className="text-blue-400">{(transMs / 1000).toFixed(1)}s</span>
                       </label>
                       <input
                          type="range" min="300" max="4000" step="100" value={transMs}
                          onChange={(e) => setWallpaper({ ...wallpaper, transitionMs: parseInt(e.target.value) })}
-                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
                       />
                    </div>
                 )}
                 {effectiveTransition === "kenburns" && (
                    <div>
-                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                          <span>{t("Ken-Burns-Intensität")}</span>
                          <span className="text-blue-400">{wallpaper.kenBurnsIntensity ?? 15}%</span>
                       </label>
                       <input
                          type="range" min="5" max="40" step="1" value={wallpaper.kenBurnsIntensity ?? 15}
                          onChange={(e) => setWallpaper({ ...wallpaper, kenBurnsIntensity: parseInt(e.target.value) })}
-                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
                       />
-                      <p className="text-[11px] text-white/40 mt-1">{t("Wie weit das Bild langsam einzoomt. Höher = stärkerer Effekt.")}</p>
+                      <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">{t("Wie weit das Bild langsam einzoomt. Höher = stärkerer Effekt.")}</p>
                    </div>
                 )}
                 <div>
-                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Bildanzeige")}</label>
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Bildanzeige")}</label>
                    <select
                       value={wallpaper.fit ?? "cover"}
                       onChange={(e) => setWallpaper({ ...wallpaper, fit: e.target.value as "cover" | "contain" | "fill" | "none" })}
-                      className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
                    >
                       <option value="cover">{t("Füllen (Ausschnitt, Standard)")}</option>
                       <option value="contain">{t("Einpassen (ganzes Bild)")}</option>
                       <option value="fill">{t("Strecken (verzerrt)")}</option>
                       <option value="none">{t("Zentriert (Originalgröße)")}</option>
                    </select>
-                   <p className="text-[11px] text-white/40 mt-1">
+                   <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                       {t("Füllen schneidet Ränder ab. Einpassen zeigt das ganze Bild ohne Beschneiden — gut für Hochformat-Fotos.")}
                    </p>
                 </div>
                 <div>
-                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Bild-Position")}</label>
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Bild-Position")}</label>
                    <select
                       value={wallpaper.imagePosition ?? "center"}
                       onChange={(e) => setWallpaper({ ...wallpaper, imagePosition: e.target.value as "top" | "center" | "bottom" })}
-                      className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
                    >
                       <option value="top">{t("Oben")}</option>
                       <option value="center">{t("Mitte (Standard)")}</option>
                       <option value="bottom">{t("Unten")}</option>
                    </select>
-                   <p className="text-[11px] text-white/40 mt-1">
+                   <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                       {t("Bei „Füllen“: welcher Bildausschnitt sichtbar bleibt — z.B. „Oben“ gegen abgeschnittene Köpfe.")}
                    </p>
                 </div>
@@ -443,9 +464,9 @@ export default function WallpaperSettingsModal({
                          onChange={(e) => setWallpaper({ ...wallpaper, showTimer: e.target.checked })}
                          className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                      <div className="w-11 h-6 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                    </div>
-                   <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Ladekreis (Timer) anzeigen")}</span>
+                   <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Ladekreis (Timer) anzeigen")}</span>
                 </label>
             </>
           )}
@@ -453,50 +474,50 @@ export default function WallpaperSettingsModal({
           {/* ─────────────── TAB: OVERLAYS & TEXT ─────────────── */}
           {tab === "overlays" && (
             <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[var(--mf-elev)]/5 p-4 rounded-xl border border-[var(--mf-bdr)]/10">
                    <div>
-                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                          <span>{t("Schatten Oben")}</span>
                          <span className="text-blue-400">{wallpaper.gradientTop ?? 30}%</span>
                       </label>
                       <input
                          type="range" min="0" max="100" step="5" value={wallpaper.gradientTop ?? 30}
                          onChange={(e) => setWallpaper({ ...wallpaper, gradientTop: parseInt(e.target.value) })}
-                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-black"
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-surface)]"
                       />
                    </div>
                    <div>
-                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                          <span>{t("Schatten Unten")}</span>
                          <span className="text-blue-400">{wallpaper.gradientBottom ?? 80}%</span>
                       </label>
                       <input
                          type="range" min="0" max="100" step="5" value={wallpaper.gradientBottom ?? 80}
                          onChange={(e) => setWallpaper({ ...wallpaper, gradientBottom: parseInt(e.target.value) })}
-                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-black"
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-surface)]"
                       />
                    </div>
-                   <div className="col-span-2 border-t border-white/5 pt-3 mt-1" />
+                   <div className="col-span-2 border-t border-[var(--mf-bdr)]/5 pt-3 mt-1" />
                    <div>
-                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                          <span>{t("Vignette Effekt")}</span>
                          <span className="text-blue-400">{wallpaper.overlayVignette ?? 85}%</span>
                       </label>
                       <input
                          type="range" min="0" max="100" step="5" value={wallpaper.overlayVignette ?? 85}
                          onChange={(e) => setWallpaper({ ...wallpaper, overlayVignette: parseInt(e.target.value) })}
-                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-black"
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-surface)]"
                       />
                    </div>
                    <div>
-                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                          <span>{t("Unschärfe (Blur)")}</span>
                          <span className="text-blue-400">{wallpaper.overlayBlur ?? 0}px</span>
                       </label>
                       <input
                          type="range" min="0" max="30" step="1" value={wallpaper.overlayBlur ?? 0}
                          onChange={(e) => setWallpaper({ ...wallpaper, overlayBlur: parseInt(e.target.value) })}
-                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-black"
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-surface)]"
                       />
                    </div>
                 </div>
@@ -509,68 +530,68 @@ export default function WallpaperSettingsModal({
                          onChange={(e) => setWallpaper({ ...wallpaper, showMetadata: e.target.checked })}
                          className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                      <div className="w-11 h-6 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                    </div>
-                   <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Metadata/EXIF einblenden")}</span>
+                   <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Metadata/EXIF einblenden")}</span>
                 </label>
 
                 {wallpaper.showMetadata && (
                    <div className="flex flex-col gap-3">
                       <label className="flex items-center gap-3 cursor-pointer group">
                          <input type="checkbox" checked={wallpaper.metaShowDate !== false} onChange={(e) => setWallpaper({ ...wallpaper, metaShowDate: e.target.checked })} className="accent-blue-500 w-4 h-4 cursor-pointer" />
-                         <span className="text-xs font-medium text-white/60 group-hover:text-white/80 transition-colors">{t("Datum & Uhrzeit")}</span>
+                         <span className="text-xs font-medium text-[var(--mf-fg)]/60 group-hover:text-[var(--mf-fg)]/80 transition-colors">{t("Datum & Uhrzeit")}</span>
                       </label>
                       <label className="flex items-center gap-3 cursor-pointer group">
                          <input type="checkbox" checked={wallpaper.metaShowCamera !== false} onChange={(e) => setWallpaper({ ...wallpaper, metaShowCamera: e.target.checked })} className="accent-blue-500 w-4 h-4 cursor-pointer" />
-                         <span className="text-xs font-medium text-white/60 group-hover:text-white/80 transition-colors">{t("Kamera-Modell")}</span>
+                         <span className="text-xs font-medium text-[var(--mf-fg)]/60 group-hover:text-[var(--mf-fg)]/80 transition-colors">{t("Kamera-Modell")}</span>
                       </label>
                       <label className="flex items-center gap-3 cursor-pointer group">
                          <input type="checkbox" checked={wallpaper.metaShowLocation !== false} onChange={(e) => setWallpaper({ ...wallpaper, metaShowLocation: e.target.checked })} className="accent-blue-500 w-4 h-4 cursor-pointer" />
-                         <span className="text-xs font-medium text-white/60 group-hover:text-white/80 transition-colors">{t("Aufnahmeort (GPS)")}</span>
+                         <span className="text-xs font-medium text-[var(--mf-fg)]/60 group-hover:text-[var(--mf-fg)]/80 transition-colors">{t("Aufnahmeort (GPS)")}</span>
                       </label>
 
-                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-black/30 p-3 rounded-lg border border-white/5">
+                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] p-3 rounded-lg border border-[var(--mf-bdr)]/5">
                          <div className="col-span-2">
-                            <label className="text-[10px] font-medium text-white/40 block mb-1 uppercase tracking-wider">{t("Hintergrund-Balken Deckkraft")}</label>
+                            <label className="text-[10px] font-medium text-[var(--mf-fg)]/40 block mb-1 uppercase tracking-wider">{t("Hintergrund-Balken Deckkraft")}</label>
                             <div className="flex items-center gap-2">
                                <input
                                   type="range" min="0" max="100" step="10" value={wallpaper.metaBgOpacity ?? 40}
                                   onChange={(e) => setWallpaper({ ...wallpaper, metaBgOpacity: parseInt(e.target.value) })}
-                                  className="flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                                  className="flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
                                />
-                               <span className="text-xs text-white/60 w-8">{wallpaper.metaBgOpacity ?? 40}%</span>
+                               <span className="text-xs text-[var(--mf-fg)]/60 w-8">{wallpaper.metaBgOpacity ?? 40}%</span>
                             </div>
                          </div>
 
-                         <div className="col-span-2 border-t border-white/10 my-1 pt-3" />
+                         <div className="col-span-2 border-t border-[var(--mf-bdr)]/10 my-1 pt-3" />
 
                          <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                               <label className="text-[10px] font-medium text-white/40 block mb-1 uppercase tracking-wider">{t("Schriftfarbe")}</label>
+                               <label className="text-[10px] font-medium text-[var(--mf-fg)]/40 block mb-1 uppercase tracking-wider">{t("Schriftfarbe")}</label>
                                <input
                                   type="color" value={wallpaper.metaColor || '#ffffff'}
                                   onChange={(e) => setWallpaper({ ...wallpaper, metaColor: e.target.value })}
-                                  className="w-full h-10 bg-black border border-white/10 rounded-lg cursor-pointer"
+                                  className="w-full h-10 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg cursor-pointer"
                                />
                             </div>
                             <div>
-                               <label className="text-[10px] font-medium text-white/40 mb-1 uppercase tracking-wider flex justify-between">
+                               <label className="text-[10px] font-medium text-[var(--mf-fg)]/40 mb-1 uppercase tracking-wider flex justify-between">
                                   <span>{t("Schatten (Blur)")}</span>
                                   <span className="text-purple-400">{wallpaper.metaTextShadowBlur ?? 0}px</span>
                                </label>
                                <input
                                   type="range" min="0" max="20" value={wallpaper.metaTextShadowBlur ?? 0}
                                   onChange={(e) => setWallpaper({ ...wallpaper, metaTextShadowBlur: parseInt(e.target.value) })}
-                                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-purple-500 bg-white/10 mt-3"
+                                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-purple-500 bg-[var(--mf-elev)]/10 mt-3"
                                />
                             </div>
 
                             <div>
-                               <label className="text-[10px] font-medium text-white/40 block mb-1 uppercase tracking-wider">{t("Basis-Schriftart")}</label>
+                               <label className="text-[10px] font-medium text-[var(--mf-fg)]/40 block mb-1 uppercase tracking-wider">{t("Basis-Schriftart")}</label>
                                <select
                                   value={wallpaper.metaFontFamily || 'Inter'}
                                   onChange={(e) => setWallpaper({ ...wallpaper, metaFontFamily: e.target.value })}
-                                  className="w-full bg-black border border-white/10 text-white font-sans text-xs rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
+                                  className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-xs rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
                                >
                                   <option value="Inter">{t("Inter (Clean)")}</option>
                                   <option value="Courier New">{t("Courier (Retro)")}</option>
@@ -586,11 +607,11 @@ export default function WallpaperSettingsModal({
                                </select>
                             </div>
                             <div>
-                               <label className="text-[10px] font-medium text-white/40 block mb-1 uppercase tracking-wider">{t("Dicke (Weight)")}</label>
+                               <label className="text-[10px] font-medium text-[var(--mf-fg)]/40 block mb-1 uppercase tracking-wider">{t("Dicke (Weight)")}</label>
                                <select
                                   value={wallpaper.metaFontWeight || '300'}
                                   onChange={(e) => setWallpaper({ ...wallpaper, metaFontWeight: e.target.value })}
-                                  className="w-full bg-black border border-white/10 text-white font-sans text-xs rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
+                                  className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-xs rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
                                >
                                   <option value="100">{t("100 - Sehr dünn")}</option>
                                   <option value="300">{t("300 - Dünn (Standard)")}</option>
@@ -603,14 +624,14 @@ export default function WallpaperSettingsModal({
                          </div>
 
                          <div className="col-span-2 mt-2">
-                            <label className="text-[10px] font-medium text-white/40 mb-1 uppercase tracking-wider flex justify-between">
+                            <label className="text-[10px] font-medium text-[var(--mf-fg)]/40 mb-1 uppercase tracking-wider flex justify-between">
                               <span>{t("Schriftgröße (Standard: 12px)")}</span>
                               <span className="text-green-400">{wallpaper.metaFontSize ?? 12}px</span>
                             </label>
                             <input
                                type="range" min="8" max="40" step="1" value={wallpaper.metaFontSize ?? 12}
                                onChange={(e) => setWallpaper({ ...wallpaper, metaFontSize: parseInt(e.target.value) })}
-                               className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-green-500 bg-white/10 mt-2"
+                               className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-green-500 bg-[var(--mf-elev)]/10 mt-2"
                             />
                          </div>
                       </div>
@@ -620,19 +641,19 @@ export default function WallpaperSettingsModal({
           )}
        </div>
 
-       <p className="text-xs text-white/40 mt-6 bg-white/5 p-4 rounded-xl border border-white/5">
+       <p className="text-xs text-[var(--mf-fg)]/40 mt-6 bg-[var(--mf-elev)]/5 p-4 rounded-xl border border-[var(--mf-bdr)]/5">
           {t("Hinweis: Speichern Sie das Layout über den blauen Button oben rechts, damit die Wallpaper Engine auf dem Display aktualisiert wird.")}
        </p>
     </>
   );
 
   if (variant === "inline") {
-    return <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6">{inner}</div>;
+    return <div className="bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">{inner}</div>;
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-zinc-950 border border-white/10 p-8 rounded-[32px] shadow-2xl w-full max-w-3xl nodrag max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-[var(--mf-backdrop)]/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 p-8 rounded-[32px] shadow-2xl w-full max-w-3xl nodrag max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {inner}
       </div>
     </div>

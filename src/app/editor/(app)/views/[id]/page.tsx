@@ -10,8 +10,11 @@ import {
   Smartphone,
   Settings,
   Plus,
+  Layers,
+  EyeOff,
   Image as ImageIcon,
   Gauge,
+  Video,
   X,
   ClipboardPaste,
   Save,
@@ -23,6 +26,7 @@ import {
   Power,
   Bell,
   ChevronLeft,
+  GripVertical,
   RefreshCw,
   Timer as TimerIcon,
   MessageSquare,
@@ -63,6 +67,7 @@ const WIDGET_CATALOG: {
   { type: "TodosWidget.tsx", label: "Todos", icon: <ClipboardList size={16} /> },
   { type: "ImageWidget.tsx", label: "Bild", icon: <ImageIcon size={16} /> },
   { type: "SensorWidget.tsx", label: "Sensor", icon: <Gauge size={16} /> },
+  { type: "CameraWidget.tsx", label: "Kamera", icon: <Video size={16} /> },
 ];
 
 const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }> = {
@@ -76,6 +81,7 @@ const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }>
   "MessagesWidget.tsx":        { hex: "#d946ef", glow: "rgba(217,70,239,0.25)",  tint: "rgba(217,70,239,0.12)"  }, // fuchsia
   "ImageWidget.tsx":           { hex: "#a855f7", glow: "rgba(168,85,247,0.25)",  tint: "rgba(168,85,247,0.12)"  }, // purple
   "SensorWidget.tsx":          { hex: "#14b8a6", glow: "rgba(20,184,166,0.25)",  tint: "rgba(20,184,166,0.12)"  }, // teal
+  "CameraWidget.tsx":          { hex: "#f43f5e", glow: "rgba(244,63,94,0.25)",   tint: "rgba(244,63,94,0.12)"   }, // rose
   "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
   "TodosWidget.tsx":           { hex: "#6366f1", glow: "rgba(99,102,241,0.25)",  tint: "rgba(99,102,241,0.12)"  }, // indigo
 };
@@ -290,6 +296,16 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         </div>
       );
 
+    case "CameraWidget.tsx":
+      // Camera frame + centred play triangle — reads as "video feed".
+      return (
+        <div className="w-full h-full flex items-center justify-center p-[10%]">
+          <div className="w-full h-full rounded-lg flex items-center justify-center" style={{ border: `2px solid ${dim}` }}>
+            <div className="w-0 h-0" style={{ borderTop: "0.7em solid transparent", borderBottom: "0.7em solid transparent", borderLeft: `1.1em solid ${dim}` }} />
+          </div>
+        </div>
+      );
+
     case "ShoppingListWidget.tsx":
     case "TodosWidget.tsx":
       // List rows: checkbox square + text line.
@@ -339,6 +355,8 @@ function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <ImageIcon size={size} />;
     case "SensorWidget.tsx":
       return <Gauge size={size} />;
+    case "CameraWidget.tsx":
+      return <Video size={size} />;
     case "ShoppingListWidget.tsx":
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":
@@ -362,6 +380,9 @@ export default function ViewEditor({
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [layout, setLayout] = useState<WidgetLayoutItem[]>(defaultLayout);
   const [activeSettingsId, setActiveSettingsId] = useState<string | null>(null);
+  // Drag-reorder state for the layer list (front→back stacking order).
+  const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null);
+  const [dragOverLayerId, setDragOverLayerId] = useState<string | null>(null);
   const [wallpaper, setWallpaper] = useState<WallpaperConfig>({ ...DEFAULT_WALLPAPER });
   const [settings, setSettings] = useState<any>({ haUrl: "", haToken: "" });
 
@@ -398,6 +419,7 @@ export default function ViewEditor({
 
   const [socket, setSocket] = useState<any>(null);
   const [saveStatus, setSaveStatus] = useState<null | "saving" | "saved" | "error">(null);
+  const [showViewSettings, setShowViewSettings] = useState(false);
 
   // #28: vertikale Grid-Grenze. Wird aus der ECHTEN gemessenen Grid-Höhe
   // abgeleitet (nicht geraten). Solange undefined → kein Limit (= bisheriges
@@ -505,6 +527,36 @@ export default function ViewEditor({
 
   const updateLabel = (i: string, label: string) => {
     setLayout((prev) => prev.map((item) => (item.i === i ? { ...item, label } : item)));
+  };
+
+  // Stacking z-order. An explicit config.zIndex (a plain number) survives
+  // save/load regardless of DB row order; fall back to the array index for
+  // widgets that never got one. Higher zIndex = drawn on top (front).
+  const zIndexOf = (w: any, idx: number) =>
+    typeof w.config?.zIndex === "number" ? w.config.zIndex : idx;
+
+  // Drag-reorder: drop `draggedId` onto `targetId`'s slot in the visual
+  // (front→back) order, then re-stamp every zIndex 0..n-1 so it persists.
+  const reorderLayers = (draggedId: string, targetId: string) => {
+    if (draggedId === targetId) return;
+    setLayout((prev) => {
+      const ordered = prev
+        .map((w, i) => ({ w, z: zIndexOf(w, i) }))
+        .sort((a, b) => b.z - a.z) // front (top of list) first
+        .map((o) => o.w);
+      const from = ordered.findIndex((w) => w.i === draggedId);
+      const to = ordered.findIndex((w) => w.i === targetId);
+      if (from < 0 || to < 0) return prev;
+      const [moved] = ordered.splice(from, 1);
+      ordered.splice(to, 0, moved);
+      const n = ordered.length;
+      const zMap = new Map<string, number>();
+      ordered.forEach((w, listIdx) => zMap.set(w.i, n - 1 - listIdx)); // top of list = highest z
+      return prev.map((w) => ({
+        ...w,
+        config: { ...w.config, zIndex: zMap.get(w.i) ?? 0 },
+      }));
+    });
   };
 
   const addWidget = (type: string) => {
@@ -719,57 +771,64 @@ export default function ViewEditor({
 
   return (
     <>
-      <header className="h-14 shrink-0 border-b border-white/10 bg-black/40 flex items-center px-3 gap-2">
+      <header className="h-14 shrink-0 border-b border-[var(--mf-bdr)]/10 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] flex items-center px-3 gap-2">
         <Link
           href="/editor/views"
-          className="flex items-center gap-1 text-xs text-white/50 hover:text-white px-2 h-8 rounded-md hover:bg-white/5"
+          className="flex items-center gap-1 text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-2 h-8 rounded-md hover:bg-[var(--mf-elev)]/5"
         >
           <ChevronLeft size={14} /> {t("Views")}
         </Link>
-        <div className="w-px h-6 bg-white/10" />
+        <div className="w-px h-6 bg-[var(--mf-elev)]/10" />
         <div className="min-w-0 flex-1 flex items-baseline gap-2">
           <h1 className="text-sm font-semibold truncate">{viewName || viewId}</h1>
-          <code className="text-[11px] text-white/40 font-mono truncate hidden sm:inline">
+          <code className="text-[11px] text-[var(--mf-fg)]/40 font-mono truncate hidden sm:inline">
             /view/{viewId}
           </code>
         </div>
 
-        <div className="hidden md:inline-flex rounded-lg bg-white/5 border border-white/10 p-0.5 shrink-0">
+        <div className="hidden md:inline-flex rounded-lg bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 p-0.5 shrink-0">
           <button
             onClick={() => setOrientation("landscape")}
-            className={`flex items-center gap-1.5 px-2.5 h-7 rounded-md text-xs font-medium transition-colors ${orientation === "landscape" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"}`}
+            className={`flex items-center gap-1.5 px-2.5 h-7 rounded-md text-xs font-medium transition-colors ${orientation === "landscape" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"}`}
           >
             <Monitor size={13} /> {t("Quer")}
           </button>
           <button
             onClick={() => setOrientation("portrait")}
-            className={`flex items-center gap-1.5 px-2.5 h-7 rounded-md text-xs font-medium transition-colors ${orientation === "portrait" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"}`}
+            className={`flex items-center gap-1.5 px-2.5 h-7 rounded-md text-xs font-medium transition-colors ${orientation === "portrait" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"}`}
           >
             <Smartphone size={13} /> {t("Hoch")}
           </button>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={() => setShowViewSettings(true)}
+            title={t("View-Einstellungen")}
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors"
+          >
+            <Settings size={15} />
+          </button>
           <a
             href={`/view/${encodeURIComponent(viewId)}`}
             target="_blank"
             rel="noreferrer"
             title={t("View in neuem Tab öffnen")}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors"
           >
             <ExternalLink size={15} />
           </a>
           <button
             onClick={handleStopCast}
             title={t("TV Sync beenden")}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-[var(--mf-fg)]/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
           >
             <X size={15} />
           </button>
           <button
             onClick={handleCastToTV}
             title={t("Alle TVs auf dieses Dashboard")}
-            className="flex items-center gap-1.5 px-2.5 h-9 rounded-lg text-sm font-medium text-indigo-300 hover:text-white bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 h-9 rounded-lg text-sm font-medium text-indigo-300 hover:text-[var(--mf-fg)] bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 transition-colors"
           >
             <Cast size={14} />
             <span className="hidden lg:inline">{t("TV Sync")}</span>
@@ -783,7 +842,7 @@ export default function ViewEditor({
                 handleRefreshDevices(true);
               }
             }}
-            className="flex items-center gap-1.5 px-2.5 h-9 rounded-lg text-sm font-medium text-amber-300 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 h-9 rounded-lg text-sm font-medium text-amber-300 hover:text-[var(--mf-fg)] bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-colors"
           >
             <RefreshCw size={14} />
             <span className="hidden lg:inline">{t("Refresh")}</span>
@@ -810,7 +869,7 @@ export default function ViewEditor({
         </div>
       </header>
 
-      <div className="border-b border-white/5 bg-black/20 px-4 flex items-center gap-2 overflow-x-auto">
+      <div className="border-b border-[var(--mf-bdr)]/5 bg-[var(--mf-ovl)]/20 light:bg-[var(--mf-surface)] px-4 flex items-center gap-2 overflow-x-auto">
         {hasClipboardData && (
           <button
             onClick={pasteFromClipboard}
@@ -821,28 +880,28 @@ export default function ViewEditor({
         )}
         <button
           onClick={() => setShowWallpaperModal(true)}
-          className="flex items-center gap-1.5 h-10 px-3 text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 border-b-2 border-transparent hover:border-white/20 transition-colors"
+          className="flex items-center gap-1.5 h-10 px-3 text-sm font-medium text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 border-b-2 border-transparent hover:border-[var(--mf-bdr)]/20 transition-colors"
           title={t("Hintergrund / Wallpaper für diesen View")}
         >
           <ImageIcon size={14} /> {t("Wallpaper")}
         </button>
         <Link
           href="/editor/integrations"
-          className="flex items-center gap-1.5 h-10 px-3 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 border-b-2 border-transparent hover:border-white/20 transition-colors"
+          className="flex items-center gap-1.5 h-10 px-3 text-sm font-medium text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 border-b-2 border-transparent hover:border-[var(--mf-bdr)]/20 transition-colors"
         >
           <Plug size={14} /> {t("Integrationen")}
         </Link>
         <div className="flex-1" />
-        <div className="md:hidden inline-flex rounded-lg bg-white/5 border border-white/10 p-0.5 my-2 shrink-0">
+        <div className="md:hidden inline-flex rounded-lg bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 p-0.5 my-2 shrink-0">
           <button
             onClick={() => setOrientation("landscape")}
-            className={`flex items-center gap-1 px-2 h-6 rounded-md text-xs font-medium transition-colors ${orientation === "landscape" ? "bg-white/15 text-white" : "text-white/50"}`}
+            className={`flex items-center gap-1 px-2 h-6 rounded-md text-xs font-medium transition-colors ${orientation === "landscape" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50"}`}
           >
             <Monitor size={12} />
           </button>
           <button
             onClick={() => setOrientation("portrait")}
-            className={`flex items-center gap-1 px-2 h-6 rounded-md text-xs font-medium transition-colors ${orientation === "portrait" ? "bg-white/15 text-white" : "text-white/50"}`}
+            className={`flex items-center gap-1 px-2 h-6 rounded-md text-xs font-medium transition-colors ${orientation === "portrait" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50"}`}
           >
             <Smartphone size={12} />
           </button>
@@ -850,8 +909,8 @@ export default function ViewEditor({
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        <aside className="hidden md:flex flex-col w-48 lg:w-56 shrink-0 border-r border-white/10 bg-black/20 overflow-y-auto">
-          <div className="px-3 pt-4 pb-2 text-[10px] font-medium uppercase tracking-[0.15em] text-white/40">
+        <aside className="hidden md:flex flex-col w-48 lg:w-56 shrink-0 border-r border-[var(--mf-bdr)]/10 bg-[var(--mf-ovl)]/20 light:bg-[var(--mf-surface)] overflow-y-auto">
+          <div className="px-3 pt-4 pb-2 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40">
             {t("Widget hinzufügen")}
           </div>
           <div className="px-2 pb-3 space-y-0.5">
@@ -859,39 +918,114 @@ export default function ViewEditor({
               <button
                 key={w.type}
                 onClick={() => addWidget(w.type)}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors group"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors group"
                 title={t("{x} hinzufügen").replace("{x}", t(w.label))}
               >
-                <span className="w-5 flex justify-center text-white/60 group-hover:text-white">
+                <span className="w-5 flex justify-center text-[var(--mf-fg)]/60 group-hover:text-[var(--mf-fg)]">
                   {w.icon}
                 </span>
                 <span className="flex-1 text-left truncate">{t(w.label)}</span>
-                <Plus size={13} className="text-white/30 group-hover:text-white/70 shrink-0" />
+                <Plus size={13} className="text-[var(--mf-fg)]/30 group-hover:text-[var(--mf-fg)]/70 shrink-0" />
               </button>
             ))}
             {customModules.length > 0 && (
               <>
-                <div className="px-3 pt-3 pb-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white/30">
+                <div className="px-3 pt-3 pb-1 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/30">
                   {t("Custom")}
                 </div>
                 {customModules.map((m) => (
                   <button
                     key={m.type}
                     onClick={() => addWidget(m.type)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors group"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5 transition-colors group"
                     title={t("{x} hinzufügen").replace("{x}", m.label)}
                   >
                     <span className="w-5 flex justify-center text-base leading-none">{m.iconEmoji}</span>
                     <span className="flex-1 text-left truncate">{m.label}</span>
-                    <Plus size={13} className="text-white/30 group-hover:text-white/70 shrink-0" />
+                    <Plus size={13} className="text-[var(--mf-fg)]/30 group-hover:text-[var(--mf-fg)]/70 shrink-0" />
                   </button>
                 ))}
               </>
             )}
           </div>
+
+          {/* Ebenen-Liste — alle platzierten Widgets. Klick wählt aus, auch wenn
+              ein Widget komplett verdeckt ist (für Stacking unverzichtbar). */}
+          {layout.length > 0 && (
+            <>
+              <div className="px-3 pt-3 pb-2 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 border-t border-[var(--mf-bdr)]/10 flex items-center gap-1.5">
+                <Layers size={11} /> {t("Ebenen")}
+              </div>
+              <div className="px-2 pb-4 space-y-0.5">
+                {layout
+                  .map((w, i) => ({ w, z: zIndexOf(w, i) }))
+                  .sort((a, b) => b.z - a.z) // top of stack first
+                  .map(({ w }) => {
+                    const isActive = activeSettingsId === w.i;
+                    const hidden = !!w.config?.defaultHidden;
+                    const accent = WIDGET_ACCENT[w.type] ?? DEFAULT_ACCENT;
+                    const isDragged = draggedLayerId === w.i;
+                    const isDropTarget = dragOverLayerId === w.i && draggedLayerId !== w.i;
+                    return (
+                      <div
+                        key={w.i}
+                        draggable
+                        onDragStart={(e) => {
+                          setDraggedLayerId(w.i);
+                          e.dataTransfer.effectAllowed = "move";
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = "move";
+                          if (draggedLayerId && draggedLayerId !== w.i) setDragOverLayerId(w.i);
+                        }}
+                        onDragLeave={() => setDragOverLayerId((p) => (p === w.i ? null : p))}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (draggedLayerId) reorderLayers(draggedLayerId, w.i);
+                          setDraggedLayerId(null);
+                          setDragOverLayerId(null);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedLayerId(null);
+                          setDragOverLayerId(null);
+                        }}
+                        className={`group/layer w-full flex items-center rounded-lg transition-all ${
+                          isActive ? "bg-[var(--mf-elev)]/10 ring-1 ring-[var(--mf-bdr)]/15" : "hover:bg-[var(--mf-elev)]/5"
+                        } ${isDragged ? "opacity-40" : ""} ${isDropTarget ? "ring-1 ring-blue-400/70" : ""}`}
+                      >
+                        <span
+                          className="pl-2 pr-0.5 text-[var(--mf-fg)]/25 group-hover/layer:text-[var(--mf-fg)]/50 cursor-grab active:cursor-grabbing shrink-0"
+                          title={t("Zum Sortieren ziehen")}
+                        >
+                          <GripVertical size={13} />
+                        </span>
+                        <button
+                          onClick={() => setActiveSettingsId(w.i)}
+                          className={`flex-1 min-w-0 flex items-center gap-2.5 pr-3 py-1.5 text-sm ${
+                            isActive ? "text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/70 group-hover/layer:text-[var(--mf-fg)]"
+                          }`}
+                          title={widgetTitle(w.type, w.label, t)}
+                        >
+                          <span className="w-4 flex justify-center shrink-0" style={{ color: accent.hex }}>
+                            {widgetIconFor(w.type, 13)}
+                          </span>
+                          <span className="flex-1 text-left truncate">{widgetTitle(w.type, w.label, t)}</span>
+                          {hidden && <EyeOff size={12} className="text-[var(--mf-fg)]/30 shrink-0" />}
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
+            </>
+          )}
         </aside>
 
-        <div className="flex-1 overflow-auto p-2 md:p-6 relative">
+        {/* Canvas follows the editor theme (#21): in light mode it goes light
+            too — keeping it dark would defeat the purpose (you switch to light
+            because dark was hard to read). Widget cards are accent-tinted, so
+            they read on either background. */}
+        <div className="flex-1 overflow-auto p-2 md:p-6 relative bg-[var(--mf-surface)]">
           <button
             onClick={() => setShowMobileWidgets(true)}
             className="md:hidden fixed bottom-6 right-6 z-40 bg-blue-600 hover:bg-blue-500 text-white w-14 h-14 rounded-full shadow-2xl shadow-blue-500/40 flex items-center justify-center active:scale-95 transition-transform"
@@ -904,7 +1038,7 @@ export default function ViewEditor({
             <div
               className={`
                 ${orientation === "portrait" ? "max-w-[500px] h-[900px]" : "w-full h-[700px]"}
-                mx-auto bg-zinc-900/60 border border-white/10 rounded-2xl shadow-2xl relative overflow-hidden transition-all duration-300
+                mx-auto bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl shadow-2xl relative overflow-hidden transition-all duration-300
               `}
             >
               <div
@@ -912,7 +1046,7 @@ export default function ViewEditor({
                 style={{
                   bottom: `${metaBarPx}px`,
                   backgroundImage:
-                    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+                    "linear-gradient(var(--mf-grid) 1px, transparent 1px), linear-gradient(90deg, var(--mf-grid) 1px, transparent 1px)",
                   backgroundSize: "calc(100% / 12) 50px",
                 }}
               ></div>
@@ -933,25 +1067,30 @@ export default function ViewEditor({
                   isResizable={true}
                   margin={[16, 16]}
                   compactType={null}
-                  preventCollision={true}
+                  allowOverlap={true}
+                  preventCollision={false}
                   maxRows={gridMaxRows}
                   draggableCancel=".nodrag"
                 >
-                  {layout.map((w) => {
+                  {layout.map((w, index) => {
                     const isActive = activeSettingsId === w.i;
                     const accent = WIDGET_ACCENT[w.type] ?? DEFAULT_ACCENT;
                     return (
                       <div
                         key={w.i}
-                        className={`group relative flex flex-col rounded-2xl border shadow-md transition-all overflow-hidden cursor-grab active:cursor-grabbing ${isActive ? "ring-2 ring-blue-500/60" : "hover:ring-1 hover:ring-white/20"}`}
+                        className={`group relative flex flex-col rounded-2xl border shadow-md transition-all overflow-hidden cursor-grab active:cursor-grabbing ${isActive ? "ring-2 ring-blue-500/60" : "hover:ring-1 hover:ring-[var(--mf-bdr)]/20"}`}
                         style={{
                           backgroundColor: `${accent.hex}12`,
                           backdropFilter: w.bgOpacity > 0 ? "blur(12px)" : "none",
                           borderColor: isActive ? accent.hex : `${accent.hex}40`,
+                          // Stacking: each widget sits at its own zIndex; the
+                          // selected one floats above everything so an overlapped
+                          // widget stays editable once picked from the layer list.
+                          zIndex: isActive ? 1000 : zIndexOf(w, index),
                         }}
                       >
                         <div
-                          className="flex items-center gap-2 px-3 py-2.5 md:px-2.5 md:py-2 rounded-t-2xl border-b text-white transition-colors min-h-[40px]"
+                          className="flex items-center gap-2 px-3 py-2.5 md:px-2.5 md:py-2 rounded-t-2xl border-b text-[var(--mf-fg)] transition-colors min-h-[40px]"
                           style={{
                              backgroundColor: `${accent.hex}20`,
                              borderColor: `${accent.hex}30`,
@@ -963,7 +1102,7 @@ export default function ViewEditor({
                           >
                             {widgetIconFor(w.type, 14)}
                           </span>
-                          <span className="text-xs font-semibold tracking-wide font-sans text-white/95 truncate flex-1">
+                          <span className="text-xs font-semibold tracking-wide font-sans text-[var(--mf-fg)]/95 truncate flex-1">
                             {widgetTitle(w.type, w.label, t)}
                           </span>
                           <button
@@ -974,7 +1113,7 @@ export default function ViewEditor({
                             }}
                             onMouseDown={(e) => e.stopPropagation()}
                             title={t("Widget-Einstellungen")}
-                            className="nodrag shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                            className="nodrag shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/10 transition-colors"
                           >
                             <Settings className="w-3.5 h-3.5" />
                           </button>
@@ -1004,14 +1143,14 @@ export default function ViewEditor({
 
               {wallpaper.showMetadata !== false && (
                 <div
-                  className={`absolute bottom-0 inset-x-0 h-[65px] z-20 pointer-events-none flex flex-row items-center justify-between px-6 transition-all ${(wallpaper.metaBgOpacity ?? 40) > 0 ? "backdrop-blur-md border-t border-white/10" : ""}`}
-                  style={{ backgroundColor: `rgba(0,0,0,${(wallpaper.metaBgOpacity ?? 40) / 100})` }}
+                  className={`absolute bottom-0 inset-x-0 h-[65px] z-20 pointer-events-none flex flex-row items-center justify-between px-6 transition-all ${(wallpaper.metaBgOpacity ?? 40) > 0 ? "backdrop-blur-md border-t border-[var(--mf-bdr)]/10" : ""}`}
+                  style={{ backgroundColor: `color-mix(in srgb, var(--mf-ovl) ${(wallpaper.metaBgOpacity ?? 40)}%, transparent)` }}
                 >
                   <div className="flex items-center gap-2">
                     {wallpaper.showTimer !== false && (
-                      <div className="w-4 h-4 rounded-full border-4 border-white/20"></div>
+                      <div className="w-4 h-4 rounded-full border-4 border-[var(--mf-bdr)]/20"></div>
                     )}
-                    <span className="text-white/30 text-xs font-semibold pl-2 drop-shadow-md">
+                    <span className="text-[var(--mf-fg)]/30 text-xs font-semibold pl-2 drop-shadow-md">
                       {t("Metadaten Platzhalter")}
                     </span>
                   </div>
@@ -1052,7 +1191,7 @@ export default function ViewEditor({
         if (!activeWidget) return null;
         return (
           <div
-            className="fixed inset-0 z-[60] flex items-stretch md:items-center md:justify-center bg-black/60 backdrop-blur-sm md:bg-black/40 md:backdrop-blur-none md:p-6"
+            className="fixed inset-0 z-[60] flex items-stretch md:items-center md:justify-center bg-[var(--mf-backdrop)]/60 backdrop-blur-sm md:bg-[var(--mf-backdrop)]/40 md:backdrop-blur-none md:p-6"
             onClick={() => setActiveSettingsId(null)}
           >
             <div
@@ -1100,17 +1239,54 @@ export default function ViewEditor({
         />
       )}
 
+      {showViewSettings && (
+        <div
+          className="fixed inset-0 z-[9999] bg-[var(--mf-backdrop)]/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowViewSettings(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl shadow-2xl p-6 space-y-5"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{t("View-Einstellungen")}</h2>
+              <button
+                onClick={() => setShowViewSettings(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-md text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] hover:bg-[var(--mf-elev)]/5"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Auto-Aktualisierung")}</label>
+              <select
+                value={settings?.autoRefreshHours ?? 0}
+                onChange={(e) => setSettings({ ...settings, autoRefreshHours: parseInt(e.target.value) })}
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/20 text-[var(--mf-fg)] text-sm rounded-lg p-2.5"
+              >
+                <option value={0}>{t("Aus")}</option>
+                {[1, 2, 3, 4, 6, 8, 12, 24].map((h) => (
+                  <option key={h} value={h}>{h} {h === 1 ? t("Stunde") : t("Stunden")}</option>
+                ))}
+              </select>
+              <p className="text-[11px] text-[var(--mf-fg)]/40">{t("Lädt diese View regelmäßig neu — hält Dauer-Displays frisch (leert den Browser-Cache).")}</p>
+            </div>
+            <p className="text-[11px] text-[var(--mf-fg)]/50 border-t border-[var(--mf-bdr)]/10 pt-3">{t("Nicht vergessen: oben Speichern, sonst greift die Änderung nicht.")}</p>
+          </div>
+        </div>
+      )}
+
       {showMobileWidgets && (
         <div
-          className="md:hidden fixed inset-0 z-50 flex items-end bg-black/60 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-50 flex items-end bg-[var(--mf-backdrop)]/60 backdrop-blur-sm"
           onClick={() => setShowMobileWidgets(false)}
         >
           <div
-            className="w-full bg-zinc-900 border-t border-white/10 rounded-t-3xl p-4 pb-8"
+            className="w-full bg-[var(--mf-surface-2)] border-t border-[var(--mf-bdr)]/10 rounded-t-3xl p-4 pb-8"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-12 h-1 rounded-full bg-white/20 mx-auto mb-4" />
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 px-2 mb-3">
+            <div className="w-12 h-1 rounded-full bg-[var(--mf-elev)]/20 mx-auto mb-4" />
+            <div className="text-[10px] uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 px-2 mb-3">
               {t("Widget hinzufügen")}
             </div>
             <div className="space-y-1">
@@ -1121,11 +1297,11 @@ export default function ViewEditor({
                     addWidget(w.type);
                     setShowMobileWidgets(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-white/80 hover:text-white active:bg-white/10 transition-colors min-h-[48px]"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] active:bg-[var(--mf-elev)]/10 transition-colors min-h-[48px]"
                 >
-                  <span className="w-7 flex justify-center text-white/60">{w.icon}</span>
+                  <span className="w-7 flex justify-center text-[var(--mf-fg)]/60">{w.icon}</span>
                   <span className="flex-1 text-left truncate">{t(w.label)}</span>
-                  <Plus size={15} className="text-white/30" />
+                  <Plus size={15} className="text-[var(--mf-fg)]/30" />
                 </button>
               ))}
               {customModules.map((m) => (
@@ -1135,11 +1311,11 @@ export default function ViewEditor({
                     addWidget(m.type);
                     setShowMobileWidgets(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-white/80 hover:text-white active:bg-white/10 transition-colors min-h-[48px]"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-[var(--mf-fg)]/80 hover:text-[var(--mf-fg)] active:bg-[var(--mf-elev)]/10 transition-colors min-h-[48px]"
                 >
                   <span className="w-7 flex justify-center text-lg leading-none">{m.iconEmoji}</span>
                   <span className="flex-1 text-left truncate">{m.label}</span>
-                  <Plus size={15} className="text-white/30" />
+                  <Plus size={15} className="text-[var(--mf-fg)]/30" />
                 </button>
               ))}
             </div>
