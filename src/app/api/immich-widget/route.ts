@@ -50,7 +50,21 @@ export async function GET(req: NextRequest) {
     });
     if (!res.ok) return NextResponse.json({ error: `Immich ${res.status}` }, { status: 502 });
     const data = await res.json();
-    const assets = (data.assets || []) as any[];
+    let assets = (data.assets || []) as any[];
+    // Immich >= 3.0: Album-Detail enthält kein assets[] mehr (nur assetCount) —
+    // Fallback über die Metadata-Suche mit albumIds (wie im Wallpaper-Playlist).
+    if (assets.length === 0 && (data.assetCount ?? 0) > 0) {
+      const sr = await fetch(`${base}/api/search/metadata`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ albumIds: [albumId], type: "IMAGE", size: 1000 }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!sr.ok) return NextResponse.json({ error: `Immich search ${sr.status}` }, { status: 502 });
+      const sd = await sr.json();
+      assets = (sd?.assets?.items ?? []) as any[];
+    }
     for (let i = assets.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [assets[i], assets[j]] = [assets[j], assets[i]];

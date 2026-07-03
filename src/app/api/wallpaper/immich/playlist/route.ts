@@ -53,7 +53,23 @@ async function fetchImmichAssets(baseUrl: string, apiKey: string, wp: any): Prom
   const r = await fetch(`${baseUrl}/api/albums/${wp.immichAlbumId}`, { headers });
   if (!r.ok) throw new Error(`Immich album ${r.statusText}`);
   const d = await r.json();
-  return d?.assets ?? [];
+  // Immich <= 2.x liefert die Assets direkt im Album-Detail.
+  if (Array.isArray(d?.assets) && d.assets.length > 0) return d.assets;
+  // Immich >= 3.0: Breaking Change — das Album-Detail enthält kein assets[]
+  // mehr (nur noch assetCount). Assets stattdessen über die Metadata-Suche
+  // mit albumIds holen — gleiche Response-Form wie favorites/people
+  // (assets.items); exifInfo via withExif bleibt für die Metadata-Bar erhalten.
+  if ((d?.assetCount ?? 0) > 0) {
+    const sr = await fetch(`${baseUrl}/api/search/metadata`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ albumIds: [wp.immichAlbumId], type: 'IMAGE', size: 1000, withExif: true }),
+    });
+    if (!sr.ok) throw new Error(`Immich album search ${sr.status}`);
+    const sd = await sr.json();
+    return sd?.assets?.items ?? [];
+  }
+  return [];
 }
 
 export async function GET(req: NextRequest) {
