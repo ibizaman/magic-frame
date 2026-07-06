@@ -84,7 +84,7 @@ spec:
                 configMapKeyRef:
                   key: SESSION_SECRET
                   name: magic-frame-env
-          image: magic-frame-app:latest
+          image: ghcr.io/jeremiaa/magic-frame-app:latest
           name: magic-frame-app
           imagePullPolicy: Never
           ports:

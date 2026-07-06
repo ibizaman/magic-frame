@@ -80,7 +80,7 @@ spec:
         app: magic-frame-caddy
     spec:
       containers:
-        - image: magic-frame-caddy
+        - image: ghcr.io/jeremiaa/magic-frame-caddy:latest
           name: magic-frame-caddy
           imagePullPolicy: Never
           ports:
@@ -201,7 +201,7 @@ spec:
                 configMapKeyRef:
                   key: SESSION_SECRET
                   name: magic-frame-env
-          image: magic-frame-app:latest
+          image: ghcr.io/jeremiaa/magic-frame-app:latest
           name: magic-frame-app
           imagePullPolicy: Never
           ports:

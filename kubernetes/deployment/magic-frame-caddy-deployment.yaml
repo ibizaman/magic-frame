@@ -18,7 +18,7 @@ spec:
         app: magic-frame-caddy
     spec:
       containers:
-        - image: magic-frame-caddy
+        - image: ghcr.io/jeremiaa/magic-frame-caddy:latest
           name: magic-frame-caddy
           imagePullPolicy: Never
           ports:
