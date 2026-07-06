@@ -9,8 +9,8 @@ export async function POST(req: NextRequest) {
      if (!body.entityId) return new NextResponse("Missing entityId", { status: 400 });
 
      const entityId = body.entityId;
-     const serviceName = body.service || 'toggle';
-     const domain = body.domain || 'homeassistant'; // Most toggles can be done via homeassistant.toggle
+     let serviceName = body.service || 'toggle';
+     let domain = body.domain || 'homeassistant'; // Most toggles can be done via homeassistant.toggle
 
      const settings = await getAppSettings();
      if (!settings.haUrl || !settings.haToken) {
@@ -18,6 +18,25 @@ export async function POST(req: NextRequest) {
      }
 
      const cleanHaUrl = settings.haUrl.replace(/\/+$/, '');
+
+     // #45: HA kennt kein lock.toggle — homeassistant.toggle überspringt
+     // Lock-Entities stillschweigend. Deshalb: aktuellen Zustand holen und
+     // gezielt lock.lock / lock.unlock aufrufen. Schlägt die Zustandsabfrage
+     // fehl, bleibt das bisherige Verhalten (generischer Toggle) bestehen.
+     if (serviceName === 'toggle' && domain === 'homeassistant' && String(entityId).startsWith('lock.')) {
+        try {
+           const st = await fetch(`${cleanHaUrl}/api/states/${entityId}`, {
+              headers: { 'Authorization': `Bearer ${settings.haToken}` },
+              signal: AbortSignal.timeout(4000),
+           });
+           if (st.ok) {
+              const s = await st.json();
+              domain = 'lock';
+              serviceName = s.state === 'locked' ? 'unlock' : 'lock';
+           }
+        } catch { /* Zustand nicht ermittelbar — generischer Toggle als Fallback */ }
+     }
+
      const url = `${cleanHaUrl}/api/services/${domain}/${serviceName}`;
      
      console.log(`[HA Action] Sending POST to ${url} with entity_id: ${entityId}, payload:`, JSON.stringify(body.data));
