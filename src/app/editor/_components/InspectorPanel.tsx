@@ -297,17 +297,24 @@ function LayoutTab({
       </div>
 
       <div>
-        <SectionHeader title="Hintergrund" />
-        <Field label="Deckkraft" value={`${activeWidget.bgOpacity}%`} accent="text-blue-300">
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={activeWidget.bgOpacity}
-            onChange={(e) => updateOpacity(activeWidget.i, parseInt(e.target.value))}
-            className="w-full h-2 rounded-lg cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
-          />
-        </Field>
+        {/* #39: Bild + Kamera füllen die ganze Kachel — der Kachel-Hintergrund
+            ist dort nie sichtbar und der Regler wirkungslos. Ausblenden statt
+            Nutzer verwirren. */}
+        {activeWidget.type !== "ImageWidget.tsx" && activeWidget.type !== "CameraWidget.tsx" && (
+          <>
+            <SectionHeader title="Hintergrund" />
+            <Field label="Deckkraft" value={`${activeWidget.bgOpacity}%`} accent="text-blue-300">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={activeWidget.bgOpacity}
+                onChange={(e) => updateOpacity(activeWidget.i, parseInt(e.target.value))}
+                className="w-full h-2 rounded-lg cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
+              />
+            </Field>
+          </>
+        )}
         <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
           <SectionHeader title="Sichtbarkeit" />
           <Toggle
