@@ -2,7 +2,7 @@
 
 <img src="public/social/og-banner.png" alt="Magic Frame — local glassmorphism dashboard for tablets, monitors, and picture frames" width="100%" />
 
-**English** · [Deutsch](README.de.md)
+**English** · [Deutsch](README.de.md) · 🌐 **[magicframe.dev](https://magicframe.dev)**
 
 Runs entirely on your home network — no cloud account, no domain needed.
 
@@ -12,6 +12,7 @@ Drag & drop editor · Real live updates · Smart-home · Calendar · Weather · 
 [![Next.js 15](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)]()
+[![Sponsor](https://img.shields.io/badge/%E2%9D%A4-Sponsor-ea4aaa)](https://github.com/sponsors/jeremiaa)
 
 </div>
 
@@ -78,6 +79,13 @@ curl -fsSL https://raw.githubusercontent.com/jeremiaa/magic-frame/main/deploy/in
 
 > macOS / Windows? Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) instead of step 1, then run step 2 in a terminal.
 
+**No `curl` on a fresh box?** (`curl: command not found`) Either install it first — `sudo apt install curl` (Debian/Ubuntu) or `sudo dnf install curl` (Fedora) — or skip curl entirely and use git:
+
+```bash
+git clone https://github.com/jeremiaa/magic-frame.git
+cd magic-frame && ./deploy/install.sh
+```
+
 The second script
 
 1. clones the repo
@@ -90,11 +98,15 @@ for the first admin → done. Optional integrations (Google/Microsoft
 Calendar OAuth, OpenWeatherMap key, Todoist token) all get added later
 through the UI.
 
-Re-run on an existing install (idempotent — data + secrets stay):
+### Updating to a new version
+
+**The same command updates you** — run it from the `magic-frame` folder any time a new version is out. It pulls the latest code, grabs the new pre-built images, and restarts. Your data, login, secrets and uploaded modules are **never touched** (none of that lives in git):
 
 ```bash
 cd magic-frame && ./deploy/install.sh
 ```
+
+That's it — no separate `git pull` needed, the installer does it for you.
 
 By default the installer **pulls pre-built images** from ghcr.io (`amd64` + `arm64`) — fast, and no 15-25 min compile on a Raspberry Pi. To build from source instead (forks, local changes):
 
@@ -219,6 +231,8 @@ Real-world setups across different hardware. Same project, different layouts, di
 ### External integrations
 - **Home Assistant** with live WebSocket entity updates
 - **Google Calendar** and **Microsoft 365** via OAuth, multiple accounts in parallel
+  - *Simplest read-only path:* Google Calendar's **secret iCal address** (Google Calendar → Settings → *Integrate calendar*) works as a plain iCal feed — no OAuth app, no domain needed. Trade-offs: Google refreshes that export on its own schedule (it can lag a few hours), and the link grants read access to anyone who has it.
+  - *OAuth on a LAN-only install:* Google refuses local addresses as redirect URIs — but the domain **never has to be reachable from the internet**, it only has to resolve to your box *inside* your network. Set up a DDNS domain + HTTPS under *Settings → Hosting & Network* (DuckDNS/Cloudflare built in, DNS-challenge — no open ports), then open the editor via that https URL when connecting Google.
 - **Todoist** with 1-click API-token setup
 - **Immich** + **WebDAV** as wallpaper sources
 - **OpenWeatherMap** as weather provider (optional)
