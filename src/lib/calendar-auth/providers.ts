@@ -17,7 +17,7 @@ export type ProviderCalendar = {
 };
 
 export async function fetchGoogleEvents(params: {
-  userId: string;
+  userId?: string | null; // optional seit #43 — public views haben keine Session
   accountId: string;
   calendarId: string;
   windowStart: Date;
@@ -59,7 +59,7 @@ export async function fetchGoogleEvents(params: {
 }
 
 export async function fetchGoogleCalendars(params: {
-  userId: string;
+  userId?: string | null; // optional seit #43 — public views haben keine Session
   accountId: string;
 }): Promise<ProviderCalendar[]> {
   const token = await getFreshAccessToken(params.accountId, params.userId);
@@ -80,7 +80,7 @@ export async function fetchGoogleCalendars(params: {
 }
 
 export async function fetchMicrosoftEvents(params: {
-  userId: string;
+  userId?: string | null; // optional seit #43 — public views haben keine Session
   accountId: string;
   calendarId: string;
   windowStart: Date;
@@ -129,7 +129,7 @@ export async function fetchMicrosoftEvents(params: {
 }
 
 export async function fetchMicrosoftCalendars(params: {
-  userId: string;
+  userId?: string | null; // optional seit #43 — public views haben keine Session
   accountId: string;
 }): Promise<ProviderCalendar[]> {
   const token = await getFreshAccessToken(params.accountId, params.userId);

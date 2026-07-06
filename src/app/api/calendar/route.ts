@@ -160,7 +160,9 @@ export async function GET(request: NextRequest) {
         try {
           let events: any[] = [];
           if (type === "google") {
-            if (!userId) throw new Error("not_authenticated");
+            // #43: kein Session-Zwang mehr — der Token hängt an der accountId
+            // (PK der CalendarAuth-Zeile), nicht an der Viewer-Session. Nur so
+            // funktionieren Google/MS-Feeds auf der öffentlichen /view.
             if (!feed.accountId) throw new Error("missing_accountId");
             events = await fetchGoogleEvents({
               userId,
@@ -171,7 +173,6 @@ export async function GET(request: NextRequest) {
               limit: perFeedLimit,
             });
           } else if (type === "microsoft") {
-            if (!userId) throw new Error("not_authenticated");
             if (!feed.accountId) throw new Error("missing_accountId");
             events = await fetchMicrosoftEvents({
               userId,

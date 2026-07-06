@@ -73,8 +73,13 @@ export async function deleteAccount(userId: string, id: string) {
   return prisma.calendarAuth.deleteMany({ where: { id, userId } });
 }
 
-export async function getFreshAccessToken(accountId: string, userId: string): Promise<string | null> {
-  const row = await prisma.calendarAuth.findFirst({ where: { id: accountId, userId } });
+export async function getFreshAccessToken(accountId: string, userId?: string | null): Promise<string | null> {
+  // #43: Öffentliche /view-Displays haben keine Browser-Session. Die accountId
+  // ist der Primary Key der Token-Zeile und identifiziert das Konto allein —
+  // userId ist nur ein zusätzlicher Scope-Check, wenn eine Session existiert.
+  const row = await prisma.calendarAuth.findFirst({
+    where: userId ? { id: accountId, userId } : { id: accountId },
+  });
   if (!row) return null;
 
   const now = Date.now();
