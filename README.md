@@ -9,7 +9,7 @@ Runs entirely on your home network — no cloud account, no domain needed.
 Drag & drop editor · Real live updates · Smart-home · Calendar · Weather · Picture-frame mode
 
 [![License: Polyform NC](https://img.shields.io/badge/license-Polyform_Noncommercial-blue.svg)](LICENSE.md)
-[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)]()
 [![Sponsor](https://img.shields.io/badge/%E2%9D%A4-Sponsor-ea4aaa)](https://github.com/sponsors/jeremiaa)
@@ -18,50 +18,29 @@ Drag & drop editor · Real live updates · Smart-home · Calendar · Weather · 
 
 ---
 
-## What's it for?
+## What is it?
 
-Magic Frame runs anywhere a browser lands on a display — and turns the
-device into exactly what you need:
+Magic Frame turns any browser-capable screen — tablets, kitchen monitors, old TVs, picture frames — into a self-hosted display for your home:
 
-- **Family board** on the kitchen wall with shopping list, todos, calendar, and weather
-- **Smart-home hub** on a tablet in the hallway with Home Assistant entities, scene buttons, and live notifications
-- **Digital picture frame** on an old monitor with wallpaper rotation from Immich or WebDAV, subtle clock bottom-left
-- **Status display** in the office with power usage, today's calendar, timers, and quick posts
-- **Workshop or hobby monitor** with live HA data, scene buttons, weather
-- **Living-room TV** in landscape as an ambient display between streams
-- **Digital signage** for clubhouses, school hallways, libraries, community centers — rotating notices, schedules, weather, and quick-posts on any spare screen (non-commercial; see [license](LICENSE.md))
+- **Family board** — shopping list, todos, calendar, weather
+- **Smart-home hub** — live Home Assistant entities, scene buttons, camera pop-ups, notification tiles
+- **Digital picture frame** — wallpaper rotation from Immich or WebDAV, subtle clock on top
+- **Status display / signage** — power usage, timers, quick posts, rotating notices *(non-commercial — see [license](LICENSE.md))*
 
-One "view" per display with its own layout, URL, and wallpaper source.
-Multiple displays in parallel — everything syncs live via WebSocket,
-no refresh needed.
-
----
+One **view** per display, each with its own URL, layout and wallpaper. Everything syncs live over WebSocket — change a widget on your laptop and every display updates in under 100 ms, no refresh.
 
 ## Where does it run?
 
-**Magic Frame is a local app.** You install it once on a machine on
-your home network — that machine sits there and becomes "the server".
-Your tablets and monitors render dashboards by simply opening the
-machine's local IP in a browser.
+Install it once on any box in your home network — that machine becomes "the server", your displays just open its IP in a browser. **No cloud account, no domain, no DDNS required.** Postgres ships inside the Docker stack.
 
-| Hardware | Works? |
+| Hardware | |
 |---|---|
-| Raspberry Pi 4 / 5 | ✅ (Docker installable) |
-| Synology / QNAP NAS | ✅ (Docker package in NAS OS) |
-| Old laptop / desktop PC | ✅ |
-| Mac mini / the Mac you're already working on | ✅ |
-| Mini-PC (Beelink, Intel NUC, …) | ✅ |
-| VPS / cloud server | ✅ (optional, only if reachable from outside) |
+| Raspberry Pi 4 / 5, Mini-PC (NUC, Beelink, …) | ✅ |
+| Synology / QNAP NAS | ✅ Docker package in the NAS OS |
+| Old laptop / desktop / Mac mini | ✅ |
+| VPS / cloud server | ✅ optional — only if you want outside access |
 
-**No cloud account, no domain, no DDNS record required.** Tablets
-just hit `http://192.168.x.x` on the home network. All the "hosting"
-features below (Caddy with Let's-Encrypt HTTPS, DDNS updater, 2FA,
-brute-force protection) are **all optional** and only relevant if you
-want the dashboard reachable from outside.
-
-> Rule of thumb: as long as you don't actively set up a domain,
-> everything stays local on the LAN. Even Postgres lives inside the
-> Docker container and needs no external DB.
+> Rule of thumb: as long as you don't actively set up a domain, everything stays local on your LAN.
 
 ---
 
@@ -78,41 +57,20 @@ curl -fsSL https://raw.githubusercontent.com/jeremiaa/magic-frame/main/deploy/in
 ```
 
 > macOS / Windows? Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) instead of step 1, then run step 2 in a terminal.
+>
+> **No `curl`?** Install it (`sudo apt install curl` / `sudo dnf install curl`) — or use git instead: `git clone https://github.com/jeremiaa/magic-frame.git && cd magic-frame && ./deploy/install.sh`
 
-**No `curl` on a fresh box?** (`curl: command not found`) Either install it first — `sudo apt install curl` (Debian/Ubuntu) or `sudo dnf install curl` (Fedora) — or skip curl entirely and use git:
-
-```bash
-git clone https://github.com/jeremiaa/magic-frame.git
-cd magic-frame && ./deploy/install.sh
-```
-
-The second script
-
-1. clones the repo
-2. generates `SESSION_SECRET` automatically (uses `openssl` if available, falls back to `/dev/urandom`)
-3. pulls pre-built multi-arch images from ghcr.io (or builds from source with `--build`) + starts the stack (app + Postgres + Caddy as reverse proxy)
-4. waits until the app responds
-
-Then open `http://<your-ip>` → **setup flow** → enter email + password
-for the first admin → done. Optional integrations (Google/Microsoft
-Calendar OAuth, OpenWeatherMap key, Todoist token) all get added later
-through the UI.
+The installer clones the repo, generates secrets, pulls the pre-built multi-arch images (ghcr.io, `amd64` + `arm64` — no 20-minute compile on a Pi) and starts the stack: app + Postgres + Caddy. Then open `http://<your-ip>` → **setup flow** → create the first admin → done. Integrations (Google/Microsoft Calendar, OpenWeatherMap, Todoist, Home Assistant, Immich) are all added later through the UI.
 
 ### Updating to a new version
 
-**The same command updates you** — run it from the `magic-frame` folder any time a new version is out. It pulls the latest code, grabs the new pre-built images, and restarts. Your data, login, secrets and uploaded modules are **never touched** (none of that lives in git):
+**The same command updates you** — run it from the `magic-frame` folder any time a new version is out. It pulls the latest code, grabs the new images, and restarts. Your data, login, secrets and uploaded modules are **never touched** (none of that lives in git):
 
 ```bash
 cd magic-frame && ./deploy/install.sh
 ```
 
-That's it — no separate `git pull` needed, the installer does it for you.
-
-By default the installer **pulls pre-built images** from ghcr.io (`amd64` + `arm64`) — fast, and no 15-25 min compile on a Raspberry Pi. To build from source instead (forks, local changes):
-
-```bash
-./deploy/install.sh --build        # or: MAGIC_FRAME_BUILD=1 ./deploy/install.sh
-```
+No separate `git pull` needed — the installer does it for you. To build from source instead (forks, local changes): `./deploy/install.sh --build`
 
 ---
 
@@ -155,11 +113,10 @@ Real-world setups across different hardware. Same project, different layouts, di
 
 <p align="center"><img src="public/setups/setup-tablet.jpg" alt="Small picture-frame tablet on a side table with HA scene buttons, a clock and the current weather" width="50%" /></p>
 
-<p align="center"><sub><strong>Scene-button layout:</strong> a small tablet in a real photo-frame mount on the side table. Quick-access HA buttons (lights, "only good vibes", air purifier, …), small clock, current temperature, rotating wallpaper underneath.</sub></p>
+<p align="center"><sub><strong>Scene-button layout:</strong> a small tablet in a real photo-frame mount. Quick-access HA buttons, small clock, current temperature, rotating wallpaper underneath.</sub></p>
 
----
-
-## Screenshots
+<details>
+<summary><b>📸 More screenshots — dashboard, views, editor, modules</b></summary>
 
 ### Dashboard — entry point with live status
 <div align="center">
@@ -183,12 +140,10 @@ Real-world setups across different hardware. Same project, different layouts, di
 </tr>
 <tr>
 <td valign="top"><sub><strong>Smart-home display:</strong> clock, 4 scene/device buttons (HA services), weather with 4-day forecast.</sub></td>
-<td valign="top"><sub><strong>Minimal / picture frame:</strong> just clock + weather, the wallpaper rotation in the background is the main element.</sub></td>
+<td valign="top"><sub><strong>Minimal / picture frame:</strong> just clock + weather, the wallpaper rotation is the main element.</sub></td>
 <td valign="top"><sub><strong>In action:</strong> tap on a button opens the matching pop-up — here a colour picker for a lamp incl. power toggle.</sub></td>
 </tr>
 </table>
-
-<sub>Wallpapers rotate from Immich albums or a WebDAV folder. All widget cards have a soft blur backdrop (glassmorphism) layered over the photo backgrounds. Touch-optimised for iOS Safari without sticky-hover bugs.</sub>
 
 ### View editor — drag &amp; drop
 <div align="center">
@@ -200,76 +155,79 @@ Real-world setups across different hardware. Same project, different layouts, di
 <div align="center">
   <img src="public/screenshots/modules.png" alt="Modules" width="900" />
 </div>
-<sub>10 core widgets installed. Custom modules via JS-bundle upload — hot-loading, no container restart needed.</sub>
+<sub>13 core widgets installed. Custom modules via JS-bundle upload — hot-loading, no container restart needed.</sub>
+
+</details>
 
 ---
 
 ## Features
 
-### Editor & layouts
-- **Drag & drop layout builder** on a 24-column grid, resize via handle
-- **Multiple views** (portrait, landscape) — one URL per display
-- **Live sync** via WebSockets — changes push instantly to every connected display
-- **Auto snapshots** before every save (last 20), plus manual export/import
-- **i18n** German + English fully translated
-
-### Widgets (10 core)
+### Widgets (13 core)
 
 | Widget | Description |
 |---|---|
 | **Clock** | Time + date, optional mini weather, 12/24h |
 | **Weather** | Open-Meteo, DWD, OpenWeatherMap, or HA weather entity |
-| **Calendar** | iCal feeds + Google + Microsoft 365 (OAuth) |
+| **Calendar** | iCal + Google + Microsoft 365 · 3-day agenda mode · 12/24h toggle |
 | **Home Assistant** | Any HA entity + rule engine (colour/icon per state) |
-| **HA Notifications** | Rule-based push tiles, auto-hide when quiet |
-| **Buttons** | Tap tiles with HA services / webhooks |
+| **HA Notifications** | Rule-based push tiles, tap-to-toggle, auto-hide when quiet |
+| **Camera** | HA camera entities — snapshot refresh, fullscreen view |
+| **Sensor** | Multi-sensor value tiles — per-sensor icon/colour, history sparkline |
+| **Image** | Photo tile — Immich album or WebDAV slideshow |
+| **Buttons** | Tap tiles with HA service calls (incl. service data) / webhooks |
 | **Timer** | Live countdown, startable via REST API / iOS Shortcut |
 | **Messages** | Quick post (text + image) via REST API with TTL |
 | **Shopping** | 3 sources: local, HA (todo.\*) or **Todoist** |
 | **Todos** | 3 sources: local, HA (todo.\*) or **Todoist** |
 
-### External integrations
-- **Home Assistant** with live WebSocket entity updates
-- **Google Calendar** and **Microsoft 365** via OAuth, multiple accounts in parallel
-  - *Simplest read-only path:* Google Calendar's **secret iCal address** (Google Calendar → Settings → *Integrate calendar*) works as a plain iCal feed — no OAuth app, no domain needed. Trade-offs: Google refreshes that export on its own schedule (it can lag a few hours), and the link grants read access to anyone who has it.
-  - *OAuth on a LAN-only install:* Google refuses local addresses as redirect URIs — but the domain **never has to be reachable from the internet**, it only has to resolve to your box *inside* your network. Set up a DDNS domain + HTTPS under *Settings → Hosting & Network* (DuckDNS/Cloudflare built in, DNS-challenge — no open ports), then open the editor via that https URL when connecting Google.
-- **Todoist** with 1-click API-token setup
-- **Immich** + **WebDAV** as wallpaper sources
-- **OpenWeatherMap** as weather provider (optional)
+### Editor & live view
 
-### Hosting & security — *only if you want to be reachable from outside*
-All of these are toggle-able in the UI. For **purely local LAN use**
-you need none of them:
+- **Drag & drop builder** on a 24-column grid — multiple views (portrait/landscape), one URL per display
+- **Stack & overlay widgets** with a drag-sortable layer list (z-order)
+- **HA-triggered show/hide** — bind any widget to an entity state: doorbell rings → camera pops up over the photos, auto-hides after n seconds. Home Assistant can also "press" dashboard buttons remotely
+- **Light + dark editor theme** · per-view auto-refresh (off / 1–24 h) · auto-snapshots before every save (last 20)
+- **Live sync** via WebSocket to every connected display · i18n German + English
 
-- **Caddy as reverse proxy** with automatic HTTPS via Let's Encrypt
-- **10 DNS providers** baked into the image for ACME DNS-01
-- **DDNS updater** with 3 provider modes (Cloudflare, Hetzner, DynDNS-v2 generic)
+### Integrations
+
+- **Home Assistant** — live entity updates over one WebSocket (pushed, not polled)
+- **Google Calendar** and **Microsoft 365** via OAuth (multiple accounts) — plus plain iCal feeds
+- **Immich** + **WebDAV** as wallpaper sources · **Todoist** · **OpenWeatherMap** (optional)
+
+<details>
+<summary><b>📅 Google Calendar on a home network — two ways</b></summary>
+
+- *Simplest read-only path:* Google Calendar's **secret iCal address** (Google Calendar → Settings → *Integrate calendar*) works as a plain iCal feed — no OAuth app, no domain needed. Trade-offs: Google refreshes that export on its own schedule (it can lag a few hours), and the link grants read access to anyone who has it.
+- *OAuth on a LAN-only install:* Google refuses local addresses as redirect URIs — but the domain **never has to be reachable from the internet**, it only has to resolve to your box *inside* your network. Set up a DDNS domain + HTTPS under *Settings → Hosting & Network* (DuckDNS/Cloudflare built in, DNS-challenge — no open ports), then open the editor via that https URL when connecting Google.
+
+</details>
+
+<details>
+<summary><b>🔐 Hosting & security — all optional, off by default</b></summary>
+
+For purely local LAN use you need none of these. Toggle-able in the UI:
+
+- **Caddy reverse proxy** with automatic HTTPS via Let's Encrypt
+- **10 DNS providers** baked in for ACME DNS-01 (no open ports needed)
+- **DDNS updater** (Cloudflare, Hetzner, DynDNS-v2 generic)
 - **2FA (TOTP)** with authenticator apps + recovery codes
-- **In-app brute-force protection** (fail2ban equivalent)
-- **scrypt password hashing**, iron-session
+- **In-app brute-force protection** · **scrypt** password hashing · iron-session
 
-### Custom modules — build your own widgets
-- Upload a JS bundle, **hot-loading** without container rebuild
-- Build helper: `node scripts/build-module.mjs <source>` → `module.json` + `bundle.js`
-- Manifest with field schema (text/number/boolean/color/url/textarea)
-- Example module in `examples/modules/hello/`
-- Contributions to the core widget family are very welcome — see
-  [`docs/module-development.md`](docs/module-development.md)
+</details>
 
-### Companion (iOS) — in development
+### Custom modules
 
-Native Swift app being built in parallel with the web editor.
-**Not yet available — TestFlight beta coming soon.** Planned features:
+Upload a JS bundle through the UI — **hot-loaded** on every display, no container restart. Build helper (`node scripts/build-module.mjs`), manifest with field schema, example module in [`examples/modules/hello/`](examples/modules/hello/). See [`docs/custom-modules.md`](docs/custom-modules.md) — community modules & PRs welcome.
 
-- **Timer** startable from the lock screen via App Intent
-- **Quick post** (text + image) to individual displays with TTL
-- **Shopping & todos** sync with iOS Reminders (two-way)
-- **Push notifications** to individual frames
-- **View switch / refresh** and live status from anywhere
+<details>
+<summary><b>📱 Companion app (iOS) — in development</b></summary>
 
-Until the app ships (and afterwards too): all of this is already
-available via the REST API with a shortcut token — perfect for
-iOS Shortcuts, Tasker profiles, or curl scripts.
+Native Swift app being built alongside the web editor. **Not yet available — TestFlight beta coming soon.** Planned: lock-screen timer (App Intent), quick posts with TTL, shopping/todos sync with iOS Reminders, push notifications per frame, view switch/refresh from anywhere.
+
+Until then (and afterwards too): all of this already works via the REST API with a shortcut token — perfect for iOS Shortcuts, Tasker, or curl. See [`docs/companion-api.md`](docs/companion-api.md).
+
+</details>
 
 ---
 
@@ -279,40 +237,26 @@ One Docker stack with three services, all on the same host:
 
 | Layer | What |
 |---|---|
-| **Caddy** | Reverse proxy + automatic HTTPS (Let's Encrypt). Custom build with 10 DNS plugins for ACME DNS-01. Listens on 80/443, forwards to the app. For purely local operation Caddy runs as a simple HTTP proxy without TLS. |
-| **Next.js app** | `/editor` is the admin UI. `/view/<id>` is what tablets/monitors render. `/api/...` is the REST surface for the companion app, shortcuts, and external tools. Socket.IO pushes live updates to every connected display — no refresh. |
-| **Postgres 16** | Stores dashboards, widget layouts, snapshots, users, OAuth tokens (for calendar), custom modules as JS bundles, and all app settings. |
+| **Caddy** | Reverse proxy + automatic HTTPS (Let's Encrypt). Custom build with 10 DNS plugins for ACME DNS-01. For purely local use it runs as a plain HTTP proxy without TLS. |
+| **Next.js app** | `/editor` is the admin UI. `/view/<id>` is what displays render. `/api/...` is the REST surface for the companion app, shortcuts, and external tools. Socket.IO pushes live updates to every display. |
+| **Postgres 16** | Dashboards, layouts, snapshots, users, OAuth tokens, custom modules, app settings. |
 
-**Data flow on a layout save:**
-Browser changes a widget → POST to Next.js API → snapshot to Postgres → Socket.IO event to all displays → every tablet re-renders the changed widget in under 100 ms.
-
-**Persistent volumes:** Postgres data · editor settings · wallpaper cache · Caddyfile · ACME / Let's Encrypt certs. All survive container updates.
+**Data flow on save:** browser edits a widget → Next.js API → snapshot to Postgres → Socket.IO event → every display re-renders in under 100 ms. **Persistent volumes** (Postgres data, settings, wallpaper cache, Caddyfile, certs) survive every update.
 
 ---
 
-## Update / maintenance
-
-### The normal way
+## Maintenance
 
 ```bash
-cd magic-frame
-./deploy/install.sh
+cd magic-frame && ./deploy/install.sh                # update — data, login and modules survive
+docker compose logs -f app                           # logs (app / caddy)
+docker compose exec db pg_dump -U postgres magicdashboard | gzip > backup-$(date +%F).sql.gz   # DB backup
 ```
 
-Idempotent — pulls the latest code, rebuilds the containers, and leaves your `.env`, database volume and uploaded custom modules alone. From v1.0.2 onwards this works in one step even if upstream history got rewritten.
+<details>
+<summary><b>Update fails with "divergent branches" / "would clobber existing tag" (early v1.0.x clones)</b></summary>
 
-### If it fails (early v1.0.x clones)
-
-If you cloned during the launch week (before v1.0.2) you may see one of these:
-
-```
-fatal: Need to specify how to reconcile divergent branches
-```
-```
-! [rejected]    v1.0.0   -> v1.0.0   (would clobber existing tag)
-```
-
-That's because the upstream history was rewritten a few times during launch (Co-Author scrub, CLAUDE.md scrub, v1.0.1 retag). One-time recovery:
+If you cloned during launch week (before v1.0.2), upstream history was rewritten a few times. One-time recovery — your `.env`, database and modules are untouched (none of that lives in git):
 
 ```bash
 cd magic-frame
@@ -321,41 +265,36 @@ git reset --hard origin/main
 ./deploy/install.sh
 ```
 
-Your `.env`, database and uploaded custom modules are untouched — none of that lives in git. After this one-time reset, regular `./deploy/install.sh` works on its own again.
-
-### Database backup
-```bash
-docker compose exec db pg_dump -U postgres magicdashboard | gzip > backup-$(date +%F).sql.gz
-```
-
-### Logs
-```bash
-docker compose logs -f app
-docker compose logs -f caddy
-```
+</details>
 
 ---
 
 ## Troubleshooting
 
-### Browser refuses to load `http://<server-ip>` / says HTTPS failed
-Brave, Chrome, and Edge auto-upgrade `http://` to `https://` by default. On a fresh local install there's no cert yet, so the upgrade fails before the request reaches Magic Frame.
+<details>
+<summary><b>Browser refuses to load <code>http://&lt;server-ip&gt;</code> / says HTTPS failed</b></summary>
 
-- **Quickest workaround:** type the full path — `http://<server-ip>/login` (or `/editor`) instead of just `http://<server-ip>`. The auto-upgrade often only fires on bare host URLs.
-- **Brave:** `brave://settings/security` → *"Always use secure connections"* → switch to *"Don't use"* (or set a per-site exception)
-- **Chrome/Edge:** `chrome://settings/security` → *"Always use secure connections"* → off
-- **Firefox/Safari:** usually fine with HTTP on local IPs out of the box
-- **Long-term fix:** set up a domain → Caddy gets a real Let's-Encrypt cert automatically (see *Settings → Hosting & Network* in the app)
+Brave, Chrome and Edge auto-upgrade `http://` to `https://`. On a fresh local install there's no cert yet, so the upgrade fails before the request reaches Magic Frame.
 
-### `Bind for 0.0.0.0:80 failed: port is already allocated` during install
-Something else on the host is already on port 80. Check with `ss -tlnp | grep :80` and `docker ps --filter "publish=80"`. Common culprits:
+- **Quickest workaround:** type the full path — `http://<server-ip>/login` (the auto-upgrade often only fires on bare host URLs)
+- **Brave:** `brave://settings/security` → *"Always use secure connections"* → off (or per-site exception) · **Chrome/Edge:** same setting under `chrome://settings/security`
+- **Long-term fix:** set up a domain → Caddy gets a real Let's-Encrypt cert automatically (*Settings → Hosting & Network*)
 
-- `nginx` / `apache2` from the distro: `systemctl stop nginx && systemctl disable nginx`
-- Another container holding the port: `docker stop <name>`
-- After fixing, recreate the Caddy container cleanly: `docker compose down && docker compose up -d`
+</details>
 
-### Page still shows old behavior after `git pull` and rebuild
-Both Next.js and your browser cache aggressively. Hard-refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`) or open the URL in an incognito window after `docker compose up -d --build`.
+<details>
+<summary><b><code>Bind for 0.0.0.0:80 failed: port is already allocated</code> during install</b></summary>
+
+Something else on the host is on port 80. Check `ss -tlnp | grep :80` and `docker ps --filter "publish=80"` — common culprits are distro `nginx`/`apache2` (`systemctl stop nginx && systemctl disable nginx`) or another container. After fixing: `docker compose down && docker compose up -d`.
+
+</details>
+
+<details>
+<summary><b>Page still shows old behaviour after an update</b></summary>
+
+Next.js and your browser both cache aggressively. Hard-refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`) or use an incognito window after `docker compose up -d --build`.
+
+</details>
 
 ---
 
@@ -368,25 +307,30 @@ Both Next.js and your browser cache aggressively. Hard-refresh (`Cmd+Shift+R` / 
 | [`.env.example`](.env.example) | All environment variables documented |
 | [`docs/custom-modules.md`](docs/custom-modules.md) | Build + upload your own widget modules |
 | [`docs/module-development.md`](docs/module-development.md) | Core-widget development (source-tree patch) |
-| [`docs/companion-api.md`](docs/companion-api.md) | REST API endpoints (for the iOS companion or your own scripts) |
+| [`docs/companion-api.md`](docs/companion-api.md) | REST API endpoints (companion app / your own scripts) |
+| [`kubernetes/`](kubernetes/) | Community Kubernetes manifests (thanks @RudiKlein) |
 
 ---
 
 ## Tech stack
 
-Next.js 15 · React 19 · Postgres 16 + Prisma 7 · Caddy 2 (xcaddy custom build) ·
+Next.js 16 · React 19 · Postgres 16 + Prisma 7 · Caddy 2 (xcaddy custom build) ·
 Tailwind CSS 4 · Socket.IO · react-grid-layout · iron-session · otplib · esbuild
 
 ---
 
-## Contributions
+## Contributing
 
-Issues with a clear reproduction are especially welcome — they help me
-move things forward directly. I'm happy to look at pull requests, but
-depending on complexity it might take a bit.
+Issues with a clear reproduction are especially welcome — they directly drive releases (most of v1.1 came straight from community requests). PRs are happily reviewed; for larger changes please open an issue first so we can sort out what fits.
 
-For larger changes: please open an issue first so we can sort out what
-fits and what doesn't.
+---
+
+## ❤️ Support
+
+Magic Frame is free for home use and built in my spare time. If it hangs on your wall and you want to say thanks:
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-%E2%9D%A4-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/jeremiaa)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-%E2%98%95-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/jeremiaa)
 
 ---
 
