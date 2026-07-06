@@ -218,8 +218,20 @@ fi
 # -----------------------------------------------------------------------------
 step "Waiting for app"
 
-URL="http://${HOST_BIND}:80"
-if [ "$HOST_BIND" = "0.0.0.0" ]; then URL="http://localhost"; fi
+# Konfigurierten HTTP-Port respektieren (#11): exportierte Variable gewinnt,
+# sonst .env, sonst 80. Vorher waren Health-Check UND angezeigte URLs auf
+# Port 80 hartkodiert — bei Custom-Ports pollte der Check ins Leere und die
+# "Open in browser"-URL war falsch.
+HTTP_PORT_VAL="${HTTP_PORT:-}"
+if [ -z "$HTTP_PORT_VAL" ]; then
+  HTTP_PORT_VAL=$(grep -E '^HTTP_PORT=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"' || true)
+fi
+HTTP_PORT_VAL="${HTTP_PORT_VAL:-80}"
+PORT_SUFFIX=""
+if [ "$HTTP_PORT_VAL" != "80" ]; then PORT_SUFFIX=":$HTTP_PORT_VAL"; fi
+
+URL="http://${HOST_BIND}:${HTTP_PORT_VAL}"
+if [ "$HOST_BIND" = "0.0.0.0" ]; then URL="http://localhost${PORT_SUFFIX}"; fi
 
 for i in $(seq 1 60); do
   code=$(curl -fsS -o /dev/null -w "%{http_code}" --max-time 3 "$URL/login" 2>/dev/null || echo "000")
@@ -238,20 +250,44 @@ fi
 # -----------------------------------------------------------------------------
 # 6) Done — onboarding instructions
 # -----------------------------------------------------------------------------
+# LAN-IP purely informational — every probe is allowed to fail (|| true) so
+# set -e can never abort the summary. Order: Linux (hostname -I) → Linux
+# without it (ip route) → macOS (ipconfig).
+LAN_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || true)
+[ -n "$LAN_IP" ] || LAN_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i=="src") {print $(i+1); exit}}' || true)
+[ -n "$LAN_IP" ] || LAN_IP=$(ipconfig getifaddr en0 2>/dev/null || true)
+
+echo
+# Wordmark im Marken-Verlauf (Blau → Lila), Halbblock-Zeichen für die
+# kompakte "gemalte" Optik. 256-Farb-SGR-Codes werden von Terminals ohne
+# Support schlicht ignoriert — schlimmstenfalls einfarbig.
+printf '  \033[38;5;75m%s\033[0m\n'  '█▄ ▄█ █▀▀█ █▀▀▀ ▀█▀ █▀▀▀    █▀▀▀ █▀▀█ █▀▀█ █▄ ▄█ █▀▀▀'
+printf '  \033[38;5;141m%s\033[0m\n' '█ ▀ █ █▀▀█ █ ▀█  █  █       █▀▀  █▀█  █▀▀█ █ ▀ █ █▀▀'
+printf '  \033[38;5;213m%s\033[0m\n' '▀   ▀ ▀  ▀ ▀▀▀▀ ▀▀▀ ▀▀▀▀    ▀    ▀  ▀ ▀  ▀ ▀   ▀ ▀▀▀▀'
 echo
 echo "$(c_green "============================================================")"
 echo "$(c_green "  Magic Frame is running!")"
 echo "$(c_green "============================================================")"
 echo
-echo "  $(c_cyan "Open in browser:")  $URL"
+# /editor statt nackter Host-URL: leitet Unangemeldete automatisch zum
+# Login/Setup UND umgeht Chromes HTTPS-Auto-Upgrade, das bevorzugt auf
+# nackten Host-URLs zuschlägt (Troubleshooting #1 im README).
+if [ -n "$LAN_IP" ] && [ "$HOST_BIND" = "0.0.0.0" ]; then
+  echo "  $(c_cyan "Open in browser:")  http://${LAN_IP}${PORT_SUFFIX}/editor"
+else
+  echo "  $(c_cyan "Open in browser:")  $URL/editor"
+fi
 echo
-echo "  On first visit you land in the $(c_yellow "setup flow") and create"
-echo "  your admin user (email + password). After that you can enable"
-echo "  2FA in Settings, connect HA/Todoist/Calendar in Integrations,"
-echo "  and set up DDNS + HTTPS under Hosting & Network."
+echo "  On first visit you land in the $(c_yellow "setup flow") — create your"
+echo "  admin user and you're in. Everything else (Home Assistant,"
+echo "  calendars, Todoist, 2FA, HTTPS/DDNS) is $(c_yellow "optional") and waits"
+echo "  in the app under Settings & Integrations."
 echo
 echo "  $(c_dim "Logs:")    docker compose logs -f app"
 echo "  $(c_dim "Stop:")    docker compose down"
 echo "  $(c_dim "Update:")  ./deploy/install.sh   $(c_dim "(re-run any time — pulls latest, your data stays)")"
 echo "  $(c_dim "Backup:")  docker compose exec db pg_dump -U postgres magicdashboard | gzip > backup-\$(date +%F).sql.gz"
+echo
+echo "  $(c_yellow "☆") Enjoying Magic Frame? Star it on GitHub $(c_yellow "☆")"
+echo "    $(c_dim "https://github.com/jeremiaa/magic-frame")"
 echo
