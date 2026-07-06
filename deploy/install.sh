@@ -137,7 +137,17 @@ update_repo() {
 if [ -f docker-compose.yml ] && [ -d src ]; then
   step "Already inside the repo — pulling latest"
   REPO_DIR="."
+  # The pull may replace this very script — bash keeps running the OLD code
+  # from memory (users updating from a pre-v1.0.9 build-by-default installer
+  # would compile once for nothing). Detect the change and restart once with
+  # the fresh file. curl|bash runs are unaffected ($0 is not a file there).
+  INSTALLER_SUM_PRE=$(cksum "$0" 2>/dev/null || echo none)
   ( update_repo )
+  INSTALLER_SUM_POST=$(cksum "$0" 2>/dev/null || echo none)
+  if [ "$INSTALLER_SUM_PRE" != "$INSTALLER_SUM_POST" ] && [ -z "${MAGIC_FRAME_REEXEC:-}" ]; then
+    step "Installer updated itself — restarting with the new version"
+    MAGIC_FRAME_REEXEC=1 exec bash "$0" "$@"
+  fi
 elif [ -d "$REPO_DIR/.git" ]; then
   step "Updating existing repo $REPO_DIR"
   ( cd "$REPO_DIR" && update_repo )
@@ -242,6 +252,6 @@ echo "  and set up DDNS + HTTPS under Hosting & Network."
 echo
 echo "  $(c_dim "Logs:")    docker compose logs -f app"
 echo "  $(c_dim "Stop:")    docker compose down"
-echo "  $(c_dim "Update:")  git pull && ./deploy/install.sh"
+echo "  $(c_dim "Update:")  ./deploy/install.sh   $(c_dim "(re-run any time — pulls latest, your data stays)")"
 echo "  $(c_dim "Backup:")  docker compose exec db pg_dump -U postgres magicdashboard | gzip > backup-\$(date +%F).sql.gz"
 echo
