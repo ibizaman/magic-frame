@@ -33,7 +33,14 @@ async function fetchIcal(
   let url = rawUrl.trim();
   if (url.startsWith("webcal://")) url = "https://" + url.substring(9);
 
-  const cacheKey = `${url}-d${windowEnd.getTime() - windowStart.getTime()}-l${limitPerFeed}`;
+  // Keyed on the actual start date (not just the window's length) — two
+  // requests with the same duration but different start dates (e.g. "30
+  // days from today" vs "30 days starting in the past") would otherwise
+  // collide on the same cache entry, silently serving one caller's data
+  // for a completely different date range. This only becomes reachable
+  // once callers can pass a custom `start` (see the `range` mode below),
+  // but is a more correct cache key regardless.
+  const cacheKey = `${url}-s${windowStart.getTime()}-d${windowEnd.getTime() - windowStart.getTime()}-l${limitPerFeed}`;
   const now = Date.now();
   const cached = cache.get(cacheKey);
   if (cached && now - cached.timestamp < CACHE_TTL) {
@@ -180,6 +187,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const limitParam = searchParams.get("limit");
   const daysParam = searchParams.get("days");
+  const startParam = searchParams.get("start");
+  const modeParam = searchParams.get("mode"); // "agenda" (default) | "range"
   const limit = limitParam ? parseInt(limitParam, 10) : 5;
   const days = daysParam ? parseInt(daysParam, 10) : 30;
 
@@ -206,7 +215,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const windowStart = new Date();
+  // `start` (YYYY-MM-DD), combined with `mode=range`, lets a caller fetch a
+  // window that begins in the past relative to "today" — e.g. a month-grid
+  // view that wants to render days earlier in the current month too, not
+  // just from today onward. Without `mode=range`, behaviour is unchanged
+  // (window always begins today, matching the original agenda behaviour).
+  let windowStart = new Date();
+  if (modeParam === "range" && startParam) {
+    const parsed = new Date(`${startParam}T00:00:00`);
+    if (!isNaN(parsed.getTime())) windowStart = parsed;
+  }
   windowStart.setHours(0, 0, 0, 0);
   const windowEnd = new Date(windowStart);
   windowEnd.setDate(windowEnd.getDate() + days);
@@ -275,9 +293,16 @@ export async function GET(request: NextRequest) {
     );
 
     const now = new Date();
+    // The original agenda-style behaviour only ever wants upcoming events,
+    // so it filters out anything already finished relative to the real
+    // current moment. A `mode=range` caller explicitly wants a fixed date
+    // window instead (which can include past days), so only the
+    // windowStart/windowEnd bounds should apply there, not an additional
+    // "must still be upcoming" filter.
+    const keepPastEvents = modeParam === "range";
     const allEvents = feedResults
       .flatMap((f) => f.events)
-      .filter((e) => new Date(e.end) > now)
+      .filter((e) => keepPastEvents || new Date(e.end) > now)
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .slice(0, limit);
 
