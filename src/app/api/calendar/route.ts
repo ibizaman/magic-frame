@@ -57,47 +57,117 @@ async function fetchIcal(
   const comp = new ICAL.Component(jcalData);
   const vevents = comp.getAllSubcomponents("vevent");
 
+  // BUG FIX 1: a recurring series that's had one occurrence edited/moved in
+  // the source calendar (Google/iCloud/etc.) isn't stored as a single
+  // VEVENT — it's a "master" VEVENT (the RRULE) plus a separate override
+  // VEVENT sharing the same UID but carrying a RECURRENCE-ID, holding the
+  // edited date/title. The code below previously treated every VEVENT as
+  // independent, so the master's plain iterator had no idea an override
+  // existed and still generated the original, now-stale occurrence — while
+  // the override VEVENT was *also* added as its own event, producing two
+  // visible entries for what is really one edited event.
+  //
+  // ical.js resolves this correctly via relateException() — but that state
+  // lives on the specific Event *instance* you call it on, so the exact
+  // same instance must be the one used later for expansion.
+  const masters = new Map<string, ICAL.Event>();
+  const exceptionsByUid = new Map<string, ICAL.Component[]>();
+  const singles: ICAL.Component[] = [];
+
+  for (const vevent of vevents) {
+    try {
+      const ev = new ICAL.Event(vevent);
+      if (ev.isRecurrenceException()) {
+        const list = exceptionsByUid.get(ev.uid) ?? [];
+        list.push(vevent);
+        exceptionsByUid.set(ev.uid, list);
+      } else if (ev.isRecurring()) {
+        masters.set(ev.uid, ev);
+      } else {
+        singles.push(vevent);
+      }
+    } catch (err) {
+      // BUG FIX 3: a single malformed/unusual VEVENT (common in large,
+      // years-old calendars) must not take down parsing for the entire
+      // feed — skip just this one entry and keep going.
+      console.error("Skipped malformed calendar event during classification", err);
+    }
+  }
+
+  // Relate each exception to its master (same instance stored above, so the
+  // relation actually sticks for later expansion). If a master can't be
+  // found in this feed (edge case — e.g. the series master got deleted but
+  // an override survived), fall back to treating it as its own standalone
+  // event using its own edited date, rather than silently dropping it.
+  const orphanExceptions: ICAL.Component[] = [];
+  for (const [uid, list] of exceptionsByUid) {
+    const master = masters.get(uid);
+    if (master) {
+      for (const exVevent of list) master.relateException(exVevent);
+    } else {
+      orphanExceptions.push(...list);
+    }
+  }
+
   const events: any[] = [];
   const windowStartIcal = ICAL.Time.fromJSDate(windowStart);
   const windowEndIcal = ICAL.Time.fromJSDate(windowEnd);
 
-  for (const vevent of vevents) {
-    const event = new ICAL.Event(vevent);
+  const pushStandalone = (event: ICAL.Event) => {
     try {
-      if (event.isRecurring()) {
-        const expand = event.iterator();
-        let next;
-        let iterations = 0;
-        while ((next = expand.next()) && iterations < limitPerFeed + 10) {
-          iterations++;
-          if (next.compare(windowStartIcal) < 0) continue;
-          if (next.compare(windowEndIcal) > 0) break;
-
-          const occurrence = event.getOccurrenceDetails(next);
-          events.push({
-            id: `${event.uid}-${next.toUnixTime()}`,
-            title: event.summary,
-            start: occurrence.startDate.toJSDate().toISOString(),
-            end: occurrence.endDate.toJSDate().toISOString(),
-            isAllDay: event.startDate.isDate,
-          });
-        }
-      } else {
-        const startJS = event.startDate.toJSDate();
-        const endJS = event.endDate.toJSDate();
-        if (endJS >= windowStart && startJS <= windowEnd) {
-          events.push({
-            id: event.uid || Math.random().toString(),
-            title: event.summary,
-            start: startJS.toISOString(),
-            end: endJS.toISOString(),
-            isAllDay: event.startDate.isDate,
-          });
-        }
+      const startJS = event.startDate.toJSDate();
+      const endJS = event.endDate.toJSDate();
+      if (endJS >= windowStart && startJS <= windowEnd) {
+        events.push({
+          id: event.uid || Math.random().toString(),
+          title: event.summary,
+          start: startJS.toISOString(),
+          end: endJS.toISOString(),
+          isAllDay: event.startDate.isDate,
+        });
       }
     } catch (err) {
       console.error("Skipped malformed calendar event", err);
     }
+  };
+
+  // Recurring series — exceptions (if any) are already related on these
+  // exact instances, so getOccurrenceDetails() below transparently returns
+  // the edited data for an overridden date instead of the stale original,
+  // with no separate entry needed for the override itself.
+  for (const event of masters.values()) {
+    try {
+      const expand = event.iterator();
+      let next;
+      let iterations = 0;
+      while ((next = expand.next()) && iterations < limitPerFeed + 10) {
+        iterations++;
+        if (next.compare(windowStartIcal) < 0) continue;
+        if (next.compare(windowEndIcal) > 0) break;
+
+        const occurrence = event.getOccurrenceDetails(next);
+        events.push({
+          id: `${event.uid}-${next.toUnixTime()}`,
+          title: occurrence.item.summary,
+          start: occurrence.startDate.toJSDate().toISOString(),
+          end: occurrence.endDate.toJSDate().toISOString(),
+          isAllDay: occurrence.startDate.isDate,
+        });
+      }
+    } catch (err) {
+      console.error("Skipped malformed calendar event", err);
+    }
+  }
+
+  // Plain one-off events (never recurring, never an exception).
+  for (const vevent of singles) {
+    pushStandalone(new ICAL.Event(vevent));
+  }
+
+  // Orphaned exceptions — no master found in this feed, so show the edited
+  // occurrence on its own rather than dropping it.
+  for (const vevent of orphanExceptions) {
+    pushStandalone(new ICAL.Event(vevent));
   }
 
   events.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
