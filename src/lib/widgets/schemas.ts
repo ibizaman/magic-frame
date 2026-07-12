@@ -158,7 +158,7 @@ const imageConfig = baseConfig
   .extend({
     immichSource: z.enum(["global", "view"]).optional(),
     immichAlbumId: z.string().optional(),
-    fit: z.enum(["cover", "contain", "fill", "none"]).optional(),
+    fit: z.enum(["cover", "contain", "fill", "none", "blur"]).optional(),
     intervalSec: z.number().optional(),
     cornerRadius: z.number().optional(),
   })
@@ -312,7 +312,7 @@ export const wallpaperSchema = z
     showMetadata: z.boolean().optional(),
     // Wie das Bild skaliert wird (issue #17). cover = Fill (default, croppt),
     // contain = Fit, fill = Stretch, none = Center.
-    fit: z.enum(["cover", "contain", "fill", "none"]).optional(),
+    fit: z.enum(["cover", "contain", "fill", "none", "blur"]).optional(),
     // Dia-/Bild-Einstellungen: Übergangs-Dauer (ms), Bild-Position (object-
     // position), Ken-Burns-Intensität (%). Defaults reproduzieren das bisherige
     // Verhalten exakt — keine Migration nötig.

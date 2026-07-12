@@ -429,11 +429,12 @@ export default function WallpaperSettingsModal({
                    <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Bildanzeige")}</label>
                    <select
                       value={wallpaper.fit ?? "cover"}
-                      onChange={(e) => setWallpaper({ ...wallpaper, fit: e.target.value as "cover" | "contain" | "fill" | "none" })}
+                      onChange={(e) => setWallpaper({ ...wallpaper, fit: e.target.value as "cover" | "contain" | "fill" | "none" | "blur" })}
                       className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
                    >
                       <option value="cover">{t("Füllen (Ausschnitt, Standard)")}</option>
                       <option value="contain">{t("Einpassen (ganzes Bild)")}</option>
+                      <option value="blur">{t("Einpassen + Blur-Rand")}</option>
                       <option value="fill">{t("Strecken (verzerrt)")}</option>
                       <option value="none">{t("Zentriert (Originalgröße)")}</option>
                    </select>

@@ -388,6 +388,7 @@ export const EN: Record<string, string> = {
   "Bildanzeige": "Image display",
   "Füllen (Ausschnitt, Standard)": "Fill (crop, default)",
   "Einpassen (ganzes Bild)": "Fit (whole image)",
+  "Einpassen + Blur-Rand": "Fit + blurred fill",
   "Strecken (verzerrt)": "Stretch (distorted)",
   "Zentriert (Originalgröße)": "Center (original size)",
   "Füllen schneidet Ränder ab. Einpassen zeigt das ganze Bild ohne Beschneiden — gut für Hochformat-Fotos.": "Fill crops the edges. Fit shows the whole image without cropping — good for portrait photos.",
