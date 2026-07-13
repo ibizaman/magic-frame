@@ -72,6 +72,7 @@ export interface WidgetLayoutItem {
     cardTheme?: 'dark' | 'light';
     cardBlur?: number;
     design?: 'cards' | 'minimal';
+    hideControlButton?: boolean;
     // #6 HA-triggered visibility (baseConfig)
     showWhenEntity?: string;
     showWhenState?: string;

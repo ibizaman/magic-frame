@@ -237,6 +237,7 @@ export const EN: Record<string, string> = {
   "Icon mit Rahmen": "Icon with frame",
   "Icon-Größe": "Icon size",
   "Icon im Kasten": "Icon in box",
+  "Steuerungs-Button ausblenden": "Hide control button",
   "Kasten-Größe": "Box size",
   "Standard": "Default",
   "Standard (keine Farbe)": "Default (no color)",

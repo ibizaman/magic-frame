@@ -120,6 +120,7 @@ const homeAssistantConfig = baseConfig
     iconFrame: z.boolean().optional(), // Icon-Box an/aus (Default an)
     iconScale: z.number().optional(), // Icon-Größe-Faktor (Default 1)
     frameScale: z.number().optional(), // Kasten-Größe-Faktor (Default 1)
+    hideControlButton: z.boolean().optional(), // Steuerungs-Button (Farbe/Slider) auf Kacheln ausblenden
     entities: z.array(haEntitySlot).optional(),
   })
   .passthrough();
