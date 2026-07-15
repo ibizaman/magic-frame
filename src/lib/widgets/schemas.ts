@@ -113,7 +113,7 @@ const haEntitySlot = z.object({
 
 const homeAssistantConfig = baseConfig
   .extend({
-    design: z.enum(["cards", "minimal"]).optional(),
+    design: z.enum(["cards", "minimal", "tint"]).optional(), // tint = Media-Stil (farbige Tönung)
     cardOpacity: z.number().optional(),
     cardTheme: z.enum(["dark", "light"]).optional(),
     cardBlur: z.number().optional(),
@@ -136,6 +136,20 @@ const haNotificationConfig = baseConfig
     frameScale: z.number().optional(),
     timeFormat: z.enum(["auto", "minutes", "hours", "days", "combined"]).optional(),
     showTimers: z.boolean().optional(),
+    // Now-Playing-Karte: dockt wie die Timer in den Stack, wenn Musik läuft
+    mediaPlayers: z.array(z.string()).optional(),
+    mediaShowControls: z.boolean().optional(), // Default an
+    mediaShowProgress: z.boolean().optional(), // Default an
+    mediaShowName: z.boolean().optional(), // Default aus
+    mediaShowVolume: z.boolean().optional(), // Default aus
+    mediaArtworkBg: z.boolean().optional(), // Cover als Blur-Hintergrund, Default an
+    mediaCardHeightEm: z.number().optional(), // Karten-Höhe (em), Default 5
+    mediaCoverCorners: z.enum(["rounded", "square", "circle"]).optional(),
+    mediaTextScale: z.number().optional(), // Text-Skalierung in % relativ zu den Notifications
+    mediaShowBorder: z.boolean().optional(), // weißer Glas-Rand der Media-Karte (Default an)
+    mediaPosition: z.enum(["top", "bottom"]).optional(), // über/unter den Benachrichtigungen
+    mediaTextOverflow: z.enum(["truncate", "scroll", "shrink"]).optional(), // Titel-Überlauf
+    mediaIdleHideMinutes: z.number().optional(), // pausierte Karte nach X Min ausblenden (0 = nie)
   })
   .passthrough();
 
@@ -200,6 +214,38 @@ const cameraConfig = baseConfig
     streamMode: z.enum(["snapshot", "mjpeg", "webrtc"]).optional(),
     clickFullscreen: z.boolean().optional(),
     caption: z.string().optional(),
+  })
+  .passthrough();
+
+const mediaPlayerConfig = baseConfig
+  .extend({
+    // auto wählt nach Kachelform (breit → row, hoch → stack, quadratisch → cover)
+    layout: z.enum(["auto", "row", "stack", "cover"]).optional(),
+    entityId: z.string().optional(), // legacy single media_player.*
+    entityIds: z.array(z.string()).optional(), // mehrere Player, auto-follow
+    showCover: z.boolean().optional(), // Cover-Bild in row/stack (Default an)
+    coverScale: z.number().optional(), // Cover-Größe in % (50–130, Default 100)
+    coverCorners: z.enum(["rounded", "square", "circle"]).optional(),
+    vinylSpin: z.boolean().optional(), // Kreis-Cover dreht beim Abspielen (Default an)
+    textOverflow: z.enum(["truncate", "scroll", "shrink"]).optional(), // zu langer Text
+    showArtist: z.boolean().optional(), // Interpret-Zeile (Default an)
+    showControls: z.boolean().optional(), // Wiedergabe-Buttons (Default an)
+    showProgress: z.boolean().optional(), // Fortschrittsbalken + Zeit (Default an)
+    showVolume: z.boolean().optional(), // Lautstärke-Regler (opt-in, Default aus)
+    accentColor: z.string().optional(), // Fortschritts-Farbe (leer = dezent)
+    showPlayerName: z.boolean().optional(), // Player-Name überm Titel (opt-in)
+    frameRadius: z.number().optional(), // Radius-Vorgabe vom Host (z. B. Notification-Karte)
+    textScale: z.number().optional(), // Bar-Layout: Text-Skalierung in % (Default 100)
+    showBorder: z.boolean().optional(), // feiner Glas-Rand (Default an)
+    artworkAsTileBg: z.boolean().optional(), // Cover unscharf als Kachel-Hintergrund
+    bgBlur: z.number().optional(), // Blur-Stärke des Artwork-Hintergrunds (px)
+    bgDarken: z.number().optional(), // Abdunkelung des Artwork-Hintergrunds (%)
+    scrim: z.number().optional(), // Text-Verlauf unten im Cover-Layout (%)
+    hideWhenIdle: z.boolean().optional(), // nur zeigen wenn etwas läuft
+    idleHideMinutes: z.number().optional(), // pausierte Player nach X Min ausblenden (0 = nie)
+    autoFollow: z.boolean().optional(), // aktiven Player automatisch anzeigen (Default an)
+    dotsPosition: z.enum(["bottom-right", "top-right", "bottom-center"]).optional(), // Player-Punkte
+    dotsShowOnInteract: z.boolean().optional(), // Punkte nur bei Hover/Tipp einblenden
   })
   .passthrough();
 
@@ -286,6 +332,9 @@ export const widgetLayoutItemSchema = z.union([
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("CameraWidget.tsx"), config: cameraConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("MediaPlayerWidget.tsx"), config: mediaPlayerConfig })
     .merge(commonWidgetFields()),
   ]),
 ]);

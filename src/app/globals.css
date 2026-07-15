@@ -154,3 +154,14 @@ body {
     break-inside: avoid;
   }
 }
+
+/* Media-Player-Widget: Vinyl-Rotation (pausiert via animation-play-state)
+   und Laufschrift für zu lange Titel (Distanz kommt als CSS-Variable,
+   alternate = hin & zurück mit Halte-Punkten in den Keyframes). */
+@keyframes mf-vinyl-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes mf-marquee {
+  0%, 12% { transform: translateX(0); }
+  88%, 100% { transform: translateX(var(--mf-marquee-dist, 0px)); }
+}

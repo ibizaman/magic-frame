@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
   Gauge,
   Video,
+  Music,
   X,
   ClipboardPaste,
   Save,
@@ -68,6 +69,7 @@ const WIDGET_CATALOG: {
   { type: "ImageWidget.tsx", label: "Bild", icon: <ImageIcon size={16} /> },
   { type: "SensorWidget.tsx", label: "Sensor", icon: <Gauge size={16} /> },
   { type: "CameraWidget.tsx", label: "Kamera", icon: <Video size={16} /> },
+  { type: "MediaPlayerWidget.tsx", label: "Media Player", icon: <Music size={16} /> },
 ];
 
 const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }> = {
@@ -82,6 +84,7 @@ const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }>
   "ImageWidget.tsx":           { hex: "#a855f7", glow: "rgba(168,85,247,0.25)",  tint: "rgba(168,85,247,0.12)"  }, // purple
   "SensorWidget.tsx":          { hex: "#14b8a6", glow: "rgba(20,184,166,0.25)",  tint: "rgba(20,184,166,0.12)"  }, // teal
   "CameraWidget.tsx":          { hex: "#f43f5e", glow: "rgba(244,63,94,0.25)",   tint: "rgba(244,63,94,0.12)"   }, // rose
+  "MediaPlayerWidget.tsx":     { hex: "#ec4899", glow: "rgba(236,72,153,0.25)",  tint: "rgba(236,72,153,0.12)"  }, // pink
   "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
   "TodosWidget.tsx":           { hex: "#6366f1", glow: "rgba(99,102,241,0.25)",  tint: "rgba(99,102,241,0.12)"  }, // indigo
 };
@@ -306,6 +309,23 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         </div>
       );
 
+    case "MediaPlayerWidget.tsx":
+      // Cover square on the left + title/artist bars + a row of control dots.
+      return (
+        <div className="w-full h-full flex items-center gap-[6%] p-[8%]">
+          <div className="h-full aspect-square rounded-md shrink-0" style={{ backgroundColor: dim }} />
+          <div className="flex-1 flex flex-col gap-[10%]">
+            <div className="rounded-full" style={{ height: "16%", width: "80%", backgroundColor: dim }} />
+            <div className="rounded-full" style={{ height: "12%", width: "55%", backgroundColor: dimmer }} />
+            <div className="flex gap-[8%] mt-[6%]">
+              <div className="rounded-full aspect-square" style={{ height: "0.9em", backgroundColor: dimmer }} />
+              <div className="rounded-full aspect-square" style={{ height: "0.9em", backgroundColor: dim }} />
+              <div className="rounded-full aspect-square" style={{ height: "0.9em", backgroundColor: dimmer }} />
+            </div>
+          </div>
+        </div>
+      );
+
     case "ShoppingListWidget.tsx":
     case "TodosWidget.tsx":
       // List rows: checkbox square + text line.
@@ -357,6 +377,8 @@ function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <Gauge size={size} />;
     case "CameraWidget.tsx":
       return <Video size={size} />;
+    case "MediaPlayerWidget.tsx":
+      return <Music size={size} />;
     case "ShoppingListWidget.tsx":
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":

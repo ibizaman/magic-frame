@@ -68,16 +68,56 @@ export interface WidgetLayoutItem {
     showIfState4?: string;
     maxNotifications?: number;
     rules?: any[]; // NotificationRule array
+    // Now-Playing-Karte im Notification-Stack (Discussion #50)
+    mediaPlayers?: string[];
+    mediaShowControls?: boolean;
+    mediaShowProgress?: boolean;
+    mediaShowName?: boolean;
+    mediaShowVolume?: boolean;
+    mediaArtworkBg?: boolean;
+    mediaCardHeightEm?: number;
+    mediaCoverCorners?: 'rounded' | 'square' | 'circle';
+    mediaTextScale?: number;
+    mediaShowBorder?: boolean;
+    mediaPosition?: 'top' | 'bottom';
+    mediaTextOverflow?: 'truncate' | 'scroll' | 'shrink';
+    mediaIdleHideMinutes?: number;
+    frameRadius?: number;
+    textScale?: number;
+    showBorder?: boolean;
+    idleHideMinutes?: number;
     cardOpacity?: number;
     cardTheme?: 'dark' | 'light';
     cardBlur?: number;
-    design?: 'cards' | 'minimal';
+    design?: 'cards' | 'minimal' | 'tint';
     // #6 HA-triggered visibility (baseConfig)
     showWhenEntity?: string;
     showWhenState?: string;
     autoHideSeconds?: number;
     // #33 calendar time-format override
     calendarTimeFormat?: 'auto' | '12h' | '24h';
+    // Media Player widget (Discussion #50)
+    layout?: 'auto' | 'row' | 'stack' | 'cover';
+    entityIds?: string[];
+    showCover?: boolean;
+    coverScale?: number;
+    coverCorners?: 'rounded' | 'square' | 'circle';
+    vinylSpin?: boolean;
+    textOverflow?: 'truncate' | 'scroll' | 'shrink';
+    showArtist?: boolean;
+    showControls?: boolean;
+    showProgress?: boolean;
+    showVolume?: boolean;
+    showPlayerName?: boolean;
+    accentColor?: string;
+    artworkAsTileBg?: boolean;
+    bgBlur?: number;
+    bgDarken?: number;
+    scrim?: number;
+    hideWhenIdle?: boolean;
+    autoFollow?: boolean;
+    dotsPosition?: 'bottom-right' | 'top-right' | 'bottom-center';
+    dotsShowOnInteract?: boolean;
   };
 }
 
@@ -140,6 +180,7 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "ShoppingListWidget.tsx": "Einkaufsliste",
   "TodosWidget.tsx": "Todos",
   "CameraWidget.tsx": "Kamera",
+  "MediaPlayerWidget.tsx": "Media Player",
 };
 
 // Every German default string we have ever auto-assigned (the current types

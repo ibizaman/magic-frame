@@ -20,6 +20,7 @@ import {
 import { ImageInspector } from "../_inspectors/ImageInspector";
 import { SensorInspector } from "../_inspectors/SensorInspector";
 import CameraInspector from "../_inspectors/CameraInspector";
+import { MediaPlayerInspector } from "../_inspectors/MediaPlayerInspector";
 import CustomModuleInspector from "../_inspectors/CustomModuleInspector";
 import HAEntityInput from "./HAEntityInput";
 
@@ -577,6 +578,9 @@ function ContentTab(props: InspectorPanelProps) {
       )}
       {activeWidget.type === "CameraWidget.tsx" && (
         <CameraInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
+      {activeWidget.type === "MediaPlayerWidget.tsx" && (
+        <MediaPlayerInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
       {activeWidget.type.startsWith("custom:") && (
         <CustomModuleInspector widget={activeWidget} updateConfig={updateConfig} />

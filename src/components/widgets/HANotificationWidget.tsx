@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Icon } from "@iconify/react";
 import { useGlassStyle } from "@/lib/ui/glass";
+import MediaPlayerWidget from "./MediaPlayerWidget";
 import {
     formatNotifAge,
     type NotifTimeFormat,
@@ -68,6 +69,11 @@ export default function HANotificationWidget({
 
     // Memory mapping of active alerts by their unique config index
     const [persistedAlerts, setPersistedAlerts] = useState<Map<number, PersistedAlert>>(new Map());
+    // Now-Playing-Karten: JEDER konfigurierte Player bekommt seine eigene
+    // Karte — spielen zwei gleichzeitig, stapeln sich zwei Karten. Sichtbar-
+    // keit meldet jedes eingebettete MediaPlayerWidget einzeln (hideWhenIdle).
+    const [mediaVisibleMap, setMediaVisibleMap] = useState<Record<string, boolean>>({});
+    const anyMediaVisible = Object.values(mediaVisibleMap).some(Boolean);
 
     const rules: NotificationRule[] = config?.rules || [];
     const maxNotifications = config?.maxNotifications || 5;
@@ -309,8 +315,10 @@ export default function HANotificationWidget({
           : haPersistent.filter((n) => !dismissedIds.has(n.entityId)).length > 0;
         // showTimers → Widget bleibt immer sichtbar (Timer-Karten erscheinen
         // dynamisch unter den Notifications, ohne dass das Host-Widget weggefadet wird).
-        onVisibilityChange(hasAlerts || showTimers);
-    }, [activeAlertArray.length, onVisibilityChange, statesDict, haPersistent, dismissedIds, source, showTimers]);
+        // anyMediaVisible: laufende Now-Playing-Karten halten das Widget
+        // sichtbar — auch ganz ohne aktive Alerts.
+        onVisibilityChange(hasAlerts || showTimers || anyMediaVisible);
+    }, [activeAlertArray.length, onVisibilityChange, statesDict, haPersistent, dismissedIds, source, showTimers, anyMediaVisible]);
 
     const handleTap = async (rule: NotificationRule) => {
         const action = rule.tapAction || 'none';
@@ -345,6 +353,9 @@ export default function HANotificationWidget({
 
     const { cardOpacity, cardBlur, isLight, hasBg } = useGlassStyle(config);
     const isMinimal = config?.design === 'minimal';
+    // "tint" = Media-Stil: farbige Tönung statt Farbkante, rundes Icon-Badge —
+    // passt optisch zur Now-Playing-Karte mit Artwork-Hintergrund.
+    const isTint = config?.design === 'tint';
     // Icon-Darstellung (#20) — Defaults = bisheriges Verhalten (Box an, 3.2em/1.4em).
     const iconFrame = config?.iconFrame !== false;
     const iconScale = typeof config?.iconScale === "number" ? config.iconScale : 1;
@@ -362,7 +373,60 @@ export default function HANotificationWidget({
 
     const hasTimers = showTimers && activeTimers.length > 0;
 
-    if (source === "rules" && rules.length === 0 && !hasTimers) {
+    // Now-Playing-Karte — dockt wie die Timer-Karten in den Stack. Das
+    // Media-Widget MUSS dauerhaft gemountet bleiben (es pollt und meldet über
+    // onVisibilityChange, ob etwas läuft) — deshalb dürfen die Leer-Returns
+    // unten nicht greifen, sobald Player konfiguriert sind: der Wrapper mit
+    // Höhe 0 ist dann das unsichtbare "Ohr", das die Karte aufklappen kann.
+    const mediaPlayers: string[] = Array.isArray(config?.mediaPlayers)
+        ? (config.mediaPlayers as string[]).filter(Boolean)
+        : [];
+    // Höhe: Default kompakt wie die übrigen Karten; per Regler änderbar. Die
+    // Mess-Engine des Media-Widgets blendet aus, was bei kleiner Höhe nicht
+    // passt (Prioritäts-Reihenfolge) — nichts wird gequetscht.
+    const mediaCardEm = Math.min(12, Math.max(3.5, Number(config?.mediaCardHeightEm) || 5));
+    const mediaCards = mediaPlayers.length > 0 ? mediaPlayers.map((pid) => {
+        const visible = mediaVisibleMap[pid] === true;
+        return (
+            <div
+                key={pid}
+                className="w-full shrink-0 overflow-hidden transition-all duration-500"
+                // marginTop kompensiert das gap-3 des Stacks für zugeklappte
+                // Karten — sonst hinterließe jede stille Karte eine Lücke.
+                style={{ height: visible ? `${mediaCardEm}em` : 0, opacity: visible ? 1 : 0, marginTop: visible ? undefined : "-0.75rem" }}
+            >
+                <MediaPlayerWidget
+                    config={{
+                        entityIds: [pid],
+                        layout: "bar", // deterministisches Karten-Layout — blendet nie Elemente aus
+                        cardTheme: isLight ? "light" : "dark",
+                        cardOpacity: cardOpacity,
+                        cardBlur: cardBlur,
+                        frameRadius: 24, // rounded-3xl der Geschwister-Karten — Kanten passen
+                        textScale: Number(config?.mediaTextScale) || 100, // erbt Host-Schrift × Regler
+                        showBorder: config?.mediaShowBorder !== false, // weißer Glas-Rand schaltbar
+                        coverCorners: config?.mediaCoverCorners || "rounded",
+                        artworkAsTileBg: config?.mediaArtworkBg !== false,
+                        showCover: true,
+                        showArtist: true,
+                        // Bei mehreren Playern automatisch den Namen zeigen —
+                        // sonst wüsste man nicht, welche Karte wo spielt.
+                        showPlayerName: config?.mediaShowName === true || mediaPlayers.length > 1,
+                        showControls: config?.mediaShowControls !== false,
+                        showProgress: config?.mediaShowProgress !== false,
+                        showVolume: config?.mediaShowVolume === true,
+                        textOverflow: (config?.mediaTextOverflow as string) || "scroll",
+                        hideWhenIdle: true,
+                        idleHideMinutes: Number(config?.mediaIdleHideMinutes) || 0,
+                        fontSize: 20,
+                    }}
+                    onVisibilityChange={(v) => setMediaVisibleMap((prev) => (prev[pid] === v ? prev : { ...prev, [pid]: v }))}
+                />
+            </div>
+        );
+    }) : null;
+
+    if (source === "rules" && rules.length === 0 && !hasTimers && mediaPlayers.length === 0) {
         return (
             <div className="text-white/50 text-[10px] uppercase text-center">
                 {tr("Bitte Notification-Regeln im Editor konfigurieren")}
@@ -370,8 +434,9 @@ export default function HANotificationWidget({
         );
     }
 
-    // Wirklich nichts da? → komplett verstecken (wie bisher).
-    if (!hasAlerts && !hasTimers) return null;
+    // Wirklich nichts da? → komplett verstecken (wie bisher). Mit
+    // konfigurierten Playern bleibt das Widget gemountet (siehe oben).
+    if (!hasAlerts && !hasTimers && mediaPlayers.length === 0) return null;
 
     // ── Timer-Karte: visuell wie eine Notification, einfach unter den Alerts ──
     const renderTimerCard = (timer: DockedTimer) => {
@@ -513,10 +578,14 @@ export default function HANotificationWidget({
         );
     };
 
+    // Andock-Position: über oder unter den Benachrichtigungen (Default unten).
+    const mediaTop = config?.mediaPosition === "top";
+
     if (source === "persistent") {
         const visible = haPersistent.filter((n) => !dismissedIds.has(n.entityId)).slice(0, maxNotifications);
         return (
             <div className="flex flex-col gap-3 w-full h-full justify-start overflow-y-auto no-scrollbar pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                {mediaTop && mediaCards}
                 {visible.map((n) => {
                     const color = "#60A5FA";
                     const icon = "mdi:bell-ring";
@@ -568,6 +637,7 @@ export default function HANotificationWidget({
                         </div>
                     );
                 })}
+                {!mediaTop && mediaCards}
                 {hasTimers && activeTimers.map(renderTimerCard)}
             </div>
         );
@@ -575,6 +645,7 @@ export default function HANotificationWidget({
 
     return (
         <div className="flex flex-col gap-3 w-full h-full justify-start overflow-y-auto no-scrollbar pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {mediaTop && mediaCards}
             {activeAlertArray.map((alert) => {
                 const rule = alert.rule;
                 const color = rule.color || "#F43F5E";
@@ -610,12 +681,15 @@ export default function HANotificationWidget({
                     <div
                         key={alert.key}
                         onClick={() => handleTap(rule)}
-                        className={`group relative flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] transform transition-transform shrink-0 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/10') : ''} ${hasBg ? 'shadow-xl' : ''} ${isTappable ? 'cursor-pointer active:scale-95' : ''}`}
+                        className={`group relative flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] transform transition-transform shrink-0 overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/10') : ''} ${hasBg ? 'shadow-xl' : ''} ${isTappable ? 'cursor-pointer active:scale-95' : ''}`}
                         style={{
                             backgroundColor: isLight ? `rgba(255,255,255,${cardOpacity / 100})` : `rgba(0,0,0,${cardOpacity / 100})`,
+                            // Media-Stil: sanfte Farbtönung von links statt Farbkante —
+                            // wie der Artwork-Verlauf der Now-Playing-Karte.
+                            ...(isTint ? { backgroundImage: `linear-gradient(90deg, ${color}33, transparent 45%)` } : {}),
                             backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : 'none',
                             boxShadow: hasBg ? `0 8px 32px ${color}15` : 'none',
-                            borderLeft: hasBg ? `0.3em solid ${color}` : 'none'
+                            borderLeft: hasBg && !isTint ? `0.3em solid ${color}` : 'none'
                         }}
                     >
                         <button
@@ -625,7 +699,12 @@ export default function HANotificationWidget({
                         >
                           <Icon icon="lucide:x" width={14} height={14} />
                         </button>
-                        {iconFrame ? (
+                        {isTint ? (
+                        <div className="shrink-0 rounded-full flex items-center justify-center relative"
+                           style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${color}26` }}>
+                            <Icon icon={icon} className="relative z-10" style={{ color, fontSize: `${1.5 * iconScale}em` }} />
+                        </div>
+                        ) : iconFrame ? (
                         <div
                            className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden transition-colors duration-500 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
                            style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${color}20` }}
@@ -647,6 +726,7 @@ export default function HANotificationWidget({
                     </div>
                 );
             })}
+            {!mediaTop && mediaCards}
             {hasTimers && activeTimers.map(renderTimerCard)}
         </div>
     );

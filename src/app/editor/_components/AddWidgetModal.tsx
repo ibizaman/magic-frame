@@ -54,6 +54,10 @@ export default function AddWidgetModal({ onClose, addWidget }: AddWidgetModalPro
                 <div className="text-3xl mb-2 text-rose-400">📷</div>
                 <div className="font-bold text-[var(--mf-fg)]">{t("Kamera")}</div>
              </button>
+             <button onClick={() => addWidget("MediaPlayerWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-pink-500/10 border border-[var(--mf-bdr)]/10 hover:border-pink-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-pink-400">🎵</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("Media Player")}</div>
+             </button>
           </div>
        </div>
     </div>

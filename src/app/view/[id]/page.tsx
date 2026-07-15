@@ -21,6 +21,7 @@ import TodosWidget from "@/components/widgets/TodosWidget";
 import ImageWidget from "@/components/widgets/ImageWidget";
 import SensorWidget from "@/components/widgets/SensorWidget";
 import CameraWidget from "@/components/widgets/CameraWidget";
+import MediaPlayerWidget from "@/components/widgets/MediaPlayerWidget";
 import { CustomWidget } from "@/lib/modules/runtime";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 
@@ -409,6 +410,10 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     if (type === 'ImageWidget.tsx') return <ImageWidget config={config} dashboardId={dashboardId} />;
     if (type === 'SensorWidget.tsx') return <SensorWidget config={config} />;
     if (type === 'CameraWidget.tsx') return <CameraWidget config={config} />;
+    if (type === 'MediaPlayerWidget.tsx') return <MediaPlayerWidget
+        config={config}
+        onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
+    />;
     if (type === 'CalendarWidget.tsx') return <CalendarWidget
         config={config}
         onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}

@@ -7,6 +7,48 @@ import HAEntityInput from '../_components/HAEntityInput';
 import IconPicker from '../_components/IconPicker';
 import { useT } from "@/lib/i18n/LocaleProvider";
 
+// Player-Liste für die Now-Playing-Karte. Lokale Entwurfszeilen, damit die
+// frisch hinzugefügte LEERE Zeile nicht sofort weggefiltert wird; gespeichert
+// wird dedupliziert und ohne Leere. Reset per key={widget.i} vom Parent.
+function MediaPlayersEditor({ value, onChange, t }: {
+  value: string[];
+  onChange: (ids: string[]) => void;
+  t: (s: string) => string;
+}) {
+  const [rows, setRows] = useState<string[]>(value.length ? value : [""]);
+  const commit = (next: string[]) => {
+    setRows(next.length ? next : [""]);
+    onChange(Array.from(new Set(next.map((x) => x.trim()).filter(Boolean))));
+  };
+  return (
+    <div className="space-y-2">
+      {rows.map((p, idx) => (
+        <div key={idx} className="flex items-center gap-2">
+          <div className="flex-1">
+            <HAEntityInput
+              value={p}
+              onChange={(v) => commit(rows.map((x, i) => (i === idx ? v : x)))}
+              domains={["media_player"]}
+              placeholder="media_player.wohnzimmer"
+              className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none"
+            />
+          </div>
+          {rows.length > 1 && (
+            <button onClick={() => commit(rows.filter((_, i) => i !== idx))}
+              className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-[var(--mf-fg)]/40 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+              <Trash2 size={13} />
+            </button>
+          )}
+        </div>
+      ))}
+      <button onClick={() => setRows((prev) => [...prev, ""])}
+        className="text-xs font-medium text-fuchsia-400 hover:text-fuchsia-300 transition-colors py-1">
+        + {t("Weiteren Player hinzufügen")}
+      </button>
+    </div>
+  );
+}
+
 type HANotificationInspectorProps = {
   widget: WidgetLayoutItem;
   updateConfig: (i: string, key: string, value: any) => void;
@@ -221,6 +263,7 @@ export default function HANotificationInspector({
                     </div>
                  </div>
 
+
                  <div className="mb-4">
                      <label className="text-[10px] uppercase text-[var(--mf-fg)]/50">{t("Alert Message (Anzeigetext)")}</label>
                      <input type="text" value={rule.message || ''} onChange={(e) => {
@@ -413,6 +456,110 @@ export default function HANotificationInspector({
        </button>
        </>
        )}
+
+       {/* Karten-Design (cards war bisher fix; tint = Media-Stil) */}
+       <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
+          <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-2">{t("Design")}</div>
+          <select value={(activeWidget.config as any)?.design || 'cards'}
+             onChange={(e) => updateConfig(activeWidget.i, 'design', e.target.value)}
+             className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+             <option value="cards">{t("Karten (Standard)")}</option>
+             <option value="minimal">{t("Minimal")}</option>
+             <option value="tint">{t("Media-Stil (farbig getönt)")}</option>
+          </select>
+       </div>
+
+       {/* Now-Playing-Karte: dockt wie Timer in den Stack, wenn Musik läuft */}
+       <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
+          <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-1">{t("Now Playing (Media-Player)")}</div>
+          <p className="text-[11px] text-[var(--mf-fg)]/45 mb-3">{t("Zeigt eine Musik-Karte im Stack, solange ein Player läuft.")}</p>
+          <MediaPlayersEditor
+             key={activeWidget.i}
+             value={Array.isArray(activeWidget.config?.mediaPlayers) ? (activeWidget.config!.mediaPlayers as string[]) : []}
+             onChange={(ids) => updateConfig(activeWidget.i, 'mediaPlayers', ids)}
+             t={t}
+          />
+          {Array.isArray(activeWidget.config?.mediaPlayers) && (activeWidget.config!.mediaPlayers as string[]).filter(Boolean).length > 0 && (
+             <div className="mt-3 space-y-3">
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                      <span>{t("Karten-Höhe")}</span>
+                      <span className="text-fuchsia-400">{Number(activeWidget.config?.mediaCardHeightEm) || 5}em</span>
+                   </label>
+                   <input type="range" min={3.5} max={10} step={0.5}
+                      value={Number(activeWidget.config?.mediaCardHeightEm) || 5}
+                      onChange={(e) => updateConfig(activeWidget.i, 'mediaCardHeightEm', parseFloat(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                      <span>{t("Schriftgröße")}</span>
+                      <span className="text-fuchsia-400">{Number(activeWidget.config?.mediaTextScale) || 100}%</span>
+                   </label>
+                   <input type="range" min={50} max={180} step={5}
+                      value={Number(activeWidget.config?.mediaTextScale) || 100}
+                      onChange={(e) => updateConfig(activeWidget.i, 'mediaTextScale', parseInt(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
+                   <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1">{t("100 % = passt sich der Schrift der Benachrichtigungen an.")}</p>
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Cover-Ecken")}</label>
+                   <select value={(activeWidget.config as any)?.mediaCoverCorners || 'rounded'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'mediaCoverCorners', e.target.value)}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+                      <option value="rounded">{t("Abgerundet")}</option>
+                      <option value="square">{t("Eckig")}</option>
+                      <option value="circle">{t("Kreis")}</option>
+                   </select>
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Wenn Text nicht passt")}</label>
+                   <select value={(activeWidget.config as any)?.mediaTextOverflow || 'scroll'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'mediaTextOverflow', e.target.value)}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+                      <option value="scroll">{t("Laufschrift")}</option>
+                      <option value="shrink">{t("Automatisch verkleinern")}</option>
+                      <option value="truncate">{t("Abschneiden (…)")}</option>
+                   </select>
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Bei Pause ausblenden nach (Minuten)")}</label>
+                   <input type="number" min={0} max={720} step={1}
+                      value={Number(activeWidget.config?.mediaIdleHideMinutes) || 0}
+                      onChange={(e) => updateConfig(activeWidget.i, 'mediaIdleHideMinutes', Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none" />
+                   <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1">{t("0 = nie ausblenden")}</p>
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Andocken")}</label>
+                   <select value={(activeWidget.config as any)?.mediaPosition || 'bottom'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'mediaPosition', e.target.value)}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+                      <option value="bottom">{t("Unter den Benachrichtigungen")}</option>
+                      <option value="top">{t("Über den Benachrichtigungen")}</option>
+                   </select>
+                </div>
+                <div className="space-y-1.5">
+                {([
+                   ['mediaShowControls', 'Steuerung anzeigen', true],
+                   ['mediaShowProgress', 'Fortschritt anzeigen', true],
+                   ['mediaShowName', 'Player-Name anzeigen', false],
+                   ['mediaShowVolume', 'Lautstärke-Regler anzeigen', false],
+                   ['mediaArtworkBg', 'Cover als Hintergrund (Blur)', true],
+                   ['mediaShowBorder', 'Weißer Rand anzeigen', true],
+                ] as [string, string, boolean][]).map(([key, label, defOn]) => (
+                   <label key={key} className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox"
+                         checked={defOn ? (activeWidget.config as any)?.[key] !== false : (activeWidget.config as any)?.[key] === true}
+                         onChange={(e) => updateConfig(activeWidget.i, key, e.target.checked)}
+                         className="accent-fuchsia-500" />
+                      <span className="text-xs text-[var(--mf-fg)]/70">{t(label)}</span>
+                   </label>
+                ))}
+                </div>
+             </div>
+          )}
+       </div>
 
        {source === "persistent" && (
          <div className="bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded-xl p-4 text-sm text-[var(--mf-fg)]/70 space-y-2">
