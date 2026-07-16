@@ -446,8 +446,8 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
                        {unit && !['timer'].includes(domain) && <span style={{ fontSize: '0.6em' }}>{unit}</span>}
                     </div>
                 </div>
-                {(hasSlider || hasColorSupport) && (
-                   <button 
+                {(hasSlider || hasColorSupport) && !config?.hideControlButton && (
+                   <button
                      onClick={(e) => { e.stopPropagation(); setOpenColorModal(slot.id as string); }}
                      className={`shrink-0 w-[2.2em] h-[2.2em] rounded-full flex items-center justify-center ${isLight ? 'bg-black/5 text-black/60' : 'bg-white/10 text-white/60'} hover:scale-110 active:scale-95 transition-transform`}
                    >

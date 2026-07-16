@@ -326,6 +326,20 @@ export default function HomeAssistantInspector({
           <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Icon im Kasten")}</span>
         </label>
 
+        {/* Steuerungs-Button (Farbe/Slider) auf Kacheln ausblenden */}
+        <label className="flex items-center gap-3 cursor-pointer group py-2">
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={(activeWidget.config as any)?.hideControlButton === true}
+              onChange={(e) => updateConfig(activeWidget.i, "hideControlButton", e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          </div>
+          <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Steuerungs-Button ausblenden")}</span>
+        </label>
+
         <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
           <span>{t("Icon-Größe")}</span>
           <span className="text-blue-400">{Math.round(((activeWidget.config as any)?.iconScale ?? 1) * 100)}%</span>
