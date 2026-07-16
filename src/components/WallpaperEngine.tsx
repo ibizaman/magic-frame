@@ -134,7 +134,9 @@ export default function WallpaperEngine({
   const intervalMs = (config?.intervalSec || 60) * 1000;
   const transition = resolveTransition(config);
   // "blur" = Einpassen (contain) + weiche, gezoomte Kopie füllt die Balken.
-  const isBlurFill = config?.fit === "blur";
+  // Nur im Einzelbild-Modus: im Split-Raster wäre ein globaler Backdrop hinter
+  // den Kacheln falsch (letterboxte Tiles) → dort verhält sich blur wie cover.
+  const isBlurFill = config?.fit === "blur" && (((config?.splitMode as string) || "off") === "off");
   const fitClass = isBlurFill
     ? "object-contain"
     : WALLPAPER_FIT[config?.fit as string] ?? "object-cover";
