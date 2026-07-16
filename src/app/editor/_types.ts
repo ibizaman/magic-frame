@@ -215,7 +215,7 @@ export interface WallpaperConfig {
   zoomEffect?: boolean;
   transitionEffect?: "crossfade" | "kenburns" | "slide" | "none";
   transitionMs?: number; // Übergangs-Dauer (Default crossfade/kenburns 1500, slide 1200)
-  fit?: "cover" | "contain" | "fill" | "none";
+  fit?: "cover" | "contain" | "fill" | "none" | "blur";
   imagePosition?: "top" | "center" | "bottom"; // object-position (gegen abgeschnittene Köpfe)
   kenBurnsIntensity?: number; // Ken-Burns-Zielzoom in % (Default 15 = scale 1.15)
   splitMode?: "off" | "auto" | "grid2" | "grid4"; // Split-View (#16/#17, Schritt 3)

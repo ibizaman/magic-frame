@@ -133,7 +133,11 @@ export default function WallpaperEngine({
 
   const intervalMs = (config?.intervalSec || 60) * 1000;
   const transition = resolveTransition(config);
-  const fitClass = WALLPAPER_FIT[config?.fit as string] ?? "object-cover";
+  // "blur" = Einpassen (contain) + weiche, gezoomte Kopie füllt die Balken.
+  const isBlurFill = config?.fit === "blur";
+  const fitClass = isBlurFill
+    ? "object-contain"
+    : WALLPAPER_FIT[config?.fit as string] ?? "object-cover";
   const posClass = WALLPAPER_POS[config?.imagePosition as string] ?? "object-center";
   // Übergangs-Dauer: konfigurierbar, Defaults = bisherige hartkodierte Werte
   // (crossfade/kenburns 1500 ms, slide 1200 ms) → kein Tizen-Regress.
@@ -258,6 +262,15 @@ export default function WallpaperEngine({
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black z-0">
+      {isBlurFill && currentImage ? (
+        <img
+          src={currentImage.url}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110"
+          decoding="async"
+        />
+      ) : null}
       {splitMode !== "off" ? (
         <SplitSlideshow
           images={images}
