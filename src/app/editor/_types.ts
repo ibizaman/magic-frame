@@ -26,6 +26,10 @@ export interface WidgetLayoutItem {
     hideForecast?: boolean;
     hideSeconds?: boolean;
     showMiniWeather?: boolean;
+    // Weather widget: atmosphärischer Wetter-Hintergrund
+    weatherBg?: boolean;
+    weatherBgOpacity?: number;
+    weatherBgBlur?: number;
     align?: string;
     timezone?: string;
     location?: string;
@@ -68,8 +72,15 @@ export interface WidgetLayoutItem {
     showIfState4?: string;
     maxNotifications?: number;
     rules?: any[]; // NotificationRule array
+    tintStrength?: number;
+    tintDirection?: 'left' | 'right';
+    tintAnimate?: boolean;
+    notifyBorder?: 'off' | 'accent' | 'custom';
+    notifyBorderColor?: string;
     // Now-Playing-Karte im Notification-Stack (Discussion #50)
     mediaPlayers?: string[];
+    mediaBorderColor?: string;
+    borderColor?: string;
     mediaShowControls?: boolean;
     mediaShowProgress?: boolean;
     mediaShowName?: boolean;
@@ -159,6 +170,12 @@ export interface WallpaperConfig {
   splitMode?: "off" | "auto" | "grid2" | "grid4"; // Split-View (#16/#17, Schritt 3)
   showTimer?: boolean;
   bgColor?: string; // Vollfarb-Hintergrund (source === "color")
+  // Artwork-Takeover: Album-Cover als Hintergrund, wenn ein media_player läuft
+  artworkEnabled?: boolean; // An/Aus-Schalter fürs ganze Feature
+  artworkPlayer?: string; // media_player.* — leer = aus
+  artworkFit?: 'blur' | 'cover'; // Blur-Rahmen mit scharfem Cover / bildschirmfüllend
+  artworkBlur?: number; // Blur-Stärke der Füllung (px)
+  artworkDarken?: number; // Abdunkelung (%)
 }
 
 // ── Widget display titles ────────────────────────────────────────────────

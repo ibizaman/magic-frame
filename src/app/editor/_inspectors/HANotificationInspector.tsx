@@ -5,6 +5,7 @@ import { Trash2, ChevronDown } from 'lucide-react';
 import type { WidgetLayoutItem } from '../_types';
 import HAEntityInput from '../_components/HAEntityInput';
 import IconPicker from '../_components/IconPicker';
+import CollapsibleSection from '../_components/CollapsibleSection';
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 // Player-Liste für die Now-Playing-Karte. Lokale Entwurfszeilen, damit die
@@ -457,9 +458,8 @@ export default function HANotificationInspector({
        </>
        )}
 
-       {/* Karten-Design (cards war bisher fix; tint = Media-Stil) */}
-       <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
-          <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-2">{t("Design")}</div>
+       {/* Karten-Design — einklappbar */}
+       <CollapsibleSection title="Design" defaultOpen>
           <select value={(activeWidget.config as any)?.design || 'cards'}
              onChange={(e) => updateConfig(activeWidget.i, 'design', e.target.value)}
              className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
@@ -467,12 +467,57 @@ export default function HANotificationInspector({
              <option value="minimal">{t("Minimal")}</option>
              <option value="tint">{t("Media-Stil (farbig getönt)")}</option>
           </select>
-       </div>
 
-       {/* Now-Playing-Karte: dockt wie Timer in den Stack, wenn Musik läuft */}
-       <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
-          <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-1">{t("Now Playing (Media-Player)")}</div>
-          <p className="text-[11px] text-[var(--mf-fg)]/45 mb-3">{t("Zeigt eine Musik-Karte im Stack, solange ein Player läuft.")}</p>
+          {(activeWidget.config as any)?.design === 'tint' && (
+             <div className="mt-3">
+                <label className="text-xs font-medium text-[var(--mf-fg)]/60 flex justify-between mb-1.5">
+                   <span>{t("Farbverlauf-Stärke")}</span><span className="text-fuchsia-400">{(activeWidget.config as any)?.tintStrength ?? 45}%</span>
+                </label>
+                <input type="range" min="0" max="100" step="5"
+                   value={(activeWidget.config as any)?.tintStrength ?? 45}
+                   onChange={(e) => updateConfig(activeWidget.i, 'tintStrength', parseInt(e.target.value))}
+                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
+                <div className="mt-2">
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Richtung")}</label>
+                   <select value={(activeWidget.config as any)?.tintDirection || 'left'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'tintDirection', e.target.value)}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+                      <option value="left">{t("Von links")}</option>
+                      <option value="right">{t("Von rechts")}</option>
+                   </select>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer mt-2.5">
+                   <input type="checkbox"
+                      checked={(activeWidget.config as any)?.tintAnimate === true}
+                      onChange={(e) => updateConfig(activeWidget.i, 'tintAnimate', e.target.checked)}
+                      className="accent-fuchsia-500" />
+                   <span className="text-xs text-[var(--mf-fg)]/70">{t("Farbverlauf sanft animieren")}</span>
+                </label>
+             </div>
+          )}
+
+          {/* Rahmen der Karten */}
+          <div className="mt-3">
+             <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Rahmen")}</label>
+             <div className="flex items-center gap-2">
+                <select value={(activeWidget.config as any)?.notifyBorder || 'off'}
+                   onChange={(e) => updateConfig(activeWidget.i, 'notifyBorder', e.target.value)}
+                   className="flex-1 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+                   <option value="off">{t("Aus")}</option>
+                   <option value="accent">{t("In Alarm-Farbe")}</option>
+                   <option value="custom">{t("Eigene Farbe")}</option>
+                </select>
+                {(activeWidget.config as any)?.notifyBorder === 'custom' && (
+                   <input type="color" value={(activeWidget.config as any)?.notifyBorderColor || '#ffffff'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'notifyBorderColor', e.target.value)}
+                      className="w-9 h-9 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer shrink-0" />
+                )}
+             </div>
+          </div>
+       </CollapsibleSection>
+
+       {/* Now-Playing-Karte — einklappbar, standardmäßig zu (neues Opt-in-Feature) */}
+       <CollapsibleSection title="Now Playing (Media-Player)" subtitle="Zeigt eine Musik-Karte im Stack, solange ein Player läuft." defaultOpen={false}>
           <MediaPlayersEditor
              key={activeWidget.i}
              value={Array.isArray(activeWidget.config?.mediaPlayers) ? (activeWidget.config!.mediaPlayers as string[]) : []}
@@ -546,7 +591,7 @@ export default function HANotificationInspector({
                    ['mediaShowName', 'Player-Name anzeigen', false],
                    ['mediaShowVolume', 'Lautstärke-Regler anzeigen', false],
                    ['mediaArtworkBg', 'Cover als Hintergrund (Blur)', true],
-                   ['mediaShowBorder', 'Weißer Rand anzeigen', true],
+                   ['mediaShowBorder', 'Rand anzeigen', true],
                 ] as [string, string, boolean][]).map(([key, label, defOn]) => (
                    <label key={key} className="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox"
@@ -556,10 +601,22 @@ export default function HANotificationInspector({
                       <span className="text-xs text-[var(--mf-fg)]/70">{t(label)}</span>
                    </label>
                 ))}
+                {(activeWidget.config as any)?.mediaShowBorder !== false && (
+                   <div className="flex items-center gap-2 pt-1 pl-6">
+                      <span className="text-xs text-[var(--mf-fg)]/70 flex-1">{t("Rand-Farbe")}</span>
+                      <input type="color" value={(activeWidget.config as any)?.mediaBorderColor || '#ffffff'}
+                         onChange={(e) => updateConfig(activeWidget.i, 'mediaBorderColor', e.target.value)}
+                         className="w-8 h-8 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer" />
+                      {(activeWidget.config as any)?.mediaBorderColor && (
+                         <button onClick={() => updateConfig(activeWidget.i, 'mediaBorderColor', '')}
+                            className="text-[10px] text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-1.5 py-1 rounded bg-[var(--mf-elev)]/5">{t("Weiß")}</button>
+                      )}
+                   </div>
+                )}
                 </div>
              </div>
           )}
-       </div>
+       </CollapsibleSection>
 
        {source === "persistent" && (
          <div className="bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded-xl p-4 text-sm text-[var(--mf-fg)]/70 space-y-2">

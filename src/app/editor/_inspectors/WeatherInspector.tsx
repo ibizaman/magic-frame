@@ -450,6 +450,43 @@ export default function WeatherInspector({
              className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/5 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-[var(--mf-bdr)]/20"
           />
         </div>
+
+       {/* Atmosphärischer Wetter-Hintergrund */}
+       <div className="pt-4 mt-4 border-t border-[var(--mf-bdr)]/10">
+          <label className="flex items-center gap-3 cursor-pointer group">
+             <div className="relative">
+                <input type="checkbox"
+                   checked={(activeWidget.config as any)?.weatherBg === true}
+                   onChange={(e) => updateConfig(activeWidget.i, 'weatherBg', e.target.checked)}
+                   className="sr-only peer" />
+                <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+             </div>
+             <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Wetter-Hintergrund")}</span>
+          </label>
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">{t("Weiche, unscharfe Farben, die die aktuelle Wetterlage darstellen.")}</p>
+          {(activeWidget.config as any)?.weatherBg === true && (
+             <div className="grid grid-cols-2 gap-3 mt-3">
+                <div>
+                   <label className="text-xs font-medium text-[var(--mf-fg)]/60 flex justify-between mb-1.5">
+                      <span>{t("Deckkraft")}</span><span className="text-blue-300">{(activeWidget.config as any)?.weatherBgOpacity ?? 90}%</span>
+                   </label>
+                   <input type="range" min="10" max="100" step="5"
+                      value={(activeWidget.config as any)?.weatherBgOpacity ?? 90}
+                      onChange={(e) => updateConfig(activeWidget.i, 'weatherBgOpacity', parseInt(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10" />
+                </div>
+                <div>
+                   <label className="text-xs font-medium text-[var(--mf-fg)]/60 flex justify-between mb-1.5">
+                      <span>{t("Unschärfe")}</span><span className="text-blue-300">{(activeWidget.config as any)?.weatherBgBlur ?? 28}px</span>
+                   </label>
+                   <input type="range" min="0" max="60" step="2"
+                      value={(activeWidget.config as any)?.weatherBgBlur ?? 28}
+                      onChange={(e) => updateConfig(activeWidget.i, 'weatherBgBlur', parseInt(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10" />
+                </div>
+             </div>
+          )}
+       </div>
     </div>
   );
 }

@@ -174,13 +174,85 @@ export default function WallpaperEngine({
     return () => { for (const img of loaders) img.src = ""; };
   }, [currentIndex, images, splitMode]);
 
+  // ── Artwork-Takeover: media_player-Zustand pollen (token-frei über die
+  //    App-Proxy-Route, wie das Media-Widget). Leerer Entity = Feature aus.
+  // An/Aus-Schalter gated das ganze Feature — Player kann konfiguriert bleiben.
+  const artworkPlayer = config?.artworkEnabled === true ? (config?.artworkPlayer || "").trim() : "";
+  const artFit: "blur" | "cover" = config?.artworkFit === "cover" ? "cover" : "blur";
+  const artBlur = typeof config?.artworkBlur === "number" ? config.artworkBlur : 40;
+  const artDarken = typeof config?.artworkDarken === "number" ? config.artworkDarken : 30;
+  const [artAttrs, setArtAttrs] = useState<any>(null);
+  const [artOk, setArtOk] = useState(true);
+  useEffect(() => {
+    if (!artworkPlayer) { setArtAttrs(null); return; }
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const r = await fetch(`/api/ha/state?ids=${encodeURIComponent(artworkPlayer)}`, { cache: "no-store" });
+        if (!r.ok) return;
+        const d = await r.json();
+        if (!cancelled) setArtAttrs(d?.[artworkPlayer] ?? null);
+      } catch { /* nächster Poll */ }
+    };
+    poll();
+    const iv = setInterval(poll, 8000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [artworkPlayer]);
+
+  const artPlaying = artAttrs?.state === "playing";
+  const artPic = artAttrs?.attributes?.entity_picture || artAttrs?.attributes?.entity_picture_local;
+  const artTitle: string = artAttrs?.attributes?.media_title || "";
+  const artworkActive = Boolean(artworkPlayer && artPlaying && artPic);
+  // Ziel-URL pro Track cache-busten. Doppelpuffer gegen das Durchblitzen der
+  // Diashow beim Track-Wechsel: das neue Cover wird erst VORgeladen (new Image)
+  // und die sichtbare URL erst nach onload umgeschaltet — das alte Bild bleibt
+  // bis dahin stehen, es entsteht nie ein leeres <img>.
+  const targetArtUrl = artworkActive
+    ? `/api/ha/media/${encodeURIComponent(artworkPlayer)}/artwork?ts=${encodeURIComponent(artTitle)}`
+    : "";
+  const [artDisplayUrl, setArtDisplayUrl] = useState("");
+  useEffect(() => {
+    if (!targetArtUrl || targetArtUrl === artDisplayUrl) return;
+    let cancelled = false;
+    const im = new Image();
+    im.onload = () => { if (!cancelled) { setArtDisplayUrl(targetArtUrl); setArtOk(true); } };
+    im.onerror = () => { if (!cancelled) setArtOk(false); };
+    im.src = targetArtUrl;
+    return () => { cancelled = true; };
+  }, [targetArtUrl, artDisplayUrl]);
+
+  // Artwork-Takeover (#50, Phase 2): läuft ein konfigurierter media_player,
+  // legt sich dessen Album-Cover als eigene Ebene ÜBER die Diashow und blendet
+  // wieder aus, sobald die Musik stoppt. Rein additiv — die Diashow-Pipeline
+  // bleibt unberührt (Tizen-schonend: statischer Layer, nur Opacity-Transition).
+  const artUrl = artDisplayUrl; // vorgeladenes Bild; bleibt auch beim Ausblenden sichtbar
+  const artworkLayer = artworkPlayer ? (
+    <div className="absolute inset-0 pointer-events-none transition-opacity duration-1000"
+      style={{ opacity: (artworkActive && artDisplayUrl) ? 1 : 0 }} aria-hidden="true">
+      {artUrl && artOk && (
+        <>
+          {/* Unscharfe Füllung — deckt die Ränder, egal welches Seitenverhältnis */}
+          <img src={artUrl} alt="" decoding="async" onError={() => setArtOk(false)}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: `blur(${artFit === "cover" ? Math.min(artBlur, 12) : artBlur}px)`, transform: "scale(1.12)" }} />
+          {/* Im Blur-Modus zusätzlich das scharfe Cover mittig darüber */}
+          {artFit === "blur" && (
+            <img src={artUrl} alt="" decoding="async"
+              className="absolute inset-0 w-full h-full object-contain" />
+          )}
+          <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${artDarken / 100})` }} />
+        </>
+      )}
+    </div>
+  ) : null;
+
   // Solid-colour wallpaper — skip the entire image / crossfade pipeline
   // (and its Tizen quirks). Just paint the chosen colour.
   if ((config?.source) === 'color') {
-    return <div className="absolute inset-0 z-0" style={{ backgroundColor: config?.bgColor || '#0f172a' }} />;
+    return <div className="absolute inset-0 z-0 overflow-hidden" style={{ backgroundColor: config?.bgColor || '#0f172a' }}>{artworkLayer}</div>;
   }
 
-  if (images.length === 0) return <div className="absolute inset-0 bg-black z-0" />;
+  if (images.length === 0) return <div className="absolute inset-0 bg-black z-0 overflow-hidden">{artworkLayer}</div>;
 
   const currentImage = images[currentIndex];
 
@@ -217,6 +289,8 @@ export default function WallpaperEngine({
           durationMs={transitionMs}
         />
       )}
+
+      {artworkLayer}
 
       {/* Overlays */}
       {config?.overlayVignette && config.overlayVignette > 0 ? (

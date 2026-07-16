@@ -356,6 +356,21 @@ export default function HANotificationWidget({
     // "tint" = Media-Stil: farbige Tönung statt Farbkante, rundes Icon-Badge —
     // passt optisch zur Now-Playing-Karte mit Artwork-Hintergrund.
     const isTint = config?.design === 'tint';
+    // Tint-Stärke (0–100): wie kräftig + wie weit der Farbverlauf reicht. Auf
+    // großen Screens war der feste Wert kaum sichtbar → regelbar.
+    const tintStrength = Math.min(100, Math.max(0, config?.tintStrength ?? 45)) / 100;
+    const hex2 = (a: number) => Math.round(Math.min(1, Math.max(0, a)) * 255).toString(16).padStart(2, "0");
+    // Richtung des Farbverlaufs: von links (90deg) oder von rechts (270deg).
+    const tintDeg = config?.tintDirection === "right" ? 270 : 90;
+    const tintGradient = (c: string) =>
+      `linear-gradient(${tintDeg}deg, ${c}${hex2(0.10 + tintStrength * 0.6)}, ${c}${hex2(0.04 + tintStrength * 0.2)} ${Math.round(25 + tintStrength * 35)}%, transparent ${Math.round(45 + tintStrength * 45)}%)`;
+    // Rahmen der Karten: aus / in Regel-(Akzent-)Farbe / eigene Farbe.
+    const notifyBorderMode: string = config?.notifyBorder || "off";
+    const notifyBorderColor: string = config?.notifyBorderColor || "#ffffff";
+    const cardBorderFor = (accentColor: string): string | undefined =>
+      notifyBorderMode === "accent" ? `1.5px solid ${accentColor}`
+      : notifyBorderMode === "custom" ? `1.5px solid ${notifyBorderColor}`
+      : undefined;
     // Icon-Darstellung (#20) — Defaults = bisheriges Verhalten (Box an, 3.2em/1.4em).
     const iconFrame = config?.iconFrame !== false;
     const iconScale = typeof config?.iconScale === "number" ? config.iconScale : 1;
@@ -404,7 +419,8 @@ export default function HANotificationWidget({
                         cardBlur: cardBlur,
                         frameRadius: 24, // rounded-3xl der Geschwister-Karten — Kanten passen
                         textScale: Number(config?.mediaTextScale) || 100, // erbt Host-Schrift × Regler
-                        showBorder: config?.mediaShowBorder !== false, // weißer Glas-Rand schaltbar
+                        showBorder: config?.mediaShowBorder !== false, // Rand schaltbar
+                        borderColor: config?.mediaBorderColor || undefined, // leer = weißes Glas, sonst passende Farbe
                         coverCorners: config?.mediaCoverCorners || "rounded",
                         artworkAsTileBg: config?.mediaArtworkBg !== false,
                         showCover: true,
@@ -684,12 +700,23 @@ export default function HANotificationWidget({
                         className={`group relative flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] transform transition-transform shrink-0 overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/10') : ''} ${hasBg ? 'shadow-xl' : ''} ${isTappable ? 'cursor-pointer active:scale-95' : ''}`}
                         style={{
                             backgroundColor: isLight ? `rgba(255,255,255,${cardOpacity / 100})` : `rgba(0,0,0,${cardOpacity / 100})`,
-                            // Media-Stil: sanfte Farbtönung von links statt Farbkante —
-                            // wie der Artwork-Verlauf der Now-Playing-Karte.
-                            ...(isTint ? { backgroundImage: `linear-gradient(90deg, ${color}33, transparent 45%)` } : {}),
+                            // Media-Stil: sanfte Farbtönung von links statt Farbkante,
+                            // Stärke/Reichweite regelbar (tintStrength).
+                            ...(isTint ? {
+                              backgroundImage: tintGradient(color),
+                              // sanftes Driften (opt-in): kleiner Spielraum, damit die
+                              // Farbe nie ganz verschwindet, nur gemächlich atmet.
+                              ...(config?.tintAnimate === true
+                                ? { backgroundSize: "150% 100%", animation: "mf-tint-drift 11s ease-in-out infinite alternate" }
+                                : {}),
+                            } : {}),
                             backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : 'none',
                             boxShadow: hasBg ? `0 8px 32px ${color}15` : 'none',
-                            borderLeft: hasBg && !isTint ? `0.3em solid ${color}` : 'none'
+                            // Rahmen: gewählter Rahmen gewinnt, sonst die bisherige
+                            // Farbkante links (nur im Nicht-Tint-Design).
+                            ...(cardBorderFor(color)
+                              ? { border: cardBorderFor(color), borderLeft: cardBorderFor(color) }
+                              : { borderLeft: hasBg && !isTint ? `0.3em solid ${color}` : 'none' }),
                         }}
                     >
                         <button

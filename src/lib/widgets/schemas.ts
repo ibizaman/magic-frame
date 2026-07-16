@@ -74,6 +74,10 @@ const weatherConfig = baseConfig.extend({
   statsSize: z.number().optional(),
   unitTemp: z.enum(["celsius", "fahrenheit"]).optional(),
   unitWind: z.enum(["kmh", "mph", "ms", "kn"]).optional(),
+  // Atmosphärischer Wetter-Hintergrund (opt-in, Default aus)
+  weatherBg: z.boolean().optional(),
+  weatherBgOpacity: z.number().optional(),
+  weatherBgBlur: z.number().optional(),
 });
 
 const calendarConfig = baseConfig.extend({
@@ -136,8 +140,15 @@ const haNotificationConfig = baseConfig
     frameScale: z.number().optional(),
     timeFormat: z.enum(["auto", "minutes", "hours", "days", "combined"]).optional(),
     showTimers: z.boolean().optional(),
+    // Tint-Design: Stärke + Richtung des Farbverlaufs + optionaler Rahmen
+    tintStrength: z.number().optional(),
+    tintDirection: z.enum(["left", "right"]).optional(),
+    tintAnimate: z.boolean().optional(), // sanft driftender Farbverlauf
+    notifyBorder: z.enum(["off", "accent", "custom"]).optional(),
+    notifyBorderColor: z.string().optional(),
     // Now-Playing-Karte: dockt wie die Timer in den Stack, wenn Musik läuft
     mediaPlayers: z.array(z.string()).optional(),
+    mediaBorderColor: z.string().optional(), // Rahmenfarbe der Media-Karte
     mediaShowControls: z.boolean().optional(), // Default an
     mediaShowProgress: z.boolean().optional(), // Default an
     mediaShowName: z.boolean().optional(), // Default aus
@@ -237,6 +248,7 @@ const mediaPlayerConfig = baseConfig
     frameRadius: z.number().optional(), // Radius-Vorgabe vom Host (z. B. Notification-Karte)
     textScale: z.number().optional(), // Bar-Layout: Text-Skalierung in % (Default 100)
     showBorder: z.boolean().optional(), // feiner Glas-Rand (Default an)
+    borderColor: z.string().optional(), // überschreibt die weiße Glas-Linie
     artworkAsTileBg: z.boolean().optional(), // Cover unscharf als Kachel-Hintergrund
     bgBlur: z.number().optional(), // Blur-Stärke des Artwork-Hintergrunds (px)
     bgDarken: z.number().optional(), // Abdunkelung des Artwork-Hintergrunds (%)
@@ -368,6 +380,12 @@ export const wallpaperSchema = z
     transitionMs: z.number().optional(),
     imagePosition: z.enum(["top", "center", "bottom"]).optional(),
     kenBurnsIntensity: z.number().optional(),
+    // Artwork-Takeover: Cover eines laufenden media_player als Hintergrund
+    artworkEnabled: z.boolean().optional(),
+    artworkPlayer: z.string().optional(),
+    artworkFit: z.enum(["blur", "cover"]).optional(),
+    artworkBlur: z.number().optional(),
+    artworkDarken: z.number().optional(),
   })
   .passthrough();
 

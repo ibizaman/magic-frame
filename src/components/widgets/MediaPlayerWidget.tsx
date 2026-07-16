@@ -171,11 +171,13 @@ export default function MediaPlayerWidget({
   const dotsPos: string = config?.dotsPosition || "bottom-right"; // bottom-right | top-right | bottom-center
   const dotsOnInteract: boolean = config?.dotsShowOnInteract === true;
   const glass = useGlassStyle(config);
-  // showBorder: false entfernt den feinen Glas-Rand (weiße 1px-Linie) —
-  // z. B. wenn die Karte optisch mit rahmenlosen Nachbarn mithalten soll.
+  // showBorder: false entfernt den feinen Glas-Rand; borderColor überschreibt
+  // die weiße Glas-Linie mit einer passenden Farbe (z. B. zum Blur/Cover).
   const cardBox: React.CSSProperties = config?.showBorder === false
     ? { ...glass.cardStyle, border: "none" }
-    : glass.cardStyle;
+    : config?.borderColor
+      ? { ...glass.cardStyle, border: `1.5px solid ${config.borderColor}` }
+      : glass.cardStyle;
 
   // ---- Live-Daten ----------------------------------------------------------
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});

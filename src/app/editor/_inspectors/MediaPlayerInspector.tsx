@@ -5,6 +5,7 @@ import { Plus, X } from "lucide-react";
 import type { WidgetLayoutItem } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import HAEntityInput from "../_components/HAEntityInput";
+import CollapsibleSection from "../_components/CollapsibleSection";
 
 type Props = {
   widget: WidgetLayoutItem;
@@ -42,14 +43,8 @@ function Slider({ label, value, unit, min, max, step, onChange }: { label: strin
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  const t = useT();
-  return (
-    <div className="border-t border-[var(--mf-bdr)]/10 pt-3">
-      <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--mf-fg)]/40 mb-2">{t(title)}</div>
-      {children}
-    </div>
-  );
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  return <CollapsibleSection title={title} defaultOpen={defaultOpen}>{children}</CollapsibleSection>;
 }
 
 export function MediaPlayerInspector({ widget, updateConfig }: Props) {
@@ -107,7 +102,7 @@ export function MediaPlayerInspector({ widget, updateConfig }: Props) {
       </div>
 
       {/* Player */}
-      <Section title="Media-Player">
+      <Section title="Media-Player" defaultOpen>
         <div className="space-y-2">
           {players.map((p, idx) => (
             <div key={idx} className="flex items-center gap-2">
@@ -173,7 +168,7 @@ export function MediaPlayerInspector({ widget, updateConfig }: Props) {
       )}
 
       {/* Elemente */}
-      <Section title="Elemente">
+      <Section title="Elemente" defaultOpen>
         <div className="mb-2">
           <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Wenn Text nicht passt")}</label>
           <select value={cfg.textOverflow || "truncate"} onChange={(e) => updateConfig(widget.i, "textOverflow", e.target.value)} className={INPUT}>

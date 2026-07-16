@@ -5,6 +5,49 @@ import { Droplets, Wind, Sunrise, Sunset, Sun } from "lucide-react";
 import { wmoToIcon } from "@/lib/weather/wmo";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
+const clampN = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+// Wetter-Stimmung → weiche Farbfelder für den atmosphärischen Hintergrund.
+// Gruppiert nach WMO-Code; nachts eigene, tiefere Paletten. [c1,c2,c3] bilden
+// den Verlauf, glow ist ein Akzent-Leuchten (Sonne/Mond).
+function weatherMood(code: number, isNight: boolean): { c1: string; c2: string; c3: string; glow: string } {
+  const g = (n: number) =>
+    n === 0 ? 0 : n <= 3 ? 1 : n <= 48 ? 2 : n <= 57 ? 3 : n <= 67 ? 4 : n <= 77 ? 5 : n <= 82 ? 4 : n <= 86 ? 5 : 6;
+  const grp = g(code); // 0 klar · 1 wolkig · 2 nebel · 3 niesel · 4 regen · 5 schnee · 6 gewitter
+  if (isNight) {
+    const N = [
+      { c1: "#12203f", c2: "#213456", c3: "#3b4f80", glow: "#8ea6d8" }, // klar
+      { c1: "#1a2334", c2: "#2b3548", c3: "#404b63", glow: "#6b7690" }, // wolkig
+      { c1: "#20242e", c2: "#333844", c3: "#474d5b", glow: "#7c8394" }, // nebel
+      { c1: "#152438", c2: "#26384f", c3: "#374d66", glow: "#5f7fa0" }, // niesel
+      { c1: "#101d30", c2: "#213247", c3: "#31465f", glow: "#4f7099" }, // regen
+      { c1: "#23344c", c2: "#3a5170", c3: "#546e91", glow: "#a9c4e6" }, // schnee
+      { c1: "#171526", c2: "#2c2340", c3: "#463063", glow: "#8b6bd0" }, // gewitter
+    ];
+    return N[grp];
+  }
+  const D = [
+    { c1: "#3a7bc8", c2: "#6aa9e6", c3: "#a9d3f5", glow: "#ffd98a" }, // klar
+    { c1: "#5c82ab", c2: "#8aa8c6", c3: "#bcd0e2", glow: "#f2e2c0" }, // wolkig
+    { c1: "#8a95a3", c2: "#aeb7c3", c3: "#ccd3dc", glow: "#e6e2d6" }, // nebel
+    { c1: "#3f5f82", c2: "#5f809f", c3: "#8aa6bf", glow: "#b9cfe0" }, // niesel
+    { c1: "#33506f", c2: "#4d7092", c3: "#7597b5", glow: "#9fc0da" }, // regen
+    { c1: "#7ba6cf", c2: "#aecbe6", c3: "#dcebf7", glow: "#ffffff" }, // schnee
+    { c1: "#2b2f45", c2: "#474a69", c3: "#6a5b8a", glow: "#c9a9ff" }, // gewitter
+  ];
+  return D[grp];
+}
+
+function weatherBgCss(code: number, isNight: boolean): string {
+  const { c1, c2, c3, glow } = weatherMood(code, isNight);
+  // Akzent-Leuchten oben rechts + weicher Diagonal-Verlauf.
+  return [
+    `radial-gradient(60% 55% at 78% 20%, ${glow}88, transparent 60%)`,
+    `radial-gradient(90% 80% at 15% 90%, ${c3}55, transparent 65%)`,
+    `linear-gradient(158deg, ${c1} 0%, ${c2} 55%, ${c3} 100%)`,
+  ].join(", ");
+}
+
 type StatIconKey = "droplets" | "wind" | "sunrise" | "sunset" | "uv";
 
 function StatIcon({ k, sizeEm = 1 }: { k: StatIconKey; iconSet?: string; sizeEm?: number }) {
@@ -29,6 +72,21 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
   const dateLocale = locale === "en" ? "en-US" : "de-DE";
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Minuten-Tick: erzwingt ein Re-Render, damit sich Tag/Nacht auch ohne
+  // frischen Fetch zum Sonnenaufgang selbst umstellt (Mond-Bug).
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const iv = setInterval(() => setNowTick(Date.now()), 60 * 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  // Atmosphärischer Wetter-Hintergrund (opt-in, Default AUS): weiche, unscharfe
+  // Farbfelder, die die aktuelle Wetterlage darstellen — wie der Artwork-Blur
+  // beim Media-Widget, nur aus dem Wetter erzeugt statt aus einem Cover.
+  const weatherBgOn = config?.weatherBg === true;
+  const weatherBgOpacity = clampN(config?.weatherBgOpacity ?? 90, 0, 100);
+  const weatherBgBlur = clampN(config?.weatherBgBlur ?? 28, 0, 60);
 
   const unitTemp: "celsius" | "fahrenheit" = config?.unitTemp === "fahrenheit" ? "fahrenheit" : "celsius";
   const unitWind: "kmh" | "mph" | "ms" | "kn" =
@@ -74,10 +132,18 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
 
     fetchWeather();
     const interval = setInterval(fetchWeather, 15 * 60 * 1000);
+    // Kiosk-Fix (Mond bleibt morgens stehen): wacht der Monitor auf, war der
+    // Interval-Timer im Standby pausiert — sofort neu laden statt bis zum
+    // nächsten 15-Min-Tick auf dem Nacht-Stand zu hängen.
+    const onWake = () => { if (document.visibilityState === "visible") fetchWeather(); };
+    document.addEventListener("visibilitychange", onWake);
+    window.addEventListener("focus", onWake);
     return () => {
       cancelled = true;
       controller.abort();
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", onWake);
+      window.removeEventListener("focus", onWake);
     };
   }, [lat, lon, unitTemp, unitWind, provider, haEntity, needsLatLon]);
 
@@ -99,10 +165,21 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
   const humidity = data.current.relative_humidity_2m;
   const windSpeed = data.current.wind_speed_10m;
   
-  // Open-Meteo is_day: 1 = Tag, 0 = Nacht (bezieht sich auf den lat/lon).
-  const isNight = typeof data.current.is_day === "number"
-    ? data.current.is_day === 0
-    : (new Date().getHours() < 6 || new Date().getHours() > 20);
+  // Tag/Nacht aus Sonnenauf-/untergangs-UHRZEIT gegen die aktuelle Zeit
+  // (Minuten des Tages, nowTick) — korrigiert sich zum Sonnenaufgang selbst,
+  // auch ohne frischen Fetch. Uhrzeit-Vergleich (nicht Timestamp), damit ein
+  // veralteter Datensatz nicht "dauerhaft Nacht" produziert. Fallback:
+  // is_day aus den Daten, dann grobe Uhrzeit.
+  const minOfDay = (iso: string) => { const d = new Date(iso); return d.getHours() * 60 + d.getMinutes(); };
+  const nowD = new Date(nowTick);
+  const nowMinOfDay = nowD.getHours() * 60 + nowD.getMinutes();
+  const srIso0 = data.daily?.sunrise?.[0];
+  const ssIso0 = data.daily?.sunset?.[0];
+  const isNight = (srIso0 && ssIso0)
+    ? (nowMinOfDay < minOfDay(srIso0) || nowMinOfDay >= minOfDay(ssIso0))
+    : (typeof data.current.is_day === "number"
+        ? data.current.is_day === 0
+        : (nowD.getHours() < 6 || nowD.getHours() > 20));
 
   const sunrise = data.daily?.sunrise?.[0];
   const sunset = data.daily?.sunset?.[0];
@@ -184,8 +261,16 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
   })();
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden">
-      <div className={`flex items-center justify-center flex-1 overflow-hidden ${flexDirectionClass}`}>
+    <div className={`relative flex flex-col w-full h-full overflow-hidden ${weatherBgOn ? "rounded-[1.4em] p-[0.8em]" : ""}`}>
+      {weatherBgOn && (
+        <div className="absolute inset-0 rounded-[1.4em] overflow-hidden pointer-events-none" aria-hidden="true" style={{ opacity: weatherBgOpacity / 100 }}>
+          {/* skaliert + geblurrt = weiche, unscharfe Wetterstimmung */}
+          <div className="absolute inset-0" style={{ background: weatherBgCss(currentCode, isNight), filter: `blur(${weatherBgBlur}px)`, transform: "scale(1.25)" }} />
+          {/* leichte Abdunkelung für Text-Lesbarkeit */}
+          <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.18)" }} />
+        </div>
+      )}
+      <div className={`relative z-[1] flex items-center justify-center flex-1 overflow-hidden ${flexDirectionClass}`}>
       {/* Current Weather */}
       <div className="flex flex-col min-w-0 overflow-hidden shrink-0">
         {location && (
@@ -277,7 +362,7 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
       {/* Hourly Strip */}
       {hourlyData && hourlyData.length > 0 && (
         <div
-          className="mt-[0.8em] pt-[0.8em] border-t border-white/10 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+          className="relative z-[1] mt-[0.8em] pt-[0.8em] border-t border-white/10 overflow-x-auto [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
         >
           <div className="flex gap-[1.2em] items-end" style={{ minWidth: "max-content" }}>

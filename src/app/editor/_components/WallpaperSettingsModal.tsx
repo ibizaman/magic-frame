@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { X, FolderSync, RefreshCw } from 'lucide-react';
+import { X, FolderSync, RefreshCw, Music } from 'lucide-react';
 import type { WallpaperConfig } from '../_types';
 import { useT } from "@/lib/i18n/LocaleProvider";
+import HAEntityInput from './HAEntityInput';
 
 export type ImmichAlbum = { id: string; albumName: string; assetCount: number };
 
@@ -468,6 +469,69 @@ export default function WallpaperSettingsModal({
                    </div>
                    <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Ladekreis (Timer) anzeigen")}</span>
                 </label>
+
+                {/* ── Artwork bei Musik (#50, Phase 2) ── */}
+                <div className="mt-2 pt-4 border-t border-[var(--mf-bdr)]/10">
+                   <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative">
+                         <input
+                            type="checkbox"
+                            checked={wallpaper.artworkEnabled === true}
+                            onChange={(e) => setWallpaper({ ...wallpaper, artworkEnabled: e.target.checked })}
+                            className="sr-only peer"
+                         />
+                         <div className="w-11 h-6 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                      </div>
+                      <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors flex items-center gap-2"><Music size={15} className="text-blue-400" /> {t("Artwork bei Musik")}</span>
+                   </label>
+                   <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">
+                      {t("Wenn Musik läuft, wird das Album-Cover zum Hintergrund.")}
+                   </p>
+
+                   {wallpaper.artworkEnabled === true && (
+                    <div className="mt-3 space-y-3">
+                      <HAEntityInput
+                         value={wallpaper.artworkPlayer || ""}
+                         onChange={(v) => setWallpaper({ ...wallpaper, artworkPlayer: v })}
+                         domains={["media_player"]}
+                         placeholder="media_player.wohnzimmer"
+                      />
+                      {(wallpaper.artworkPlayer || "").trim() !== "" && (
+                      <div className="space-y-3">
+                         <div>
+                            <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Darstellung")}</label>
+                            <select
+                               value={wallpaper.artworkFit ?? "blur"}
+                               onChange={(e) => setWallpaper({ ...wallpaper, artworkFit: e.target.value as "blur" | "cover" })}
+                               className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                            >
+                               <option value="blur">{t("Blur-Rahmen + scharfes Cover")}</option>
+                               <option value="cover">{t("Bildschirmfüllend")}</option>
+                            </select>
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div>
+                               <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
+                                  <span>{t("Blur-Stärke")}</span><span className="text-blue-400">{wallpaper.artworkBlur ?? 40}px</span>
+                               </label>
+                               <input type="range" min="0" max="80" step="2" value={wallpaper.artworkBlur ?? 40}
+                                  onChange={(e) => setWallpaper({ ...wallpaper, artworkBlur: parseInt(e.target.value) })}
+                                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-fg)]/15" />
+                            </div>
+                            <div>
+                               <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
+                                  <span>{t("Abdunkeln")}</span><span className="text-blue-400">{wallpaper.artworkDarken ?? 30}%</span>
+                               </label>
+                               <input type="range" min="0" max="85" step="5" value={wallpaper.artworkDarken ?? 30}
+                                  onChange={(e) => setWallpaper({ ...wallpaper, artworkDarken: parseInt(e.target.value) })}
+                                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-fg)]/15" />
+                            </div>
+                         </div>
+                      </div>
+                      )}
+                    </div>
+                   )}
+                </div>
             </>
           )}
 
