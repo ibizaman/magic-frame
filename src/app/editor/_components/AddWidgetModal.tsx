@@ -58,6 +58,14 @@ export default function AddWidgetModal({ onClose, addWidget }: AddWidgetModalPro
                 <div className="text-3xl mb-2 text-pink-400">🎵</div>
                 <div className="font-bold text-[var(--mf-fg)]">{t("Media Player")}</div>
              </button>
+             <button onClick={() => addWidget("RssWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-amber-500/10 border border-[var(--mf-bdr)]/10 hover:border-amber-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-amber-400">📰</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("RSS Feed")}</div>
+             </button>
+             <button onClick={() => addWidget("QrWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-cyan-500/10 border border-[var(--mf-bdr)]/10 hover:border-cyan-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-cyan-400">🔳</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("QR-Code")}</div>
+             </button>
           </div>
        </div>
     </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Icon } from "@iconify/react";
 import { useGlassStyle } from "@/lib/ui/glass";
 import MediaPlayerWidget from "./MediaPlayerWidget";
+import RssWidget from "./RssWidget";
 import {
     formatNotifAge,
     type NotifTimeFormat,
@@ -317,8 +318,11 @@ export default function HANotificationWidget({
         // dynamisch unter den Notifications, ohne dass das Host-Widget weggefadet wird).
         // anyMediaVisible: laufende Now-Playing-Karten halten das Widget
         // sichtbar — auch ganz ohne aktive Alerts.
-        onVisibilityChange(hasAlerts || showTimers || anyMediaVisible);
-    }, [activeAlertArray.length, onVisibilityChange, statesDict, haPersistent, dismissedIds, source, showTimers, anyMediaVisible]);
+        // Feature-Schalter: Media/RSS lassen sich abschalten, ohne die Feeds/Player zu löschen.
+        const mediaOn = config?.mediaEnabled !== false;
+        const hasRssCfg = config?.rssEnabled !== false && Array.isArray(config?.rssFeeds) && (config.rssFeeds as string[]).filter(Boolean).length > 0;
+        onVisibilityChange(hasAlerts || showTimers || (mediaOn && anyMediaVisible) || hasRssCfg);
+    }, [activeAlertArray.length, onVisibilityChange, statesDict, haPersistent, dismissedIds, source, showTimers, anyMediaVisible, config?.rssFeeds, config?.rssEnabled, config?.mediaEnabled]);
 
     const handleTap = async (rule: NotificationRule) => {
         const action = rule.tapAction || 'none';
@@ -393,7 +397,7 @@ export default function HANotificationWidget({
     // onVisibilityChange, ob etwas läuft) — deshalb dürfen die Leer-Returns
     // unten nicht greifen, sobald Player konfiguriert sind: der Wrapper mit
     // Höhe 0 ist dann das unsichtbare "Ohr", das die Karte aufklappen kann.
-    const mediaPlayers: string[] = Array.isArray(config?.mediaPlayers)
+    const mediaPlayers: string[] = config?.mediaEnabled !== false && Array.isArray(config?.mediaPlayers)
         ? (config.mediaPlayers as string[]).filter(Boolean)
         : [];
     // Höhe: Default kompakt wie die übrigen Karten; per Regler änderbar. Die
@@ -442,7 +446,56 @@ export default function HANotificationWidget({
         );
     }) : null;
 
-    if (source === "rules" && rules.length === 0 && !hasTimers && mediaPlayers.length === 0) {
+    // ── Laufende RSS-Karte — dockt wie die Now-Playing-Karte in den Stack.
+    // Immer sichtbar, solange Feeds konfiguriert sind (RSS hat stets Inhalt). ──
+    const rssFeeds: string[] = config?.rssEnabled !== false && Array.isArray(config?.rssFeeds)
+        ? (config.rssFeeds as string[]).filter(Boolean)
+        : [];
+    const hasRss = rssFeeds.length > 0;
+    const rssCardEm = Math.min(16, Math.max(4, Number(config?.rssCardHeightEm) || 6));
+    const rssTop = config?.rssPosition === "top";
+    const rssShowBorder = config?.rssShowBorder !== false;
+    const rssBorderColor: string = (config?.rssBorderColor as string) || "";
+    const rssCard = hasRss ? (
+        <div
+            key="rss-card"
+            className="w-full shrink-0 overflow-hidden rounded-3xl"
+            style={{
+                height: `${rssCardEm}em`,
+                backgroundColor: isLight ? `rgba(255,255,255,${cardOpacity / 100})` : `rgba(0,0,0,${cardOpacity / 100})`,
+                backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : "none",
+                border: rssShowBorder
+                    ? `1px solid ${rssBorderColor ? `${rssBorderColor}${hex2(0.5)}` : isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)"}`
+                    : "none",
+                boxShadow: hasBg ? "0 8px 32px rgba(0,0,0,0.15)" : "none",
+            }}
+        >
+            <div className="w-full h-full px-[0.9em] py-[0.5em]">
+                <RssWidget
+                    config={{
+                        feeds: rssFeeds,
+                        rssMode: "rotate",
+                        cardTheme: isLight ? "light" : "dark", // Text passt sich dem Karten-Theme an
+                        rotateSec: Number(config?.rssRotateSec) || 8,
+                        limit: Number(config?.rssLimit) || 12,
+                        showSource: config?.rssShowSource !== false,
+                        showDate: config?.rssShowDate !== false,
+                        showImage: config?.rssShowImage === true,
+                        showSummary: config?.rssShowSummary !== false,
+                        titleLines: Number(config?.rssTitleLines) || 0,
+                        descLines: Number(config?.rssDescLines) || 0,
+                        linkable: config?.rssLinkable === true,
+                        showQr: config?.rssShowQr === true,
+                        showDots: config?.rssShowDots !== false,
+                        textOverflow: config?.rssTextOverflow || "truncate",
+                        color: config?.rssColor || "#f59e0b",
+                    }}
+                />
+            </div>
+        </div>
+    ) : null;
+
+    if (source === "rules" && rules.length === 0 && !hasTimers && mediaPlayers.length === 0 && !hasRss) {
         return (
             <div className="text-white/50 text-[10px] uppercase text-center">
                 {tr("Bitte Notification-Regeln im Editor konfigurieren")}
@@ -451,8 +504,8 @@ export default function HANotificationWidget({
     }
 
     // Wirklich nichts da? → komplett verstecken (wie bisher). Mit
-    // konfigurierten Playern bleibt das Widget gemountet (siehe oben).
-    if (!hasAlerts && !hasTimers && mediaPlayers.length === 0) return null;
+    // konfigurierten Playern/Feeds bleibt das Widget gemountet (siehe oben).
+    if (!hasAlerts && !hasTimers && mediaPlayers.length === 0 && !hasRss) return null;
 
     // ── Timer-Karte: visuell wie eine Notification, einfach unter den Alerts ──
     const renderTimerCard = (timer: DockedTimer) => {
@@ -602,6 +655,7 @@ export default function HANotificationWidget({
         return (
             <div className="flex flex-col gap-3 w-full h-full justify-start overflow-y-auto no-scrollbar pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
                 {mediaTop && mediaCards}
+                {rssTop && rssCard}
                 {visible.map((n) => {
                     const color = "#60A5FA";
                     const icon = "mdi:bell-ring";
@@ -654,6 +708,7 @@ export default function HANotificationWidget({
                     );
                 })}
                 {!mediaTop && mediaCards}
+                {!rssTop && rssCard}
                 {hasTimers && activeTimers.map(renderTimerCard)}
             </div>
         );
@@ -662,6 +717,7 @@ export default function HANotificationWidget({
     return (
         <div className="flex flex-col gap-3 w-full h-full justify-start overflow-y-auto no-scrollbar pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {mediaTop && mediaCards}
+            {rssTop && rssCard}
             {activeAlertArray.map((alert) => {
                 const rule = alert.rule;
                 const color = rule.color || "#F43F5E";
@@ -754,6 +810,7 @@ export default function HANotificationWidget({
                 );
             })}
             {!mediaTop && mediaCards}
+            {!rssTop && rssCard}
             {hasTimers && activeTimers.map(renderTimerCard)}
         </div>
     );

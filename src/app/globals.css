@@ -165,6 +165,13 @@ body {
   0%, 12% { transform: translateX(0); }
   88%, 100% { transform: translateX(var(--mf-marquee-dist, 0px)); }
 }
+/* Einblenden des nächsten Beitrags im RSS-Rotator. */
+@keyframes mf-rss-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.mf-rss-fade { animation: mf-rss-fade 0.55s ease-out; }
+
 /* Sanft driftender Farbverlauf für das Notification-Tint-Design. */
 @keyframes mf-tint-drift {
   from { background-position: 0% 50%; }

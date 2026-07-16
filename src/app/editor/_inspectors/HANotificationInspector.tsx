@@ -6,6 +6,7 @@ import type { WidgetLayoutItem } from '../_types';
 import HAEntityInput from '../_components/HAEntityInput';
 import IconPicker from '../_components/IconPicker';
 import CollapsibleSection from '../_components/CollapsibleSection';
+import FeedListEditor from '../_components/FeedListEditor';
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 // Player-Liste für die Now-Playing-Karte. Lokale Entwurfszeilen, damit die
@@ -47,6 +48,23 @@ function MediaPlayersEditor({ value, onChange, t }: {
         + {t("Weiteren Player hinzufügen")}
       </button>
     </div>
+  );
+}
+
+// Kleiner Ein/Aus-Schalter für den Sektions-Header (Feature an/aus, ohne die
+// Feeds/Player zu löschen).
+function Switch({ checked, onChange, color }: { checked: boolean; onChange: (v: boolean) => void; color: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${checked ? "" : "bg-[var(--mf-elev)]/15"}`}
+      style={checked ? { backgroundColor: color } : undefined}
+    >
+      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${checked ? "left-[18px]" : "left-0.5"}`} />
+    </button>
   );
 }
 
@@ -517,7 +535,8 @@ export default function HANotificationInspector({
        </CollapsibleSection>
 
        {/* Now-Playing-Karte — einklappbar, standardmäßig zu (neues Opt-in-Feature) */}
-       <CollapsibleSection title="Now Playing (Media-Player)" subtitle="Zeigt eine Musik-Karte im Stack, solange ein Player läuft." defaultOpen={false}>
+       <CollapsibleSection title="Now Playing (Media-Player)" subtitle="Zeigt eine Musik-Karte im Stack, solange ein Player läuft." defaultOpen={false}
+          headerRight={<Switch checked={(activeWidget.config as any)?.mediaEnabled !== false} onChange={(v) => updateConfig(activeWidget.i, 'mediaEnabled', v)} color="#d946ef" />}>
           <MediaPlayersEditor
              key={activeWidget.i}
              value={Array.isArray(activeWidget.config?.mediaPlayers) ? (activeWidget.config!.mediaPlayers as string[]) : []}
@@ -613,6 +632,128 @@ export default function HANotificationInspector({
                       )}
                    </div>
                 )}
+                </div>
+             </div>
+          )}
+       </CollapsibleSection>
+
+       {/* Laufende RSS-Karte — einklappbar, standardmäßig zu */}
+       <CollapsibleSection title="RSS-Feed" subtitle="Zeigt eine laufende Schlagzeilen-Karte im Stack." defaultOpen={false}
+          headerRight={<Switch checked={(activeWidget.config as any)?.rssEnabled !== false} onChange={(v) => updateConfig(activeWidget.i, 'rssEnabled', v)} color="#f59e0b" />}>
+          <FeedListEditor
+             key={activeWidget.i}
+             value={Array.isArray(activeWidget.config?.rssFeeds) ? (activeWidget.config!.rssFeeds as string[]) : []}
+             onChange={(urls) => updateConfig(activeWidget.i, 'rssFeeds', urls)}
+             t={t}
+          />
+          {Array.isArray(activeWidget.config?.rssFeeds) && (activeWidget.config!.rssFeeds as string[]).filter(Boolean).length > 0 && (
+             <div className="mt-3 space-y-3">
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                      <span>{t("Karten-Höhe")}</span>
+                      <span className="text-amber-400">{Number(activeWidget.config?.rssCardHeightEm) || 6}em</span>
+                   </label>
+                   <input type="range" min={4} max={16} step={0.5}
+                      value={Number(activeWidget.config?.rssCardHeightEm) || 6}
+                      onChange={(e) => updateConfig(activeWidget.i, 'rssCardHeightEm', parseFloat(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-amber-500 bg-[var(--mf-elev)]/10" />
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                      <span>{t("Wechsel-Intervall")}</span>
+                      <span className="text-amber-400">{Number(activeWidget.config?.rssRotateSec) || 8}s</span>
+                   </label>
+                   <input type="range" min={3} max={60} step={1}
+                      value={Number(activeWidget.config?.rssRotateSec) || 8}
+                      onChange={(e) => updateConfig(activeWidget.i, 'rssRotateSec', parseInt(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-amber-500 bg-[var(--mf-elev)]/10" />
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                      <span>{t("Anzahl Beiträge")}</span>
+                      <span className="text-amber-400">{Number(activeWidget.config?.rssLimit) || 12}</span>
+                   </label>
+                   <input type="range" min={1} max={30} step={1}
+                      value={Number(activeWidget.config?.rssLimit) || 12}
+                      onChange={(e) => updateConfig(activeWidget.i, 'rssLimit', parseInt(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-amber-500 bg-[var(--mf-elev)]/10" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                   <div>
+                      <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Titel")}</label>
+                      <select value={Number(activeWidget.config?.rssTitleLines) || 0}
+                         onChange={(e) => updateConfig(activeWidget.i, 'rssTitleLines', Number(e.target.value))}
+                         className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-amber-500 outline-none">
+                         <option value={0}>{t("Auto")}</option>
+                         {[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                   </div>
+                   <div>
+                      <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Beschreibung")}</label>
+                      <select value={Number(activeWidget.config?.rssDescLines) || 0}
+                         onChange={(e) => updateConfig(activeWidget.i, 'rssDescLines', Number(e.target.value))}
+                         className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-amber-500 outline-none">
+                         <option value={0}>{t("Auto")}</option>
+                         {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                   </div>
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Andocken")}</label>
+                   <select value={(activeWidget.config as any)?.rssPosition || 'bottom'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'rssPosition', e.target.value)}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-amber-500 outline-none">
+                      <option value="bottom">{t("Unter den Benachrichtigungen")}</option>
+                      <option value="top">{t("Über den Benachrichtigungen")}</option>
+                   </select>
+                </div>
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Wenn der Titel zu lang ist")}</label>
+                   <select value={(activeWidget.config as any)?.rssTextOverflow || 'truncate'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'rssTextOverflow', e.target.value)}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-amber-500 outline-none">
+                      <option value="truncate">{t("Abschneiden (…)")}</option>
+                      <option value="shrink">{t("Verkleinern")}</option>
+                      <option value="scroll">{t("Laufschrift")}</option>
+                   </select>
+                </div>
+                <div className="space-y-1.5">
+                {([
+                   ['rssShowSource', 'Quelle anzeigen', true],
+                   ['rssShowDate', 'Datum anzeigen', true],
+                   ['rssShowSummary', 'Beschreibung anzeigen', true],
+                   ['rssShowImage', 'Vorschaubild anzeigen', false],
+                   ['rssLinkable', 'Titel anklickbar', false],
+                   ['rssShowQr', 'QR-Code anzeigen', false],
+                   ['rssShowDots', 'Seiten-Punkte anzeigen', true],
+                   ['rssShowBorder', 'Rand anzeigen', true],
+                ] as [string, string, boolean][]).map(([key, label, defOn]) => (
+                   <label key={key} className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox"
+                         checked={defOn ? (activeWidget.config as any)?.[key] !== false : (activeWidget.config as any)?.[key] === true}
+                         onChange={(e) => updateConfig(activeWidget.i, key, e.target.checked)}
+                         className="accent-amber-500" />
+                      <span className="text-xs text-[var(--mf-fg)]/70">{t(label)}</span>
+                   </label>
+                ))}
+                {(activeWidget.config as any)?.rssShowBorder !== false && (
+                   <div className="flex items-center gap-2 pt-1 pl-6">
+                      <span className="text-xs text-[var(--mf-fg)]/70 flex-1">{t("Rand-Farbe")}</span>
+                      <input type="color" value={(activeWidget.config as any)?.rssBorderColor || '#ffffff'}
+                         onChange={(e) => updateConfig(activeWidget.i, 'rssBorderColor', e.target.value)}
+                         className="w-8 h-8 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer" />
+                      {(activeWidget.config as any)?.rssBorderColor && (
+                         <button onClick={() => updateConfig(activeWidget.i, 'rssBorderColor', '')}
+                            className="text-[10px] text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-1.5 py-1 rounded bg-[var(--mf-elev)]/5">{t("Weiß")}</button>
+                      )}
+                   </div>
+                )}
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                   <span className="text-xs text-[var(--mf-fg)]/70 flex-1">{t("Akzentfarbe")}</span>
+                   <input type="color" value={(activeWidget.config as any)?.rssColor || '#f59e0b'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'rssColor', e.target.value)}
+                      className="w-8 h-8 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer" />
                 </div>
              </div>
           )}

@@ -147,6 +147,7 @@ const haNotificationConfig = baseConfig
     notifyBorder: z.enum(["off", "accent", "custom"]).optional(),
     notifyBorderColor: z.string().optional(),
     // Now-Playing-Karte: dockt wie die Timer in den Stack, wenn Musik läuft
+    mediaEnabled: z.boolean().optional(), // Feature an/aus, ohne Player zu löschen
     mediaPlayers: z.array(z.string()).optional(),
     mediaBorderColor: z.string().optional(), // Rahmenfarbe der Media-Karte
     mediaShowControls: z.boolean().optional(), // Default an
@@ -161,6 +162,26 @@ const haNotificationConfig = baseConfig
     mediaPosition: z.enum(["top", "bottom"]).optional(), // über/unter den Benachrichtigungen
     mediaTextOverflow: z.enum(["truncate", "scroll", "shrink"]).optional(), // Titel-Überlauf
     mediaIdleHideMinutes: z.number().optional(), // pausierte Karte nach X Min ausblenden (0 = nie)
+    // Laufende RSS-Karte im Stack (analog zur Now-Playing-Karte)
+    rssEnabled: z.boolean().optional(), // Feature an/aus, ohne Feeds zu löschen
+    rssFeeds: z.array(z.string()).optional(),
+    rssLimit: z.number().optional(),
+    rssRotateSec: z.number().optional(),
+    rssShowSource: z.boolean().optional(),
+    rssShowDate: z.boolean().optional(),
+    rssShowImage: z.boolean().optional(),
+    rssShowSummary: z.boolean().optional(),
+    rssTitleLines: z.number().optional(),
+    rssDescLines: z.number().optional(),
+    rssLinkable: z.boolean().optional(),
+    rssShowQr: z.boolean().optional(),
+    rssShowDots: z.boolean().optional(),
+    rssTextOverflow: z.enum(["truncate", "shrink", "scroll"]).optional(),
+    rssColor: z.string().optional(),
+    rssCardHeightEm: z.number().optional(), // Karten-Höhe (em), Default 6
+    rssPosition: z.enum(["top", "bottom"]).optional(),
+    rssShowBorder: z.boolean().optional(),
+    rssBorderColor: z.string().optional(),
   })
   .passthrough();
 
@@ -297,6 +318,45 @@ const customWidgetSchema = z
   })
   .merge(commonWidgetFields());
 
+const rssConfig = baseConfig.extend({
+  feeds: z.union([z.string(), z.array(z.string())]).optional(), // einzelne URLs (alt: String)
+  rssMode: z.enum(["list", "rotate"]).optional(),
+  limit: z.number().optional(),
+  rotateSec: z.number().optional(),
+  showSource: z.boolean().optional(),
+  showDate: z.boolean().optional(),
+  showImage: z.boolean().optional(),
+  showSummary: z.boolean().optional(),
+  linkable: z.boolean().optional(),
+  showQr: z.boolean().optional(),
+  showDots: z.boolean().optional(),
+  titleLines: z.number().optional(),
+  descLines: z.number().optional(),
+  textOverflow: z.enum(["truncate", "shrink", "scroll"]).optional(), // Titel: abschneiden/verkleinern/scrollen
+  cardTheme: z.enum(["light", "dark"]).optional(), // gesetzt, wenn als Notification-Karte eingebettet
+});
+
+const qrConfig = baseConfig.extend({
+  qrType: z.enum(["wifi", "url", "text"]).optional(),
+  wifiSsid: z.string().optional(),
+  wifiPassword: z.string().optional(),
+  wifiEncryption: z.enum(["WPA", "WEP", "nopass"]).optional(),
+  wifiHidden: z.boolean().optional(),
+  content: z.string().optional(),
+  level: z.enum(["L", "M", "Q", "H"]).optional(),
+  dotStyle: z.enum(["square", "rounded", "dots", "classy"]).optional(),
+  eyeStyle: z.enum(["square", "rounded", "circle"]).optional(),
+  gradient: z.enum(["none", "linear", "radial"]).optional(),
+  color1: z.string().optional(),
+  color2: z.string().optional(),
+  bgMode: z.enum(["solid", "transparent"]).optional(),
+  bgColor: z.string().optional(),
+  centerIcon: z.string().optional(),
+  showLabel: z.boolean().optional(),
+  label: z.string().optional(),
+  qrScale: z.number().optional(),
+});
+
 export const widgetLayoutItemSchema = z.union([
   customWidgetSchema,
   z.discriminatedUnion("type", [
@@ -347,6 +407,12 @@ export const widgetLayoutItemSchema = z.union([
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("MediaPlayerWidget.tsx"), config: mediaPlayerConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("RssWidget.tsx"), config: rssConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("QrWidget.tsx"), config: qrConfig })
     .merge(commonWidgetFields()),
   ]),
 ]);

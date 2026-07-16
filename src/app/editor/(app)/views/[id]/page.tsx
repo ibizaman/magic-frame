@@ -35,6 +35,8 @@ import {
   ClipboardList,
   Plug,
   Zap,
+  Rss,
+  QrCode,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -70,6 +72,8 @@ const WIDGET_CATALOG: {
   { type: "SensorWidget.tsx", label: "Sensor", icon: <Gauge size={16} /> },
   { type: "CameraWidget.tsx", label: "Kamera", icon: <Video size={16} /> },
   { type: "MediaPlayerWidget.tsx", label: "Media Player", icon: <Music size={16} /> },
+  { type: "RssWidget.tsx", label: "RSS Feed", icon: <Rss size={16} /> },
+  { type: "QrWidget.tsx", label: "QR-Code", icon: <QrCode size={16} /> },
 ];
 
 const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }> = {
@@ -87,6 +91,8 @@ const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }>
   "MediaPlayerWidget.tsx":     { hex: "#ec4899", glow: "rgba(236,72,153,0.25)",  tint: "rgba(236,72,153,0.12)"  }, // pink
   "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
   "TodosWidget.tsx":           { hex: "#6366f1", glow: "rgba(99,102,241,0.25)",  tint: "rgba(99,102,241,0.12)"  }, // indigo
+  "RssWidget.tsx":             { hex: "#f59e0b", glow: "rgba(245,158,11,0.25)",  tint: "rgba(245,158,11,0.12)"  }, // amber
+  "QrWidget.tsx":              { hex: "#06b6d4", glow: "rgba(6,182,212,0.25)",   tint: "rgba(6,182,212,0.12)"   }, // cyan
 };
 const DEFAULT_ACCENT = { hex: "#64748b", glow: "rgba(100,116,139,0.2)", tint: "rgba(100,116,139,0.1)" };
 
@@ -347,6 +353,31 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         </div>
       );
 
+    case "RssWidget.tsx":
+      // News rows: small source tag over a headline line.
+      return (
+        <div className="w-full h-full flex flex-col p-[8%] gap-[9%] overflow-hidden justify-center">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-[10%]" style={{ height: "22%" }}>
+              <div className="rounded-full" style={{ height: "22%", width: "26%", backgroundColor: dim }} />
+              <div className="rounded-full" style={{ height: "26%", width: `${88 - i * 10}%`, backgroundColor: dimmer }} />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "QrWidget.tsx":
+      // QR-Raster-Andeutung: 4×4-Karo mit betonten Ecken.
+      return (
+        <div className="w-full h-full flex items-center justify-center p-[15%]">
+          <div className="grid w-full h-full gap-[7%]" style={{ gridTemplateColumns: "repeat(4,1fr)", gridTemplateRows: "repeat(4,1fr)" }}>
+            {[1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0].map((on, i) => (
+              <div key={i} className="rounded-[2px]" style={{ backgroundColor: on ? dim : dimmer, opacity: on ? 1 : 0.4 }} />
+            ))}
+          </div>
+        </div>
+      );
+
     default:
       // Custom modules etc — caller falls back to a single big icon.
       return null;
@@ -379,6 +410,10 @@ function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <Video size={size} />;
     case "MediaPlayerWidget.tsx":
       return <Music size={size} />;
+    case "RssWidget.tsx":
+      return <Rss size={size} />;
+    case "QrWidget.tsx":
+      return <QrCode size={size} />;
     case "ShoppingListWidget.tsx":
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":

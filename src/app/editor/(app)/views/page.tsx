@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon, Gauge, Video } from "lucide-react";
+import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 type Orientation = "portrait" | "landscape";
@@ -24,6 +24,9 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "ImageWidget.tsx":           { color: "rgba(168,85,247,0.55)",  Icon: ImageIcon },      // purple
   "SensorWidget.tsx":          { color: "rgba(20,184,166,0.55)",  Icon: Gauge },          // teal
   "CameraWidget.tsx":          { color: "rgba(244,63,94,0.55)",   Icon: Video },          // rose
+  "MediaPlayerWidget.tsx":     { color: "rgba(236,72,153,0.55)",  Icon: Music },          // pink
+  "RssWidget.tsx":             { color: "rgba(245,158,11,0.55)",  Icon: Rss },            // amber
+  "QrWidget.tsx":              { color: "rgba(6,182,212,0.55)",   Icon: QrCode },         // cyan
 };
 
 // Konstanten aus dem Editor-Canvas: 24 Spalten; für Höhe nehmen wir max-y + h

@@ -30,6 +30,35 @@ export interface WidgetLayoutItem {
     weatherBg?: boolean;
     weatherBgOpacity?: number;
     weatherBgBlur?: number;
+    // RSS widget (limit + color werden mit den bestehenden Feldern geteilt)
+    feeds?: string | string[];
+    rssMode?: 'list' | 'rotate';
+    rotateSec?: number;
+    showSource?: boolean;
+    showDate?: boolean;
+    showImage?: boolean;
+    showSummary?: boolean;
+    linkable?: boolean;
+    showQr?: boolean;
+    showDots?: boolean;
+    titleLines?: number;
+    descLines?: number;
+    // QR-Code widget
+    qrType?: 'wifi' | 'url' | 'text';
+    wifiSsid?: string;
+    wifiPassword?: string;
+    wifiEncryption?: 'WPA' | 'WEP' | 'nopass';
+    wifiHidden?: boolean;
+    content?: string;
+    level?: 'L' | 'M' | 'Q' | 'H';
+    dotStyle?: 'square' | 'rounded' | 'dots' | 'classy';
+    eyeStyle?: 'square' | 'rounded' | 'circle';
+    gradient?: 'none' | 'linear' | 'radial';
+    color1?: string;
+    bgMode?: 'solid' | 'transparent';
+    centerIcon?: string;
+    showLabel?: boolean;
+    qrScale?: number;
     align?: string;
     timezone?: string;
     location?: string;
@@ -78,6 +107,7 @@ export interface WidgetLayoutItem {
     notifyBorder?: 'off' | 'accent' | 'custom';
     notifyBorderColor?: string;
     // Now-Playing-Karte im Notification-Stack (Discussion #50)
+    mediaEnabled?: boolean;
     mediaPlayers?: string[];
     mediaBorderColor?: string;
     borderColor?: string;
@@ -93,6 +123,26 @@ export interface WidgetLayoutItem {
     mediaPosition?: 'top' | 'bottom';
     mediaTextOverflow?: 'truncate' | 'scroll' | 'shrink';
     mediaIdleHideMinutes?: number;
+    // Laufende RSS-Karte im Notification-Stack
+    rssEnabled?: boolean;
+    rssFeeds?: string[];
+    rssLimit?: number;
+    rssRotateSec?: number;
+    rssShowSource?: boolean;
+    rssShowDate?: boolean;
+    rssShowImage?: boolean;
+    rssShowSummary?: boolean;
+    rssTitleLines?: number;
+    rssDescLines?: number;
+    rssLinkable?: boolean;
+    rssShowQr?: boolean;
+    rssShowDots?: boolean;
+    rssTextOverflow?: 'truncate' | 'shrink' | 'scroll';
+    rssColor?: string;
+    rssCardHeightEm?: number;
+    rssPosition?: 'top' | 'bottom';
+    rssShowBorder?: boolean;
+    rssBorderColor?: string;
     frameRadius?: number;
     textScale?: number;
     showBorder?: boolean;
@@ -198,6 +248,8 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "TodosWidget.tsx": "Todos",
   "CameraWidget.tsx": "Kamera",
   "MediaPlayerWidget.tsx": "Media Player",
+  "RssWidget.tsx": "RSS Feed",
+  "QrWidget.tsx": "QR-Code",
 };
 
 // Every German default string we have ever auto-assigned (the current types
