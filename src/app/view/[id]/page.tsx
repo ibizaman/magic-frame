@@ -287,6 +287,9 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
 
   // Use ref to avoid stale closures in socket events
   const effectiveIdRef = useRef(effectiveDashboardId);
+  // Server-Version beim ersten Connect merken — ändert sie sich bei einem
+  // späteren Reconnect (= Update wurde deployt), lädt das Display einmal neu.
+  const serverVersionRef = useRef<string>("");
   useEffect(() => {
      effectiveIdRef.current = effectiveDashboardId;
   }, [effectiveDashboardId]);
@@ -378,6 +381,25 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     const socket = io();
     socket.on('connect', () => {
        console.log('Connected to socket', socket.id);
+       // Auto-Reload nach Server-Update: Ein Reconnect passiert genau dann,
+       // wenn der Server neu gestartet wurde. Meldet er eine andere Version
+       // als beim Seitenaufbau, läuft hier noch das alte Frontend → einmal
+       // neu laden (mit Jitter, damit nicht alle Displays gleichzeitig ziehen;
+       // sessionStorage-Sperre verhindert Reload-Schleifen).
+       fetch('/api/version', { cache: 'no-store' })
+          .then((r) => r.json())
+          .then((d) => {
+             const v = typeof d?.version === 'string' ? d.version : '';
+             if (!v) return;
+             if (!serverVersionRef.current) { serverVersionRef.current = v; return; }
+             if (v === serverVersionRef.current) return;
+             const last = Number(sessionStorage.getItem('mf-version-reload') || 0);
+             if (Date.now() - last < 60000) return;
+             sessionStorage.setItem('mf-version-reload', String(Date.now()));
+             console.log(`Server updated (${serverVersionRef.current} → ${v}) — reloading view`);
+             setTimeout(() => window.location.reload(), Math.random() * 3000);
+          })
+          .catch(() => { /* Version nicht erreichbar → nichts tun */ });
     });
     socket.on('LAYOUT_UPDATED', () => {
        console.log('Websocket: Layout update received');
