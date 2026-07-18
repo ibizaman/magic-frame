@@ -37,6 +37,14 @@ export async function POST(req: NextRequest) {
         } catch { /* Zustand nicht ermittelbar — generischer Toggle als Fallback */ }
      }
 
+     // Tasten kennen kein toggle — homeassistant.toggle überspringt sie
+     // stillschweigend. Direkt drücken (Tipp-Aktion der Status-Karten u. a.).
+     if (serviceName === 'toggle' && domain === 'homeassistant') {
+        const eid = String(entityId);
+        if (eid.startsWith('input_button.')) { domain = 'input_button'; serviceName = 'press'; }
+        else if (eid.startsWith('button.')) { domain = 'button'; serviceName = 'press'; }
+     }
+
      const url = `${cleanHaUrl}/api/services/${domain}/${serviceName}`;
      
      console.log(`[HA Action] Sending POST to ${url} with entity_id: ${entityId}, payload:`, JSON.stringify(body.data));

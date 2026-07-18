@@ -62,6 +62,10 @@ export interface WidgetLayoutItem {
     // Status widget (Auto lädt, Drucker druckt, …)
     statusEntity?: string;
     statusStates?: string;
+    alertStates?: string;
+    alertPulse?: boolean;
+    alertRing?: boolean;
+    tapEntity?: string;
     statusLayout?: 'bar' | 'stack' | 'center';
     imageMode?: 'entity' | 'url' | 'icon';
     imageStyle?: 'box' | 'free';
@@ -122,6 +126,7 @@ export interface WidgetLayoutItem {
     tintAnimate?: boolean;
     notifyBorder?: 'off' | 'accent' | 'custom';
     notifyBorderColor?: string;
+    notifyBorderWidth?: number;
     // Now-Playing-Karte im Notification-Stack (Discussion #50)
     mediaEnabled?: boolean;
     mediaPlayers?: string[];
@@ -166,6 +171,7 @@ export interface WidgetLayoutItem {
     statusPosition?: 'top' | 'bottom';
     statusShowBorder?: boolean;
     statusBorderColor?: string;
+    statusBorderWidth?: number;
     frameRadius?: number;
     textScale?: number;
     showBorder?: boolean;

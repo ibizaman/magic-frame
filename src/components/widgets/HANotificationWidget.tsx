@@ -376,9 +376,10 @@ export default function HANotificationWidget({
     // Rahmen der Karten: aus / in Regel-(Akzent-)Farbe / eigene Farbe.
     const notifyBorderMode: string = config?.notifyBorder || "off";
     const notifyBorderColor: string = config?.notifyBorderColor || "#ffffff";
+    const notifyBorderWidth = Math.max(0.5, Math.min(6, Number(config?.notifyBorderWidth) || 1.5));
     const cardBorderFor = (accentColor: string): string | undefined =>
-      notifyBorderMode === "accent" ? `1.5px solid ${accentColor}`
-      : notifyBorderMode === "custom" ? `1.5px solid ${notifyBorderColor}`
+      notifyBorderMode === "accent" ? `${notifyBorderWidth}px solid ${accentColor}`
+      : notifyBorderMode === "custom" ? `${notifyBorderWidth}px solid ${notifyBorderColor}`
       : undefined;
     // Icon-Darstellung (#20) — Defaults = bisheriges Verhalten (Box an, 3.2em/1.4em).
     const iconFrame = config?.iconFrame !== false;
@@ -510,6 +511,7 @@ export default function HANotificationWidget({
     const statusTop = config?.statusPosition === "top";
     const statusShowBorder = config?.statusShowBorder !== false;
     const statusBorderColor: string = (config?.statusBorderColor as string) || "";
+    const statusBorderWidth = Math.max(0.5, Math.min(6, Number(config?.statusBorderWidth) || 1));
     const statusCards = statusCardsCfg.length > 0 ? statusCardsCfg.map((card, i) => {
         const cardVisible = statusVisibleMap[i] === true;
         return (
@@ -523,7 +525,7 @@ export default function HANotificationWidget({
                     backgroundColor: isLight ? `rgba(255,255,255,${cardOpacity / 100})` : `rgba(0,0,0,${cardOpacity / 100})`,
                     backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : "none",
                     border: cardVisible && statusShowBorder
-                        ? `1px solid ${statusBorderColor ? `${statusBorderColor}${hex2(0.5)}` : isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)"}`
+                        ? `${statusBorderWidth}px solid ${statusBorderColor ? `${statusBorderColor}${hex2(0.5)}` : isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)"}`
                         : "none",
                     boxShadow: cardVisible && hasBg ? "0 8px 32px rgba(0,0,0,0.15)" : "none",
                 }}

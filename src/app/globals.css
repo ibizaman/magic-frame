@@ -172,6 +172,13 @@ body {
 }
 .mf-rss-fade { animation: mf-rss-fade 0.55s ease-out; }
 
+/* Status-Karte im Alarm-Zustand (fertig etc.): pulsierende Akzent-Tönung. */
+@keyframes mf-status-alert {
+  0%, 100% { opacity: 0.38; }
+  50%      { opacity: 0.78; }
+}
+.mf-status-alert { animation: mf-status-alert 2.4s ease-in-out infinite; }
+
 /* Sanft driftender Farbverlauf für das Notification-Tint-Design. */
 @keyframes mf-tint-drift {
   from { background-position: 0% 50%; }

@@ -1723,6 +1723,15 @@ export const EN: Record<string, string> = {
   "Entität im Inspector wählen": "Pick an entity in the inspector",
   "Entität (Auslöser)": "Entity (trigger)",
   "Aktiv bei Zustand": "Active on state",
+  "Auffällig bei Zustand": "Attention states",
+  "Rand-Dicke": "Border width",
+  "Pulsieren": "Pulse",
+  "Alarm-Ring": "Alert ring",
+  "Beim Antippen auslösen (optional)": "Trigger on tap (optional)",
+  "Tippen auf die Karte drückt Tasten, schaltet Schalter oder startet Skripte — z. B. Wäsche direkt an der Karte quittieren. Nur für Touch-Displays relevant.":
+    "Tapping the card presses buttons, toggles switches or starts scripts — e.g. acknowledge laundry right on the card. Only relevant on touch displays.",
+  "Bei diesen Zuständen färbt sich die Karte kräftig ein und pulsiert — für alles, was niemand übersehen soll.":
+    "On these states the card gets a bold colour wash and pulses — for anything nobody should miss.",
   "Mehrere mit Komma. Leer = aktiv, sobald der Zustand nicht aus/idle ist. Achtung: binary_sensor-Entitäten melden on/off — nicht charging o. ä.":
     "Comma-separate multiple. Empty = active whenever the state is not off/idle. Note: binary_sensor entities report on/off — not charging etc.",
   "Aus Entität": "From entity",

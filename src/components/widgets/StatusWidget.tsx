@@ -37,7 +37,13 @@ function useTrimmedImage(src: string): string {
     let cancelled = false;
     const im = new window.Image();
     // Jeder Ausgang MUSS done() rufen — sonst bliebe das Bild ewig unsichtbar.
-    const done = (url: string) => { trimCache.set(src, url); if (!cancelled) setOut(url); };
+    // Cache deckeln: entity_pictures rotieren ihre Tokens → ohne Limit würden
+    // sich Daten-URLs (je ~300 KB) unbegrenzt ansammeln.
+    const done = (url: string) => {
+      if (trimCache.size > 30) trimCache.clear();
+      trimCache.set(src, url);
+      if (!cancelled) setOut(url);
+    };
     im.onerror = () => { if (!cancelled) setOut(src); }; // nicht cachen; <img> onError regelt den Icon-Fallback
     im.onload = () => {
       try {
@@ -85,6 +91,25 @@ export default function StatusWidget({ config, onVisibilityChange }: {
   const statusEntity: string = (config?.statusEntity || "").trim();
   const statusStates: string[] = (config?.statusStates || "")
     .split(",").map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+  // Alarm-Zustände: bei diesen wird die Karte markant (Akzent-Tönung, Puls,
+  // fettes Badge) — damit "fertig" auch wirklich niemand übersieht.
+  const alertStates: string[] = (config?.alertStates || "")
+    .split(",").map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+  const alertPulse = config?.alertPulse !== false; // Tönung pulsiert (Default an)
+  const alertRing = config?.alertRing !== false;   // Akzent-Ring um die Karte (Default an)
+  // Tipp-Aktion: Antippen der Karte löst diese Entität aus (Taste drücken /
+  // Schalter toggeln / Skript starten) — z. B. Wäsche-quittiert direkt per Karte.
+  const tapEntity: string = (config?.tapEntity || "").trim();
+  const handleTap = async () => {
+    if (!tapEntity) return;
+    try {
+      await fetch("/api/ha/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entityId: tapEntity, service: "toggle" }),
+      });
+    } catch { /* Aktion fehlgeschlagen — Karte bleibt einfach stehen */ }
+  };
   const layout: "bar" | "stack" | "center" = config?.statusLayout === "stack" || config?.statusLayout === "center" ? config.statusLayout : "bar";
   const imageMode: "entity" | "url" | "icon" = config?.imageMode === "url" || config?.imageMode === "icon" ? config.imageMode : "entity";
   const imageStyle: "box" | "free" = config?.imageStyle === "free" ? "free" : "box";
@@ -129,6 +154,7 @@ export default function StatusWidget({ config, onVisibilityChange }: {
     ? (statusStates.length ? statusStates.includes(cur) : !INACTIVE_STATES.has(cur))
     : false;
   const visible = alwaysShow || active;
+  const isAlert = alertStates.length > 0 && alertStates.includes(cur);
 
   // Sichtbarkeit mit Gnadenfrist (wie Media-Karte): kurze Zustands-Flackerer
   // beim Gerät klappen die Karte nicht pro Sekunde auf und zu. Wichtig: der
@@ -263,8 +289,16 @@ export default function StatusWidget({ config, onVisibilityChange }: {
   const titleRow = (center: boolean) => (
     <div className={`flex items-baseline gap-[0.5em] min-w-0 ${center ? "justify-center" : ""}`}>
       <span className="font-bold tracking-tight leading-tight truncate" style={{ fontSize: "0.95em" }}>{title}</span>
-      {showState && stateText && (
-        <span className="uppercase tracking-wider font-medium whitespace-nowrap shrink-0" style={{ fontSize: "0.58em", color: accent }}>{stateText}</span>
+      {(showState || isAlert) && stateText && (
+        isAlert ? (
+          // Alarm: fettes Pill statt dezentem Text — muss aus 5 m Entfernung lesbar sein.
+          <span className="uppercase tracking-widest font-extrabold whitespace-nowrap shrink-0 rounded-full self-center"
+            style={{ fontSize: "0.72em", backgroundColor: accent, color: "#ffffff", padding: "0.14em 0.65em", boxShadow: `0 2px 12px ${accent}80` }}>
+            {stateText}
+          </span>
+        ) : (
+          <span className="uppercase tracking-wider font-medium whitespace-nowrap shrink-0" style={{ fontSize: "0.58em", color: accent }}>{stateText}</span>
+        )
       )}
     </div>
   );
@@ -352,7 +386,10 @@ export default function StatusWidget({ config, onVisibilityChange }: {
   );
 
   return (
-    <div ref={boxRef} className="relative w-full h-full overflow-hidden" style={{ fontSize: fs, color: fg, ...cardChrome }}>
+    <div ref={boxRef}
+      className={`relative w-full h-full overflow-hidden ${tapEntity ? "cursor-pointer active:scale-[0.99] transition-transform duration-100" : ""}`}
+      style={{ fontSize: fs, color: fg, ...cardChrome }}
+      onClick={tapEntity ? handleTap : undefined}>
       {/* Bild als weicher Hintergrund (wie die Media-Karte) */}
       {artworkBg && imgReady && (
         <>
@@ -360,6 +397,17 @@ export default function StatusWidget({ config, onVisibilityChange }: {
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: `blur(${bgBlur}px)`, transform: `scale(${bgZoom})`, opacity: isLight ? 0.5 : 0.55 }} />
           <div className="absolute inset-0" style={{ backgroundColor: isLight ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.35)" }} />
+        </>
+      )}
+      {/* Alarm-Zustand: Akzent-Tönung (optional pulsierend) + optionaler Ring */}
+      {isAlert && (
+        <>
+          <div className={`absolute inset-0 pointer-events-none ${alertPulse ? "mf-status-alert" : ""}`}
+            style={{ background: `linear-gradient(90deg, ${accent}, ${accent}55 45%, transparent 80%)`, ...(alertPulse ? {} : { opacity: 0.55 }) }} />
+          {alertRing && (
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ boxShadow: `inset 0 0 0 2px ${accent}`, borderRadius: "inherit" }} />
+          )}
         </>
       )}
       {inner}

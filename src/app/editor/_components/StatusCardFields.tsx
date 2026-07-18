@@ -56,6 +56,26 @@ export default function StatusCardFields({ value, set }: {
         <input value={value.statusStates || ""} onChange={(e) => set("statusStates", e.target.value)}
           placeholder="on, charging, printing" spellCheck={false} className={INPUT} />
         <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1 px-1">{t("Mehrere mit Komma. Leer = aktiv, sobald der Zustand nicht aus/idle ist. Achtung: binary_sensor-Entitäten melden on/off — nicht charging o. ä.")}</p>
+        <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5 mt-2.5">{t("Auffällig bei Zustand")}</label>
+        <input value={value.alertStates || ""} onChange={(e) => set("alertStates", e.target.value)}
+          placeholder="fertig" spellCheck={false} className={INPUT} />
+        <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1 px-1">{t("Bei diesen Zuständen färbt sich die Karte kräftig ein und pulsiert — für alles, was niemand übersehen soll.")}</p>
+        {(value.alertStates || "").trim() !== "" && (
+          <div className="flex flex-wrap gap-x-6 gap-y-2 mt-2 px-1">
+            {([
+              ["alertPulse", "Pulsieren"],
+              ["alertRing", "Alarm-Ring"],
+            ] as [string, string][]).map(([key, label]) => (
+              <label key={key} className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox"
+                  checked={value[key] !== false}
+                  onChange={(e) => set(key, e.target.checked)}
+                  className="accent-sky-500" />
+                <span className="text-xs text-[var(--mf-fg)]/70">{t(label)}</span>
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Darstellung */}
@@ -141,6 +161,14 @@ export default function StatusCardFields({ value, set }: {
           )}
         </div>
         <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1 px-1">{t("Live-Werte wie Ladestand oder Restzeit, mit optionalem Label.")}</p>
+      </div>
+
+      {/* Tipp-Aktion */}
+      <div>
+        <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Beim Antippen auslösen (optional)")}</label>
+        <HAEntityInput value={value.tapEntity || ""} onChange={(v) => set("tapEntity", v)}
+          placeholder="input_button.waschmaschine_quittiert_v2" className={ENTITY_INPUT} />
+        <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1 px-1">{t("Tippen auf die Karte drückt Tasten, schaltet Schalter oder startet Skripte — z. B. Wäsche direkt an der Karte quittieren. Nur für Touch-Displays relevant.")}</p>
       </div>
 
       {/* Fortschritt */}

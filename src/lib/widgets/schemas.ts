@@ -147,6 +147,7 @@ const haNotificationConfig = baseConfig
     tintAnimate: z.boolean().optional(), // sanft driftender Farbverlauf
     notifyBorder: z.enum(["off", "accent", "custom"]).optional(),
     notifyBorderColor: z.string().optional(),
+    notifyBorderWidth: z.number().optional(), // Rand-Dicke in px (Default 1.5)
     // Now-Playing-Karte: dockt wie die Timer in den Stack, wenn Musik läuft
     mediaEnabled: z.boolean().optional(), // Feature an/aus, ohne Player zu löschen
     mediaPlayers: z.array(z.string()).optional(),
@@ -190,6 +191,7 @@ const haNotificationConfig = baseConfig
     statusPosition: z.enum(["top", "bottom"]).optional(),
     statusShowBorder: z.boolean().optional(),
     statusBorderColor: z.string().optional(),
+    statusBorderWidth: z.number().optional(), // Rand-Dicke in px (Default 1)
   })
   .passthrough();
 
@@ -373,6 +375,10 @@ const statusDetailSlot = z.object({
 const statusConfig = baseConfig.extend({
   statusEntity: z.string().optional(),
   statusStates: z.string().optional(), // Komma-Liste; leer = aktiv wenn nicht aus/idle
+  alertStates: z.string().optional(), // Zustände, bei denen die Karte markant wird (Puls + Tönung)
+  alertPulse: z.boolean().optional(), // Tönung pulsiert (Default an)
+  alertRing: z.boolean().optional(), // Akzent-Ring um die Karte (Default an)
+  tapEntity: z.string().optional(), // Antippen der Karte löst diese Entität aus (Touch)
   statusLayout: z.enum(["bar", "stack", "center"]).optional(), // Zeile / gestapelt / zentriert
   imageMode: z.enum(["entity", "url", "icon"]).optional(),
   imageStyle: z.enum(["box", "free"]).optional(), // Kachel-Crop vs. freigestelltes PNG

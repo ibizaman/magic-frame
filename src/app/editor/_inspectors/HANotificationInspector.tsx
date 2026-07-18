@@ -532,6 +532,18 @@ export default function HANotificationInspector({
                       className="w-9 h-9 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer shrink-0" />
                 )}
              </div>
+             {(activeWidget.config as any)?.notifyBorder && (activeWidget.config as any)?.notifyBorder !== 'off' && (
+                <div className="mt-2">
+                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                      <span>{t("Rand-Dicke")}</span>
+                      <span className="text-fuchsia-400">{Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}px</span>
+                   </label>
+                   <input type="range" min={0.5} max={6} step={0.5}
+                      value={Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}
+                      onChange={(e) => updateConfig(activeWidget.i, 'notifyBorderWidth', parseFloat(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
+                </div>
+             )}
           </div>
        </CollapsibleSection>
 
@@ -818,6 +830,7 @@ export default function HANotificationInspector({
                             <span className="text-xs text-[var(--mf-fg)]/70">{t("Rand anzeigen")}</span>
                          </label>
                          {(activeWidget.config as any)?.statusShowBorder !== false && (
+                            <>
                             <div className="flex items-center gap-2 pl-6">
                                <span className="text-xs text-[var(--mf-fg)]/70 flex-1">{t("Rand-Farbe")}</span>
                                <input type="color" value={(activeWidget.config as any)?.statusBorderColor || '#ffffff'}
@@ -828,6 +841,17 @@ export default function HANotificationInspector({
                                      className="text-[10px] text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-1.5 py-1 rounded bg-[var(--mf-elev)]/5">{t("Weiß")}</button>
                                )}
                             </div>
+                            <div className="pl-6 pt-1">
+                               <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                                  <span>{t("Rand-Dicke")}</span>
+                                  <span className="text-sky-400">{Number((activeWidget.config as any)?.statusBorderWidth) || 1}px</span>
+                               </label>
+                               <input type="range" min={0.5} max={6} step={0.5}
+                                  value={Number((activeWidget.config as any)?.statusBorderWidth) || 1}
+                                  onChange={(e) => updateConfig(activeWidget.i, 'statusBorderWidth', parseFloat(e.target.value))}
+                                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-sky-500 bg-[var(--mf-elev)]/10" />
+                            </div>
+                            </>
                          )}
                       </div>
                    )}
