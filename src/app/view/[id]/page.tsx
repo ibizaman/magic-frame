@@ -24,6 +24,7 @@ import CameraWidget from "@/components/widgets/CameraWidget";
 import MediaPlayerWidget from "@/components/widgets/MediaPlayerWidget";
 import RssWidget from "@/components/widgets/RssWidget";
 import QrWidget from "@/components/widgets/QrWidget";
+import StatusWidget from "@/components/widgets/StatusWidget";
 import { CustomWidget } from "@/lib/modules/runtime";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 
@@ -414,6 +415,10 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     if (type === 'CameraWidget.tsx') return <CameraWidget config={config} />;
     if (type === 'RssWidget.tsx') return <RssWidget config={config} />;
     if (type === 'QrWidget.tsx') return <QrWidget config={config} />;
+    if (type === 'StatusWidget.tsx') return <StatusWidget
+        config={config}
+        onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
+    />;
     if (type === 'MediaPlayerWidget.tsx') return <MediaPlayerWidget
         config={config}
         onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}

@@ -7,6 +7,7 @@ import HAEntityInput from '../_components/HAEntityInput';
 import IconPicker from '../_components/IconPicker';
 import CollapsibleSection from '../_components/CollapsibleSection';
 import FeedListEditor from '../_components/FeedListEditor';
+import StatusCardFields from '../_components/StatusCardFields';
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 // Player-Liste für die Now-Playing-Karte. Lokale Entwurfszeilen, damit die
@@ -757,6 +758,82 @@ export default function HANotificationInspector({
                 </div>
              </div>
           )}
+       </CollapsibleSection>
+
+       {/* Status-Karten — einklappbar, standardmäßig zu */}
+       <CollapsibleSection title="Status-Karten" subtitle="Auto lädt, Drucker druckt, Toniebox spielt — Karte mit Bild und Live-Details, solange das Ereignis aktiv ist." defaultOpen={false}
+          headerRight={<Switch checked={(activeWidget.config as any)?.statusEnabled !== false} onChange={(v) => updateConfig(activeWidget.i, 'statusEnabled', v)} color="#0ea5e9" />}>
+          {(() => {
+             const cards: any[] = Array.isArray(activeWidget.config?.statusCards) ? (activeWidget.config!.statusCards as any[]) : [];
+             const setCards = (next: any[]) => updateConfig(activeWidget.i, 'statusCards', next);
+             return (
+                <div className="space-y-3">
+                   {cards.map((card, i) => (
+                      <div key={i} className="rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/[0.03] p-3">
+                         <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--mf-fg)]/50">
+                               {(card.label || card.statusEntity || t("Karte"))} {!card.statusEntity && `${i + 1}`}
+                            </span>
+                            <button onClick={() => setCards(cards.filter((_, x) => x !== i))}
+                               className="w-7 h-7 flex items-center justify-center rounded text-[var(--mf-fg)]/40 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                               <Trash2 size={13} />
+                            </button>
+                         </div>
+                         <StatusCardFields
+                            value={card}
+                            set={(key, v) => setCards(cards.map((c, x) => (x === i ? { ...c, [key]: v } : c)))}
+                         />
+                      </div>
+                   ))}
+                   <button onClick={() => setCards([...cards, {}])}
+                      className="text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors py-1">
+                      + {t("Status-Karte hinzufügen")}
+                   </button>
+                   {cards.length > 0 && (
+                      <div className="space-y-3 pt-1">
+                         <div>
+                            <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                               <span>{t("Karten-Höhe")}</span>
+                               <span className="text-sky-400">{Number(activeWidget.config?.statusCardHeightEm) || 4.5}em</span>
+                            </label>
+                            <input type="range" min={3} max={10} step={0.5}
+                               value={Number(activeWidget.config?.statusCardHeightEm) || 4.5}
+                               onChange={(e) => updateConfig(activeWidget.i, 'statusCardHeightEm', parseFloat(e.target.value))}
+                               className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-sky-500 bg-[var(--mf-elev)]/10" />
+                         </div>
+                         <div>
+                            <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Andocken")}</label>
+                            <select value={(activeWidget.config as any)?.statusPosition || 'bottom'}
+                               onChange={(e) => updateConfig(activeWidget.i, 'statusPosition', e.target.value)}
+                               className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-sky-500 outline-none">
+                               <option value="bottom">{t("Unter den Benachrichtigungen")}</option>
+                               <option value="top">{t("Über den Benachrichtigungen")}</option>
+                            </select>
+                         </div>
+                         <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox"
+                               checked={(activeWidget.config as any)?.statusShowBorder !== false}
+                               onChange={(e) => updateConfig(activeWidget.i, 'statusShowBorder', e.target.checked)}
+                               className="accent-sky-500" />
+                            <span className="text-xs text-[var(--mf-fg)]/70">{t("Rand anzeigen")}</span>
+                         </label>
+                         {(activeWidget.config as any)?.statusShowBorder !== false && (
+                            <div className="flex items-center gap-2 pl-6">
+                               <span className="text-xs text-[var(--mf-fg)]/70 flex-1">{t("Rand-Farbe")}</span>
+                               <input type="color" value={(activeWidget.config as any)?.statusBorderColor || '#ffffff'}
+                                  onChange={(e) => updateConfig(activeWidget.i, 'statusBorderColor', e.target.value)}
+                                  className="w-8 h-8 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer" />
+                               {(activeWidget.config as any)?.statusBorderColor && (
+                                  <button onClick={() => updateConfig(activeWidget.i, 'statusBorderColor', '')}
+                                     className="text-[10px] text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)] px-1.5 py-1 rounded bg-[var(--mf-elev)]/5">{t("Weiß")}</button>
+                               )}
+                            </div>
+                         )}
+                      </div>
+                   )}
+                </div>
+             );
+          })()}
        </CollapsibleSection>
 
        {source === "persistent" && (

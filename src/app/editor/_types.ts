@@ -59,6 +59,22 @@ export interface WidgetLayoutItem {
     centerIcon?: string;
     showLabel?: boolean;
     qrScale?: number;
+    // Status widget (Auto lädt, Drucker druckt, …)
+    statusEntity?: string;
+    statusStates?: string;
+    statusLayout?: 'bar' | 'stack' | 'center';
+    imageMode?: 'entity' | 'url' | 'icon';
+    imageStyle?: 'box' | 'free';
+    imageScale?: number;
+    bgZoom?: number;
+    imageEntity?: string;
+    imageUrl?: string;
+    statusDetails?: { entity?: string; label?: string }[];
+    progressEntity?: string;
+    progressStyle?: 'bar' | 'ring';
+    progressShowPercent?: boolean;
+    alwaysShow?: boolean;
+    showState?: boolean;
     align?: string;
     timezone?: string;
     location?: string;
@@ -143,6 +159,13 @@ export interface WidgetLayoutItem {
     rssPosition?: 'top' | 'bottom';
     rssShowBorder?: boolean;
     rssBorderColor?: string;
+    // Status-Karten im Notification-Stack
+    statusEnabled?: boolean;
+    statusCards?: any[];
+    statusCardHeightEm?: number;
+    statusPosition?: 'top' | 'bottom';
+    statusShowBorder?: boolean;
+    statusBorderColor?: string;
     frameRadius?: number;
     textScale?: number;
     showBorder?: boolean;
@@ -251,6 +274,7 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "MediaPlayerWidget.tsx": "Media Player",
   "RssWidget.tsx": "RSS Feed",
   "QrWidget.tsx": "QR-Code",
+  "StatusWidget.tsx": "Status",
 };
 
 // Every German default string we have ever auto-assigned (the current types

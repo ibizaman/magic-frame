@@ -1718,4 +1718,48 @@ export const EN: Record<string, string> = {
   "Wenn der Titel zu lang ist": "When the title is too long",
   "Verkleinern": "Shrink to fit",
   "Ein-/ausklappen": "Expand/collapse",
+
+  // Status widget / status cards
+  "Entität im Inspector wählen": "Pick an entity in the inspector",
+  "Entität (Auslöser)": "Entity (trigger)",
+  "Aktiv bei Zustand": "Active on state",
+  "Mehrere mit Komma. Leer = aktiv, sobald der Zustand nicht aus/idle ist. Achtung: binary_sensor-Entitäten melden on/off — nicht charging o. ä.":
+    "Comma-separate multiple. Empty = active whenever the state is not off/idle. Note: binary_sensor entities report on/off — not charging etc.",
+  "Aus Entität": "From entity",
+  "Eigene URL": "Custom URL",
+  "Nur Icon": "Icon only",
+  "leer = Auslöser-Entität": "empty = trigger entity",
+  "Jede Entität mit Bild: image.*, camera.*, media_player.*, person.* …":
+    "Any entity with a picture: image.*, camera.*, media_player.*, person.* …",
+  "Icon (Fallback, wenn kein Bild da ist)": "Icon (fallback when no picture is available)",
+  "Standard: Name der Entität": "Default: entity name",
+  "Detail-Entitäten": "Detail entities",
+  "Label": "Label",
+  "Detail hinzufügen": "Add detail",
+  "Live-Werte wie Ladestand oder Restzeit, mit optionalem Label.":
+    "Live values like charge level or time remaining, with an optional label.",
+  "Fortschritt (0–100, optional)": "Progress (0–100, optional)",
+  "Zeigt einen Balken — Ladestand, Druck-Fortschritt …": "Shows a bar — charge level, print progress …",
+  "Zustand anzeigen": "Show state",
+  "Bild als Hintergrund (Blur)": "Picture as background (blur)",
+  "Auch ohne Ereignis anzeigen": "Show even without an event",
+  "Die Kachel erscheint nur, wenn das Ereignis aktiv ist — perfekt zum Stapeln mit anderen Widgets.":
+    "The tile only appears while the event is active — perfect for stacking with other widgets.",
+  "Status-Karten": "Status cards",
+  "Auto lädt, Drucker druckt, Toniebox spielt — Karte mit Bild und Live-Details, solange das Ereignis aktiv ist.":
+    "Car charging, printer printing, toniebox playing — a card with picture and live details while the event is active.",
+  "Karte": "Card",
+  "Status-Karte hinzufügen": "Add status card",
+  "Pfade aus dem HA-www-Ordner funktionieren direkt: /local/…": "Paths from HA's www folder work directly: /local/…",
+  "Gestapelt": "Stacked",
+  "Bild-Stil": "Picture style",
+  "Kachel (Foto/Cover)": "Tile (photo/cover)",
+  "Freigestellt (PNG)": "Cutout (PNG)",
+  "Bild-Größe": "Picture size",
+  "Hintergrund-Blur": "Background blur",
+  "Hintergrund-Füllung": "Background fill",
+  "Balken unten": "Bar at the bottom",
+  "Kreis rechts": "Ring on the right",
+  "% im Kreis anzeigen": "Show % inside the ring",
+  "Hoch drehen, bis die Farbe die ganze Karte füllt.": "Turn it up until the colour fills the whole card.",
 };

@@ -37,6 +37,7 @@ import {
   Zap,
   Rss,
   QrCode,
+  Activity,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -74,6 +75,7 @@ const WIDGET_CATALOG: {
   { type: "MediaPlayerWidget.tsx", label: "Media Player", icon: <Music size={16} /> },
   { type: "RssWidget.tsx", label: "RSS Feed", icon: <Rss size={16} /> },
   { type: "QrWidget.tsx", label: "QR-Code", icon: <QrCode size={16} /> },
+  { type: "StatusWidget.tsx", label: "Status", icon: <Activity size={16} /> },
 ];
 
 const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }> = {
@@ -93,6 +95,7 @@ const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }>
   "TodosWidget.tsx":           { hex: "#6366f1", glow: "rgba(99,102,241,0.25)",  tint: "rgba(99,102,241,0.12)"  }, // indigo
   "RssWidget.tsx":             { hex: "#f59e0b", glow: "rgba(245,158,11,0.25)",  tint: "rgba(245,158,11,0.12)"  }, // amber
   "QrWidget.tsx":              { hex: "#06b6d4", glow: "rgba(6,182,212,0.25)",   tint: "rgba(6,182,212,0.12)"   }, // cyan
+  "StatusWidget.tsx":          { hex: "#0ea5e9", glow: "rgba(14,165,233,0.25)",  tint: "rgba(14,165,233,0.12)"  }, // sky
 };
 const DEFAULT_ACCENT = { hex: "#64748b", glow: "rgba(100,116,139,0.2)", tint: "rgba(100,116,139,0.1)" };
 
@@ -366,6 +369,22 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         </div>
       );
 
+    case "StatusWidget.tsx":
+      // Bild-Quadrat + Titel + zwei Wert-Chips + Fortschritts-Linie.
+      return (
+        <div className="w-full h-full flex items-center gap-[6%] p-[8%]">
+          <div className="h-[70%] aspect-square rounded-md shrink-0" style={{ backgroundColor: dim }} />
+          <div className="flex-1 flex flex-col gap-[10%]">
+            <div className="rounded-full" style={{ height: "16%", width: "62%", backgroundColor: dim }} />
+            <div className="flex gap-[6%]">
+              <div className="rounded-full" style={{ height: "10%", width: "26%", backgroundColor: dimmer, minHeight: 3 }} />
+              <div className="rounded-full" style={{ height: "10%", width: "22%", backgroundColor: dimmer, minHeight: 3 }} />
+            </div>
+            <div className="rounded-full" style={{ height: "7%", width: "88%", backgroundColor: dimmer, minHeight: 2 }} />
+          </div>
+        </div>
+      );
+
     case "QrWidget.tsx":
       // QR-Raster-Andeutung: 4×4-Karo mit betonten Ecken.
       return (
@@ -414,6 +433,8 @@ function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <Rss size={size} />;
     case "QrWidget.tsx":
       return <QrCode size={size} />;
+    case "StatusWidget.tsx":
+      return <Activity size={size} />;
     case "ShoppingListWidget.tsx":
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":

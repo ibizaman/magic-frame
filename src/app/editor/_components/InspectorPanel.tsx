@@ -23,6 +23,7 @@ import CameraInspector from "../_inspectors/CameraInspector";
 import { MediaPlayerInspector } from "../_inspectors/MediaPlayerInspector";
 import RssInspector from "../_inspectors/RssInspector";
 import QrInspector from "../_inspectors/QrInspector";
+import StatusInspector from "../_inspectors/StatusInspector";
 import CustomModuleInspector from "../_inspectors/CustomModuleInspector";
 import HAEntityInput from "./HAEntityInput";
 
@@ -589,6 +590,9 @@ function ContentTab(props: InspectorPanelProps) {
       )}
       {activeWidget.type === "QrWidget.tsx" && (
         <QrInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
+      {activeWidget.type === "StatusWidget.tsx" && (
+        <StatusInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
       {activeWidget.type.startsWith("custom:") && (
         <CustomModuleInspector widget={activeWidget} updateConfig={updateConfig} />

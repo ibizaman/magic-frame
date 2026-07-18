@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { useGlassStyle } from "@/lib/ui/glass";
 import MediaPlayerWidget from "./MediaPlayerWidget";
 import RssWidget from "./RssWidget";
+import StatusWidget from "./StatusWidget";
 import {
     formatNotifAge,
     type NotifTimeFormat,
@@ -75,6 +76,9 @@ export default function HANotificationWidget({
     // keit meldet jedes eingebettete MediaPlayerWidget einzeln (hideWhenIdle).
     const [mediaVisibleMap, setMediaVisibleMap] = useState<Record<string, boolean>>({});
     const anyMediaVisible = Object.values(mediaVisibleMap).some(Boolean);
+    // Status-Karten (Auto lädt, Drucker druckt, …): gleiche Mechanik.
+    const [statusVisibleMap, setStatusVisibleMap] = useState<Record<number, boolean>>({});
+    const anyStatusVisible = Object.values(statusVisibleMap).some(Boolean);
 
     const rules: NotificationRule[] = config?.rules || [];
     const maxNotifications = config?.maxNotifications || 5;
@@ -318,11 +322,12 @@ export default function HANotificationWidget({
         // dynamisch unter den Notifications, ohne dass das Host-Widget weggefadet wird).
         // anyMediaVisible: laufende Now-Playing-Karten halten das Widget
         // sichtbar — auch ganz ohne aktive Alerts.
-        // Feature-Schalter: Media/RSS lassen sich abschalten, ohne die Feeds/Player zu löschen.
+        // Feature-Schalter: Media/RSS/Status lassen sich abschalten, ohne die Configs zu löschen.
         const mediaOn = config?.mediaEnabled !== false;
         const hasRssCfg = config?.rssEnabled !== false && Array.isArray(config?.rssFeeds) && (config.rssFeeds as string[]).filter(Boolean).length > 0;
-        onVisibilityChange(hasAlerts || showTimers || (mediaOn && anyMediaVisible) || hasRssCfg);
-    }, [activeAlertArray.length, onVisibilityChange, statesDict, haPersistent, dismissedIds, source, showTimers, anyMediaVisible, config?.rssFeeds, config?.rssEnabled, config?.mediaEnabled]);
+        const statusOn = config?.statusEnabled !== false;
+        onVisibilityChange(hasAlerts || showTimers || (mediaOn && anyMediaVisible) || hasRssCfg || (statusOn && anyStatusVisible));
+    }, [activeAlertArray.length, onVisibilityChange, statesDict, haPersistent, dismissedIds, source, showTimers, anyMediaVisible, anyStatusVisible, config?.rssFeeds, config?.rssEnabled, config?.mediaEnabled, config?.statusEnabled]);
 
     const handleTap = async (rule: NotificationRule) => {
         const action = rule.tapAction || 'none';
@@ -495,7 +500,43 @@ export default function HANotificationWidget({
         </div>
     ) : null;
 
-    if (source === "rules" && rules.length === 0 && !hasTimers && mediaPlayers.length === 0 && !hasRss) {
+    // ── Status-Karten — jede konfigurierte Karte dockt in den Stack, sobald
+    // ihr Ereignis aktiv ist (Auto lädt, Drucker druckt, …). Müssen wie die
+    // Media-Karten dauerhaft gemountet bleiben (melden Sichtbarkeit selbst). ──
+    const statusCardsCfg: any[] = config?.statusEnabled !== false && Array.isArray(config?.statusCards)
+        ? (config.statusCards as any[]).filter((c) => c && c.statusEntity)
+        : [];
+    const statusCardEm = Math.min(12, Math.max(3, Number(config?.statusCardHeightEm) || 4.5));
+    const statusTop = config?.statusPosition === "top";
+    const statusShowBorder = config?.statusShowBorder !== false;
+    const statusBorderColor: string = (config?.statusBorderColor as string) || "";
+    const statusCards = statusCardsCfg.length > 0 ? statusCardsCfg.map((card, i) => {
+        const cardVisible = statusVisibleMap[i] === true;
+        return (
+            <div
+                key={`status-${i}`}
+                className="w-full shrink-0 overflow-hidden transition-all duration-500 rounded-3xl"
+                style={{
+                    height: cardVisible ? `${statusCardEm}em` : 0,
+                    opacity: cardVisible ? 1 : 0,
+                    marginTop: cardVisible ? undefined : "-0.75rem",
+                    backgroundColor: isLight ? `rgba(255,255,255,${cardOpacity / 100})` : `rgba(0,0,0,${cardOpacity / 100})`,
+                    backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : "none",
+                    border: cardVisible && statusShowBorder
+                        ? `1px solid ${statusBorderColor ? `${statusBorderColor}${hex2(0.5)}` : isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)"}`
+                        : "none",
+                    boxShadow: cardVisible && hasBg ? "0 8px 32px rgba(0,0,0,0.15)" : "none",
+                }}
+            >
+                <StatusWidget
+                    config={{ ...card, cardTheme: isLight ? "light" : "dark", frameRadius: 24 }}
+                    onVisibilityChange={(v) => setStatusVisibleMap((prev) => (prev[i] === v ? prev : { ...prev, [i]: v }))}
+                />
+            </div>
+        );
+    }) : null;
+
+    if (source === "rules" && rules.length === 0 && !hasTimers && mediaPlayers.length === 0 && !hasRss && statusCardsCfg.length === 0) {
         return (
             <div className="text-white/50 text-[10px] uppercase text-center">
                 {tr("Bitte Notification-Regeln im Editor konfigurieren")}
@@ -504,8 +545,8 @@ export default function HANotificationWidget({
     }
 
     // Wirklich nichts da? → komplett verstecken (wie bisher). Mit
-    // konfigurierten Playern/Feeds bleibt das Widget gemountet (siehe oben).
-    if (!hasAlerts && !hasTimers && mediaPlayers.length === 0 && !hasRss) return null;
+    // konfigurierten Playern/Feeds/Karten bleibt das Widget gemountet (siehe oben).
+    if (!hasAlerts && !hasTimers && mediaPlayers.length === 0 && !hasRss && statusCardsCfg.length === 0) return null;
 
     // ── Timer-Karte: visuell wie eine Notification, einfach unter den Alerts ──
     const renderTimerCard = (timer: DockedTimer) => {
@@ -656,6 +697,7 @@ export default function HANotificationWidget({
             <div className="flex flex-col gap-3 w-full h-full justify-start overflow-y-auto no-scrollbar pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
                 {mediaTop && mediaCards}
                 {rssTop && rssCard}
+                {statusTop && statusCards}
                 {visible.map((n) => {
                     const color = "#60A5FA";
                     const icon = "mdi:bell-ring";
@@ -709,6 +751,7 @@ export default function HANotificationWidget({
                 })}
                 {!mediaTop && mediaCards}
                 {!rssTop && rssCard}
+                {!statusTop && statusCards}
                 {hasTimers && activeTimers.map(renderTimerCard)}
             </div>
         );
@@ -718,6 +761,7 @@ export default function HANotificationWidget({
         <div className="flex flex-col gap-3 w-full h-full justify-start overflow-y-auto no-scrollbar pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {mediaTop && mediaCards}
             {rssTop && rssCard}
+            {statusTop && statusCards}
             {activeAlertArray.map((alert) => {
                 const rule = alert.rule;
                 const color = rule.color || "#F43F5E";
@@ -811,6 +855,7 @@ export default function HANotificationWidget({
             })}
             {!mediaTop && mediaCards}
             {!rssTop && rssCard}
+            {!statusTop && statusCards}
             {hasTimers && activeTimers.map(renderTimerCard)}
         </div>
     );

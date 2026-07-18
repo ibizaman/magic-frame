@@ -183,6 +183,13 @@ const haNotificationConfig = baseConfig
     rssPosition: z.enum(["top", "bottom"]).optional(),
     rssShowBorder: z.boolean().optional(),
     rssBorderColor: z.string().optional(),
+    // Status-Karten im Stack (Auto lädt, Drucker druckt, … — wie Media/RSS)
+    statusEnabled: z.boolean().optional(),
+    statusCards: z.array(z.any()).optional(), // gleiche Felder wie statusConfig, je Karte
+    statusCardHeightEm: z.number().optional(), // Karten-Höhe (em), Default 4.5
+    statusPosition: z.enum(["top", "bottom"]).optional(),
+    statusShowBorder: z.boolean().optional(),
+    statusBorderColor: z.string().optional(),
   })
   .passthrough();
 
@@ -358,6 +365,34 @@ const qrConfig = baseConfig.extend({
   qrScale: z.number().optional(),
 });
 
+const statusDetailSlot = z.object({
+  entity: z.string().optional(),
+  label: z.string().optional(),
+});
+
+const statusConfig = baseConfig.extend({
+  statusEntity: z.string().optional(),
+  statusStates: z.string().optional(), // Komma-Liste; leer = aktiv wenn nicht aus/idle
+  statusLayout: z.enum(["bar", "stack", "center"]).optional(), // Zeile / gestapelt / zentriert
+  imageMode: z.enum(["entity", "url", "icon"]).optional(),
+  imageStyle: z.enum(["box", "free"]).optional(), // Kachel-Crop vs. freigestelltes PNG
+  imageScale: z.number().optional(), // Bild-Größe in % (50–200, Default 100)
+  bgBlur: z.number().optional(), // Hintergrund-Blur in px (Default 16)
+  bgZoom: z.number().optional(), // Hintergrund-Füllung in % (Default 120)
+  imageEntity: z.string().optional(), // leer = statusEntity
+  imageUrl: z.string().optional(),
+  icon: z.string().optional(),
+  label: z.string().optional(),
+  statusDetails: z.array(statusDetailSlot).optional(),
+  progressEntity: z.string().optional(),
+  progressStyle: z.enum(["bar", "ring"]).optional(), // Balken unten vs. Kreis rechts
+  progressShowPercent: z.boolean().optional(), // %-Zahl im Kreis (Default an)
+  alwaysShow: z.boolean().optional(),
+  showState: z.boolean().optional(),
+  artworkAsTileBg: z.boolean().optional(), // Bild als Blur-Hintergrund (Default an)
+  cardTheme: z.enum(["light", "dark"]).optional(), // gesetzt, wenn eingebettet
+});
+
 export const widgetLayoutItemSchema = z.union([
   customWidgetSchema,
   z.discriminatedUnion("type", [
@@ -414,6 +449,9 @@ export const widgetLayoutItemSchema = z.union([
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("QrWidget.tsx"), config: qrConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("StatusWidget.tsx"), config: statusConfig })
     .merge(commonWidgetFields()),
   ]),
 ]);
