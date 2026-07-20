@@ -306,6 +306,21 @@ export default function HANotificationWidget({
     activeAlertArray.sort((a, b) => b.triggerTime - a.triggerTime);
     activeAlertArray = activeAlertArray.slice(0, maxNotifications);
 
+    // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo — ohne aktive
+    // Alerts zeigen wir Beispiel-Karten aus den EIGENEN Regeln (Icon, Farbe,
+    // Text bleiben die konfigurierten). Existiert im Live-View nie.
+    if (config?.__demo && source === "rules" && activeAlertArray.length === 0) {
+        const demoRules: NotificationRule[] = rules.filter((r) => r.entityId).length
+            ? rules.filter((r) => r.entityId).slice(0, 2)
+            : [{ entityId: "sensor.beispiel", triggerState: "on", message: tr("Beispiel-Benachrichtigung — so sieht ein Alert aus"), icon: "mdi:bell-ring", color: "#60A5FA" }];
+        activeAlertArray = demoRules.map((rule, i) => ({
+            rule,
+            key: `demo-${i}`,
+            triggerTime: Date.now() - (i + 1) * 5 * 60000,
+            configIndex: 100000 + i,
+        }));
+    }
+
     // Visibility: das Widget bleibt sichtbar, sobald entweder Alerts oder
     // (showTimers + Timer aktiv) etwas anzuzeigen haben. Da der DockedTimer-
     // Strip selbst die Timer-Liste hält, signalisieren wir hier nur Alerts —
@@ -442,9 +457,10 @@ export default function HANotificationWidget({
                         showProgress: config?.mediaShowProgress !== false,
                         showVolume: config?.mediaShowVolume === true,
                         textOverflow: (config?.mediaTextOverflow as string) || "scroll",
-                        hideWhenIdle: true,
+                        hideWhenIdle: !config?.__demo,
                         idleHideMinutes: Number(config?.mediaIdleHideMinutes) || 0,
                         fontSize: 20,
+                        __demo: config?.__demo === true,
                     }}
                     onVisibilityChange={(v) => setMediaVisibleMap((prev) => (prev[pid] === v ? prev : { ...prev, [pid]: v }))}
                 />
@@ -531,7 +547,7 @@ export default function HANotificationWidget({
                 }}
             >
                 <StatusWidget
-                    config={{ ...card, cardTheme: isLight ? "light" : "dark", frameRadius: 24 }}
+                    config={{ ...card, cardTheme: isLight ? "light" : "dark", frameRadius: 24, ...(config?.__demo ? { alwaysShow: true } : {}) }}
                     onVisibilityChange={(v) => setStatusVisibleMap((prev) => (prev[i] === v ? prev : { ...prev, [i]: v }))}
                 />
             </div>

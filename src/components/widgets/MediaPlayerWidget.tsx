@@ -273,7 +273,24 @@ export default function MediaPlayerWidget({
   }, [playingKey, autoFollow]);
   const activeIdx = Math.min(manualIdx ?? (firstPlaying >= 0 ? firstPlaying : 0), Math.max(0, ids.length - 1));
   const activeId = ids[activeIdx] || ids[0] || "";
-  const state = statesDict[activeId] ?? null;
+  const realState = statesDict[activeId] ?? null;
+  // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo — spielt gerade
+  // nichts, zeigen wir einen Beispiel-Track in der EIGENEN Optik. Existiert
+  // im Live-View nie (Flag wird nur von der Editor-Vorschau gesetzt).
+  const state = config?.__demo === true && !PLAYING_STATES.has(realState?.state || "")
+    ? {
+        state: "playing",
+        attributes: {
+          media_title: t("Beispiel-Titel"),
+          media_artist: "Magic Frame",
+          media_album_name: t("Beispiel-Album"),
+          media_duration: 214,
+          media_position: 89,
+          volume_level: 0.4,
+          friendly_name: realState?.attributes?.friendly_name || t("Beispiel-Player"),
+        },
+      }
+    : realState;
 
   const attrs = state?.attributes ?? {};
   const title: string = attrs.media_title || "";

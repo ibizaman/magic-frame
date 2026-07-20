@@ -5,6 +5,8 @@ import { Copy, Trash2, X, LayoutGrid, Type, SlidersHorizontal } from "lucide-rea
 import type { WidgetLayoutItem } from "../_types";
 import { widgetTitle, isAutoDefaultLabel } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import CollapsibleSection from "./CollapsibleSection";
+import WidgetPreview from "./WidgetPreview";
 import ClockInspector from "../_inspectors/ClockInspector";
 import WeatherInspector from "../_inspectors/WeatherInspector";
 import ButtonInspector from "../_inspectors/ButtonInspector";
@@ -45,6 +47,9 @@ type InspectorPanelProps = {
   setCitySearchQuery: (v: string) => void;
   buttonTab: string;
   setButtonTab: (v: string) => void;
+  /** false = die Live-Vorschau rendert der Host in einer eigenen Spalte
+   *  (breites Layout) — hier dann nicht doppelt mounten. */
+  showPreview?: boolean;
 };
 
 type Tab = "layout" | "text" | "content";
@@ -519,6 +524,20 @@ function ContentTab(props: InspectorPanelProps) {
 
   return (
     <>
+      {/* #42: Live-Vorschau für JEDES Widget — rendert die echte Komponente
+          mit echten Daten über die geteilte Render-Map. Auf breiten Screens
+          rendert der Host sie stattdessen in einer eigenen Spalte rechts. */}
+      {props.showPreview !== false && (
+        <CollapsibleSection title="Live-Vorschau" subtitle="Zeigt das Widget mit echten Daten, während du unten Einstellungen änderst." defaultOpen>
+          <WidgetPreview
+            type={activeWidget.type}
+            config={activeWidget.config}
+            bgOpacity={activeWidget.bgOpacity}
+            gridW={activeWidget.w}
+            gridH={activeWidget.h}
+          />
+        </CollapsibleSection>
+      )}
       {activeWidget.type === "ClockWidget.tsx" && (
         <ClockInspector
           widget={activeWidget}

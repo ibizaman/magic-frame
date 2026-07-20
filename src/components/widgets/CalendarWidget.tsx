@@ -63,7 +63,22 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
   const accentColor = config?.color || config?.accentColor || "#ffffff";
   const hideOnEmpty = config?.hideOnEmpty || false;
 
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [fetchedEvents, setEvents] = useState<CalendarEvent[]>([]);
+  // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo — ein leerer
+  // Kalender zeigt dann Beispiel-Termine in der EIGENEN Formatierung.
+  // Wird nie gespeichert und existiert im Live-View nicht.
+  const events: CalendarEvent[] = (config?.__demo && fetchedEvents.length === 0)
+    ? (() => {
+        const d = (offsetDays: number, h: number, m: number) => {
+          const x = new Date(); x.setDate(x.getDate() + offsetDays); x.setHours(h, m, 0, 0); return x.toISOString();
+        };
+        return [
+          { id: "demo-1", title: t("Fußballtraining"), start: d(0, 18, 0), end: d(0, 19, 30), isAllDay: false },
+          { id: "demo-2", title: t("Geburtstag Oma"), start: d(1, 0, 0), end: d(1, 23, 59), isAllDay: true },
+          { id: "demo-3", title: t("Zahnarzt-Termin"), start: d(2, 9, 30), end: d(2, 10, 0), isAllDay: false },
+        ];
+      })()
+    : fetchedEvents;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

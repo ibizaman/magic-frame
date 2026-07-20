@@ -8,24 +8,7 @@ import "react-resizable/css/styles.css";
 
 import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 import WallpaperEngine from "@/components/WallpaperEngine";
-import ClockWidget from "@/components/widgets/ClockWidget";
-import CalendarWidget from "@/components/widgets/CalendarWidget";
-import WeatherWidget from "@/components/widgets/WeatherWidget";
-import HomeAssistantWidget from "@/components/widgets/HomeAssistantWidget";
-import HANotificationWidget from "@/components/widgets/HANotificationWidget";
-import ButtonWidget from "@/components/widgets/ButtonWidget";
-import TimerWidget from "@/components/widgets/TimerWidget";
-import MessagesWidget from "@/components/widgets/MessagesWidget";
-import ShoppingListWidget from "@/components/widgets/ShoppingListWidget";
-import TodosWidget from "@/components/widgets/TodosWidget";
-import ImageWidget from "@/components/widgets/ImageWidget";
-import SensorWidget from "@/components/widgets/SensorWidget";
-import CameraWidget from "@/components/widgets/CameraWidget";
-import MediaPlayerWidget from "@/components/widgets/MediaPlayerWidget";
-import RssWidget from "@/components/widgets/RssWidget";
-import QrWidget from "@/components/widgets/QrWidget";
-import StatusWidget from "@/components/widgets/StatusWidget";
-import { CustomWidget } from "@/lib/modules/runtime";
+import { renderWidget } from "@/components/widgets/renderWidget";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -461,47 +444,14 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     };
   }, [dashboardId]); // Only recreate socket mount if base ID changes.
 
-  const renderWidgetContent = (type: string, config: any, id: string) => {
-    if (type === 'ClockWidget.tsx') return <ClockWidget config={config} />;
-    if (type === 'ButtonWidget.tsx') return <ButtonWidget config={config} />;
-    if (type === 'TimerWidget.tsx') return <TimerWidget config={config} dashboardId={dashboardId} />;
-    if (type === 'MessagesWidget.tsx') return <MessagesWidget config={config} dashboardId={dashboardId} />;
-    if (type === 'ShoppingListWidget.tsx') return <ShoppingListWidget config={config} />;
-    if (type === 'TodosWidget.tsx') return <TodosWidget config={config} />;
-    if (type === 'ImageWidget.tsx') return <ImageWidget config={config} dashboardId={dashboardId} />;
-    if (type === 'SensorWidget.tsx') return <SensorWidget config={config} />;
-    if (type === 'CameraWidget.tsx') return <CameraWidget config={config} />;
-    if (type === 'RssWidget.tsx') return <RssWidget config={config} />;
-    if (type === 'QrWidget.tsx') return <QrWidget config={config} />;
-    if (type === 'StatusWidget.tsx') return <StatusWidget
-        config={config}
-        onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
-    />;
-    if (type === 'MediaPlayerWidget.tsx') return <MediaPlayerWidget
-        config={config}
-        onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
-    />;
-    if (type === 'CalendarWidget.tsx') return <CalendarWidget
-        config={config}
-        onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
-    />;
-    if (type === 'WeatherWidget.tsx') return <WeatherWidget config={config} location={config?.location} lat={config?.lat} lon={config?.lon} />;
-    if (type === 'HomeAssistantWidget.tsx') return <HomeAssistantWidget
-        config={config}
-        onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
-    />;
-    if (type === 'HANotificationWidget.tsx') return <HANotificationWidget
-        config={config}
-        dashboardId={dashboardId}
-        onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}
-    />;
-    // Custom-Module: type beginnt mit "custom:". Werden zur Laufzeit via
-    // <script>-Tag-Injection geladen und rendern via window.MagicFrame-Bridge.
-    if (typeof type === 'string' && type.startsWith('custom:')) {
-      return <CustomWidget type={type} config={config} dashboardId={dashboardId} />;
-    }
-    return null;
-  };
+  // Rendert über die geteilte Map (renderWidget.tsx) — dieselbe Quelle wie
+  // die Live-Vorschau im Editor (#42), damit beide nie auseinanderlaufen.
+  const renderWidgetContent = (type: string, config: any, id: string) =>
+    renderWidget(type, config, {
+      dashboardId,
+      onVisibilityChange: (isVisible) =>
+        setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : { ...prev, [id]: !isVisible }),
+    });
 
   return (
     <LocaleProvider>

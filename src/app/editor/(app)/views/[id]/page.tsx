@@ -48,6 +48,7 @@ import {
   widgetTitle,
 } from "@/app/editor/_types";
 import InspectorPanel from "@/app/editor/_components/InspectorPanel";
+import WidgetPreview from "@/app/editor/_components/WidgetPreview";
 import WallpaperSettingsModal, {
   type ImmichAlbum,
 } from "@/app/editor/_components/WallpaperSettingsModal";
@@ -522,6 +523,18 @@ export default function ViewEditor({
     return () => { cancelled = true; clearInterval(iv); };
   }, [viewId]);
   const activeDisplay = displays.find((d) => d.clientId === canvasDisplay) || null;
+
+  // Breites Fenster → Inspector-Modal zweispaltig (Einstellungen links,
+  // Live-Vorschau rechts). Schmal/Tablet/Mobil → Vorschau wie gehabt oben im
+  // Panel. Nur EINE Vorschau-Instanz gemountet (matchMedia, kein CSS-hidden).
+  const [isWideScreen, setIsWideScreen] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1280px)");
+    const update = () => setIsWideScreen(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Canvas-Maße: Standard = bisherige Idealmaße; Display gewählt = echtes
   // Seitenverhältnis, eingepasst in eine Bounding-Box (nichts wird verzerrt).
@@ -1327,28 +1340,45 @@ export default function ViewEditor({
             onClick={() => setActiveSettingsId(null)}
           >
             <div
-              className="w-full h-full md:w-[760px] md:h-auto md:max-h-[88vh]"
+              className={`w-full h-full md:h-auto ${isWideScreen ? "md:w-[1200px] md:max-h-[88vh] md:flex md:gap-4 md:items-stretch" : "md:w-[760px] md:max-h-[88vh]"}`}
               onClick={(e) => e.stopPropagation()}
             >
-              <InspectorPanel
-                activeWidget={activeWidget}
-                layout={layout}
-                onClose={() => setActiveSettingsId(null)}
-                updateLayoutGrid={updateLayoutGrid}
-                updateOpacity={updateOpacity}
-                updateConfig={updateConfig}
-                updateLabel={updateLabel}
-                copyWidgetToClipboard={copyWidgetToClipboard}
-                removeWidget={removeWidget}
-                citySearchQuery={citySearchQuery}
-                citySearchResults={citySearchResults}
-                isSearchingCity={isSearchingCity}
-                searchCity={searchCity}
-                setCitySearchResults={setCitySearchResults}
-                setCitySearchQuery={setCitySearchQuery}
-                buttonTab={buttonTab}
-                setButtonTab={setButtonTab}
-              />
+              <div className={isWideScreen ? "md:flex-1 md:min-w-0 md:max-h-[88vh] h-full md:h-auto" : "w-full h-full"}>
+                <InspectorPanel
+                  activeWidget={activeWidget}
+                  layout={layout}
+                  onClose={() => setActiveSettingsId(null)}
+                  updateLayoutGrid={updateLayoutGrid}
+                  updateOpacity={updateOpacity}
+                  updateConfig={updateConfig}
+                  updateLabel={updateLabel}
+                  copyWidgetToClipboard={copyWidgetToClipboard}
+                  removeWidget={removeWidget}
+                  citySearchQuery={citySearchQuery}
+                  citySearchResults={citySearchResults}
+                  isSearchingCity={isSearchingCity}
+                  searchCity={searchCity}
+                  setCitySearchResults={setCitySearchResults}
+                  setCitySearchQuery={setCitySearchQuery}
+                  buttonTab={buttonTab}
+                  setButtonTab={setButtonTab}
+                  showPreview={!isWideScreen}
+                />
+              </div>
+              {/* Breites Layout: Live-Vorschau als eigene Spalte — sichtbar in
+                  ALLEN Tabs (auch Text & Farbe wirken sofort). */}
+              {isWideScreen && (
+                <div className="hidden md:block w-[440px] shrink-0 max-h-[88vh] overflow-y-auto rounded-2xl bg-[var(--mf-surface-2)] border border-[var(--mf-bdr)]/10 shadow-2xl p-5">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--mf-fg)]/55 mb-2.5">{t("Live-Vorschau")}</div>
+                  <WidgetPreview
+                    type={activeWidget.type}
+                    config={activeWidget.config}
+                    bgOpacity={activeWidget.bgOpacity}
+                    gridW={activeWidget.w}
+                    gridH={activeWidget.h}
+                  />
+                </div>
+              )}
             </div>
           </div>
         );
