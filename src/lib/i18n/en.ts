@@ -1770,5 +1770,26 @@ export const EN: Record<string, string> = {
   "Balken unten": "Bar at the bottom",
   "Kreis rechts": "Ring on the right",
   "% im Kreis anzeigen": "Show % inside the ring",
+  "Status-Karte bearbeiten": "Edit status card",
+  "Live-Vorschau": "Live preview",
+  "Fertig": "Done",
+  "Live-Vorschau mit echten Daten — die Karte wird hier auch gezeigt, wenn das Ereignis gerade nicht aktiv ist.":
+    "Live preview with real data — the card is shown here even while the event is not active.",
+  "Zustand jetzt:": "State right now:",
+  "Live-Vorschau mit echten Daten — Größe hier ist nur zum Ausprobieren, die echte Kachel bestimmt die Maße.":
+    "Live preview with real data — the size here is just for trying things out, the real tile sets the dimensions.",
+  "Änderungen werden erst mit Übernehmen gespeichert.": "Changes are only saved when you hit Apply.",
+  "Schrift skaliert mit der Breite (responsive) — genau wie auf dem Display.":
+    "Font scales with the width (responsive) — exactly like on the display.",
+  "Schrift fest:": "Fixed font:",
+  "Manuell": "Manual",
+  "Raster": "Grid",
+  "Verbundenes Display — Canvas übernimmt das echte Seitenverhältnis": "Connected display — the canvas adopts its real aspect ratio",
+  "1:1 vom Display gerechnet": "Computed 1:1 from the display",
+  "Maßstab": "scale",
+  "Schrift": "Font",
+  "responsive": "responsive",
+  "klicken zum Übernehmen": "click to use it",
+  "noch keine Entität gewählt": "no entity picked yet",
   "Hoch drehen, bis die Farbe die ganze Karte füllt.": "Turn it up until the colour fills the whole card.",
 };

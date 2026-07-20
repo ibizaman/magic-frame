@@ -505,8 +505,42 @@ export default function ViewEditor({
   const gridAreaRef = useRef<HTMLDivElement | null>(null);
   const [gridMaxRows, setGridMaxRows] = useState<number | undefined>(undefined);
 
-  const rowHeight =
-    orientation === "portrait"
+  // Verbundene Displays (Heartbeat-Registry): optional kann der Canvas das
+  // ECHTE Seitenverhältnis eines Displays annehmen — Widgets wirken dann
+  // proportional wie auf dem Gerät. Default "standard" = exakt wie bisher.
+  const [displays, setDisplays] = useState<{ clientId: string; width: number; height: number; dpr: number }[]>([]);
+  const [canvasDisplay, setCanvasDisplay] = useState<string>("standard");
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      fetch(`/api/view-clients?dashboardId=${encodeURIComponent(viewId)}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) => { if (!cancelled && Array.isArray(d.displays)) setDisplays(d.displays); })
+        .catch(() => {});
+    load();
+    const iv = setInterval(load, 60_000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [viewId]);
+  const activeDisplay = displays.find((d) => d.clientId === canvasDisplay) || null;
+
+  // Canvas-Maße: Standard = bisherige Idealmaße; Display gewählt = echtes
+  // Seitenverhältnis, eingepasst in eine Bounding-Box (nichts wird verzerrt).
+  const displayCanvas = activeDisplay
+    ? (() => {
+        const landscapeish = activeDisplay.width >= activeDisplay.height;
+        const maxW = landscapeish ? 1100 : 500;
+        const maxH = landscapeish ? 700 : 900;
+        const scale = Math.min(maxW / activeDisplay.width, maxH / activeDisplay.height);
+        return { w: Math.round(activeDisplay.width * scale), h: Math.round(activeDisplay.height * scale) };
+      })()
+    : null;
+
+  // rowHeight-Formel generalisiert: (Grid-Höhe − Padding 16 − 23×16 Margins) / 24.
+  // Die bisherigen Konstanten sind exakt dieser Ausdruck mit 900/700er-Canvas
+  // und 65px Metadata-Leiste — Standard bleibt damit unverändert.
+  const rowHeight = displayCanvas
+    ? Math.max(4, Math.floor((displayCanvas.h - (wallpaper.showMetadata !== false ? 65 : 0) - 16 - 368) / 24))
+    : orientation === "portrait"
       ? Math.floor((835 - 16 - 368) / 24)
       : Math.floor((635 - 16 - 368) / 24);
 
@@ -1113,11 +1147,31 @@ export default function ViewEditor({
           </button>
 
           <div className="mx-auto md:max-w-[1200px]">
+            {/* Raster-Quelle: Standard (ideal) oder das echte Seitenverhältnis
+                eines verbundenen Displays — Chips nur sichtbar, wenn Views
+                ihre Größe gemeldet haben. Rein visuell, wird nicht gespeichert. */}
+            {displays.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mb-2.5 justify-center">
+                <span className="text-[10px] uppercase tracking-wider text-[var(--mf-fg)]/40 mr-1">{t("Raster")}</span>
+                <button type="button" onClick={() => setCanvasDisplay("standard")}
+                  className={`rounded-full px-2.5 py-1 text-[11px] border transition-colors ${canvasDisplay === "standard" ? "border-sky-500 bg-sky-500/10 text-sky-400" : "border-[var(--mf-bdr)]/15 text-[var(--mf-fg)]/60 hover:border-[var(--mf-bdr)]/30"}`}>
+                  {t("Standard")}
+                </button>
+                {displays.map((d) => (
+                  <button key={d.clientId} type="button" onClick={() => setCanvasDisplay(d.clientId)}
+                    className={`rounded-full px-2.5 py-1 text-[11px] border transition-colors tabular-nums ${canvasDisplay === d.clientId ? "border-sky-500 bg-sky-500/10 text-sky-400" : "border-[var(--mf-bdr)]/15 text-[var(--mf-fg)]/60 hover:border-[var(--mf-bdr)]/30"}`}
+                    title={t("Verbundenes Display — Canvas übernimmt das echte Seitenverhältnis")}>
+                    {d.width}×{d.height}
+                  </button>
+                ))}
+              </div>
+            )}
             <div
               className={`
                 ${orientation === "portrait" ? "max-w-[500px] h-[900px]" : "w-full h-[700px]"}
                 mx-auto bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl shadow-2xl relative overflow-hidden transition-all duration-300
               `}
+              style={displayCanvas ? { width: displayCanvas.w, height: displayCanvas.h, maxWidth: "none" } : undefined}
             >
               <div
                 className="absolute inset-x-0 top-0 z-0"

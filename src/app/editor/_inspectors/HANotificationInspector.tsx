@@ -7,7 +7,7 @@ import HAEntityInput from '../_components/HAEntityInput';
 import IconPicker from '../_components/IconPicker';
 import CollapsibleSection from '../_components/CollapsibleSection';
 import FeedListEditor from '../_components/FeedListEditor';
-import StatusCardFields from '../_components/StatusCardFields';
+import StatusCardEditorModal from '../_components/StatusCardEditorModal';
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 // Player-Liste für die Now-Playing-Karte. Lokale Entwurfszeilen, damit die
@@ -82,6 +82,9 @@ export default function HANotificationInspector({
   const source: "rules" | "persistent" = (activeWidget.config as any)?.source === "persistent" ? "persistent" : "rules";
   // Accordion: welche Regel ist aufgeklappt (standardmäßig alle zu)
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  // Status-Karten: welche Karte ist im Editor-Modal offen ("new" = anlegen —
+  // die Karte landet erst mit Übernehmen in der Config)
+  const [editCardIdx, setEditCardIdx] = useState<number | "new" | null>(null);
 
   return (
     <div className="space-y-6">
@@ -538,7 +541,7 @@ export default function HANotificationInspector({
                       <span>{t("Rand-Dicke")}</span>
                       <span className="text-fuchsia-400">{Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}px</span>
                    </label>
-                   <input type="range" min={0.5} max={6} step={0.5}
+                   <input type="range" min={0.25} max={6} step={0.25}
                       value={Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}
                       onChange={(e) => updateConfig(activeWidget.i, 'notifyBorderWidth', parseFloat(e.target.value))}
                       className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
@@ -781,26 +784,45 @@ export default function HANotificationInspector({
              return (
                 <div className="space-y-3">
                    {cards.map((card, i) => (
-                      <div key={i} className="rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/[0.03] p-3">
-                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--mf-fg)]/50">
-                               {(card.label || card.statusEntity || t("Karte"))} {!card.statusEntity && `${i + 1}`}
-                            </span>
-                            <button onClick={() => setCards(cards.filter((_, x) => x !== i))}
-                               className="w-7 h-7 flex items-center justify-center rounded text-[var(--mf-fg)]/40 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                               <Trash2 size={13} />
-                            </button>
-                         </div>
-                         <StatusCardFields
-                            value={card}
-                            set={(key, v) => setCards(cards.map((c, x) => (x === i ? { ...c, [key]: v } : c)))}
-                         />
+                      <div key={i} className="flex items-center gap-2 rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/[0.03] p-2.5">
+                         <button type="button" onClick={() => setEditCardIdx(i)} className="flex-1 min-w-0 text-left group">
+                            <div className="text-sm font-medium text-[var(--mf-fg)]/85 truncate group-hover:text-sky-400 transition-colors">
+                               {card.label || card.statusEntity || `${t("Karte")} ${i + 1}`}
+                            </div>
+                            <div className="text-[10px] text-[var(--mf-fg)]/40 truncate">{card.statusEntity || t("noch keine Entität gewählt")}</div>
+                         </button>
+                         <button onClick={() => setEditCardIdx(i)}
+                            className="shrink-0 text-[11px] font-medium text-sky-400 hover:text-sky-300 px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 transition-colors">
+                            {t("Bearbeiten")}
+                         </button>
+                         <button onClick={() => setCards(cards.filter((_, x) => x !== i))}
+                            className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-[var(--mf-fg)]/40 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                            <Trash2 size={13} />
+                         </button>
                       </div>
                    ))}
-                   <button onClick={() => setCards([...cards, {}])}
+                   <button onClick={() => setEditCardIdx("new")}
                       className="text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors py-1">
                       + {t("Status-Karte hinzufügen")}
                    </button>
+                   {editCardIdx !== null && (editCardIdx === "new" || cards[editCardIdx]) && (
+                      <StatusCardEditorModal
+                         card={editCardIdx === "new" ? {} : cards[editCardIdx]}
+                         onSave={(saved) => setCards(editCardIdx === "new" ? [...cards, saved] : cards.map((c, x) => (x === editCardIdx ? saved : c)))}
+                         onClose={() => setEditCardIdx(null)}
+                         host={{
+                            cardOpacity: (activeWidget.config as any)?.cardOpacity ?? 40,
+                            cardBlur: (activeWidget.config as any)?.cardBlur ?? 12,
+                            cardTheme: (activeWidget.config as any)?.cardTheme,
+                            showBorder: (activeWidget.config as any)?.statusShowBorder !== false,
+                            borderColor: (activeWidget.config as any)?.statusBorderColor || "",
+                            borderWidth: Number((activeWidget.config as any)?.statusBorderWidth) || 1,
+                         }}
+                         heightEm={Number(activeWidget.config?.statusCardHeightEm) || 4.5}
+                         font={{ size: Number(activeWidget.config?.fontSize) || 20, responsive: (activeWidget.config as any)?.responsiveText === true }}
+                         gridW={activeWidget.w}
+                      />
+                   )}
                    {cards.length > 0 && (
                       <div className="space-y-3 pt-1">
                          <div>
@@ -846,7 +868,7 @@ export default function HANotificationInspector({
                                   <span>{t("Rand-Dicke")}</span>
                                   <span className="text-sky-400">{Number((activeWidget.config as any)?.statusBorderWidth) || 1}px</span>
                                </label>
-                               <input type="range" min={0.5} max={6} step={0.5}
+                               <input type="range" min={0.25} max={6} step={0.25}
                                   value={Number((activeWidget.config as any)?.statusBorderWidth) || 1}
                                   onChange={(e) => updateConfig(activeWidget.i, 'statusBorderWidth', parseFloat(e.target.value))}
                                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-sky-500 bg-[var(--mf-elev)]/10" />

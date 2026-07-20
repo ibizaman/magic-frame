@@ -376,7 +376,7 @@ export default function HANotificationWidget({
     // Rahmen der Karten: aus / in Regel-(Akzent-)Farbe / eigene Farbe.
     const notifyBorderMode: string = config?.notifyBorder || "off";
     const notifyBorderColor: string = config?.notifyBorderColor || "#ffffff";
-    const notifyBorderWidth = Math.max(0.5, Math.min(6, Number(config?.notifyBorderWidth) || 1.5));
+    const notifyBorderWidth = Math.max(0.25, Math.min(6, Number(config?.notifyBorderWidth) || 1.5));
     const cardBorderFor = (accentColor: string): string | undefined =>
       notifyBorderMode === "accent" ? `${notifyBorderWidth}px solid ${accentColor}`
       : notifyBorderMode === "custom" ? `${notifyBorderWidth}px solid ${notifyBorderColor}`
@@ -511,7 +511,7 @@ export default function HANotificationWidget({
     const statusTop = config?.statusPosition === "top";
     const statusShowBorder = config?.statusShowBorder !== false;
     const statusBorderColor: string = (config?.statusBorderColor as string) || "";
-    const statusBorderWidth = Math.max(0.5, Math.min(6, Number(config?.statusBorderWidth) || 1));
+    const statusBorderWidth = Math.max(0.25, Math.min(6, Number(config?.statusBorderWidth) || 1));
     const statusCards = statusCardsCfg.length > 0 ? statusCardsCfg.map((card, i) => {
         const cardVisible = statusVisibleMap[i] === true;
         return (

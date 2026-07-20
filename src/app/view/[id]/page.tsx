@@ -106,6 +106,42 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
   const triggerMatchRef = useRef<Record<string, boolean>>({});
   const autoHideTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
+  // Display-Heartbeat: meldet Viewport-Größe an die App (In-Memory-Registry),
+  // damit die Karten-Vorschau im Editor optional mit der ECHTEN Display-Größe
+  // rechnen kann. Fire-and-forget — darf den Kiosk niemals stören.
+  useEffect(() => {
+    let cid = "";
+    try {
+      cid = localStorage.getItem("mf-client-id") || "";
+      if (!cid) {
+        cid = Math.random().toString(36).slice(2, 10);
+        localStorage.setItem("mf-client-id", cid);
+      }
+    } catch { cid = "anon"; }
+    const send = () => {
+      try {
+        fetch("/api/view-clients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dashboardId,
+            clientId: cid,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            dpr: window.devicePixelRatio || 1,
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch { /* nie den View brechen */ }
+    };
+    send();
+    const iv = setInterval(send, 60_000);
+    let rt: ReturnType<typeof setTimeout> | undefined;
+    const onResize = () => { clearTimeout(rt); rt = setTimeout(send, 1500); };
+    window.addEventListener("resize", onResize);
+    return () => { clearInterval(iv); clearTimeout(rt); window.removeEventListener("resize", onResize); };
+  }, [dashboardId]);
+
   // Derive each trigger widget's visibility from the live states.
   //  - autoHide = 0 → "show while active": visible exactly while the entity matches.
   //  - autoHide > 0 → "pulse": on the rising edge (became matching) show it, then

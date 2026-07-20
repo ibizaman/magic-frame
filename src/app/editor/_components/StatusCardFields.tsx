@@ -4,6 +4,7 @@ import React from "react";
 import { Trash2 } from "lucide-react";
 import HAEntityInput from "./HAEntityInput";
 import IconPicker from "./IconPicker";
+import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 // Gemeinsame Felder einer Status-Karte — genutzt vom eigenständigen
@@ -39,6 +40,17 @@ export default function StatusCardFields({ value, set }: {
 }) {
   const t = useT();
   const imageMode: string = value.imageMode === "url" || value.imageMode === "icon" ? value.imageMode : "entity";
+  // Live-Zustand des Auslösers — nimmt Neulingen das Raten ("charging" vs "on"):
+  // wir zeigen, was die Entität JETZT meldet, ein Klick übernimmt es.
+  const triggerId: string = (value.statusEntity || "").trim();
+  const live = useHaLiveStates(triggerId ? [triggerId] : [], Boolean(triggerId));
+  const liveState: string = live.states[triggerId]?.state ?? "";
+  const applyState = (s: string) => {
+    const cur = (value.statusStates || "").trim();
+    const list = cur.split(",").map((x: string) => x.trim().toLowerCase()).filter(Boolean);
+    if (list.includes(s.toLowerCase())) return;
+    set("statusStates", cur ? `${cur}, ${s}` : s);
+  };
   const details: { entity?: string; label?: string }[] = Array.isArray(value.statusDetails) ? value.statusDetails : [];
   const setDetail = (idx: number, key: "entity" | "label", v: string) => {
     const next = details.map((d, i) => (i === idx ? { ...d, [key]: v } : d));
@@ -55,6 +67,14 @@ export default function StatusCardFields({ value, set }: {
         <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5 mt-2.5">{t("Aktiv bei Zustand")}</label>
         <input value={value.statusStates || ""} onChange={(e) => set("statusStates", e.target.value)}
           placeholder="on, charging, printing" spellCheck={false} className={INPUT} />
+        {triggerId && liveState && (
+          <button type="button" onClick={() => applyState(liveState)}
+            className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-sky-500/40 bg-sky-500/10 px-2.5 py-1 text-[11px] text-sky-400 hover:bg-sky-500/20 transition-colors">
+            <span className="opacity-70">{t("Zustand jetzt:")}</span>
+            <span className="font-semibold">{liveState}</span>
+            <span className="opacity-70">— {t("klicken zum Übernehmen")}</span>
+          </button>
+        )}
         <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1 px-1">{t("Mehrere mit Komma. Leer = aktiv, sobald der Zustand nicht aus/idle ist. Achtung: binary_sensor-Entitäten melden on/off — nicht charging o. ä.")}</p>
         <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5 mt-2.5">{t("Auffällig bei Zustand")}</label>
         <input value={value.alertStates || ""} onChange={(e) => set("alertStates", e.target.value)}
