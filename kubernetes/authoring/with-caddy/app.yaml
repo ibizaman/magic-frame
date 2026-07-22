@@ -1,0 +1,74 @@
+---
+# Source: magic-frame/templates/app.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-app
+  namespace: magic-frame
+  labels:
+    app: magic-frame-app
+spec:
+  type: ClusterIP
+  ports:
+    - name: mf-port
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: magic-frame-app
+---
+# Source: magic-frame/templates/app.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: magic-frame-app
+  namespace: magic-frame
+  labels:
+    app: magic-frame-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: magic-frame-app
+  strategy:
+    type: Recreate
+  # Inside templates/app.yaml
+  template:
+    metadata:
+      labels:
+        app: magic-frame-app
+      annotations:
+        checksum/config: 865d4176f7c7cf5759e7839dd5184ea90ca061d9ec8927f3683b848a7bcc53a3
+        checksum/secret: 7c42df6c79ad704c43e793450cd118105bc9e66d5a794b841e8121c6592f1687
+    spec:
+      containers:
+        - name: magic-frame-app
+          image: "ghcr.io/jeremiaa/magic-frame-app:latest"
+          imagePullPolicy: Always
+          # Load from BOTH the ConfigMap and the Secret
+          envFrom:
+            - configMapRef:
+                name: magic-frame-env
+            - secretRef:
+                name: magic-frame-secrets
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/configs
+              name: magic-frame-configs-pvc
+            - mountPath: /app/wallpapers
+              name: magic-frame-wallpapers-pvc
+            - mountPath: /caddy/config
+              name: magic-frame-caddy-config-pvc
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-configs-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-configs-pvc
+        - name: magic-frame-wallpapers-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-wallpapers-pvc
+        - name: magic-frame-caddy-config-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-config-pvc

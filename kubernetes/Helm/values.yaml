@@ -1,0 +1,52 @@
+# Namespace setting
+namespace:
+  namespace: magic-frame
+
+# Persistent Storage Configurations
+storage:
+  className: "magic-frame-storage"
+  capacity: "100Mi"
+  # Base path for hostPath volumes
+  hostPathBase: "/var/lib/rancher/k3s/storage"
+
+# Application Image Settings
+image:
+  repository: ghcr.io/jeremiaa/magic-frame-app
+  tag: latest
+  pullPolicy: Always
+
+# nodePort Settings (external access). Change to your needs!
+nodePorts:
+  httpPort: 30080
+  httpsPort: 30443
+  caddyPort: 32019
+
+# Environment Variables
+appConfig:
+  # --- Public Configuration (ConfigMap) ---
+  adminEmail: ""
+  appBaseUrl: ""
+  caddyAdminUrl: "http://magic-frame-caddy:2019"
+  cookieSecure: ""
+  googleClientId: ""
+  msClientId: ""
+  nodeEnv: "production"
+
+  # --- Database Configuration ---
+  dbHost: "magic-frame-db"
+  dbPort: "5432"
+  dbName: "magicdashboard"
+  dbUser: "postgres"
+
+  # --- Sensitive Credentials (Kubernetes Secret) ---
+  adminPassword: ""
+  googleClientSecret: ""
+  msClientSecret: ""
+  openWeatherMapApiKey: ""
+
+  sessionSecret: "YOUR_SESSION_SECRET_HERE" # ########################### CHANGE THIS!
+  dbPassword: "YOUR_SECURE_PASSWORD_HERE" # ############################# CHANGE THIS!
+
+# Toggle Caddy deployment and related configs on or off
+caddy:
+  enabled: "CHOOSE_true_OR_false" # ###################################### CHANGE THIS!

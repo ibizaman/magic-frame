@@ -1,0 +1,198 @@
+# --- App Storage ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-configs-pv
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  claimRef:
+    name: magic-frame-configs-pvc
+    namespace: {{ .Values.namespace.namespace }}
+  storageClassName: {{ .Values.storage.className }}
+  capacity:
+    storage: {{ .Values.storage.capacity }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.storage.hostPathBase }}/magic-frame-configs-pv
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-configs-pvc
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  storageClassName: {{ .Values.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.capacity }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-wallpapers-pv
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  claimRef:
+    name: magic-frame-wallpapers-pvc
+    namespace: {{ .Values.namespace.namespace }}
+  storageClassName: {{ .Values.storage.className }}
+  capacity:
+    storage: {{ .Values.storage.capacity }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.storage.hostPathBase }}/magic-frame-wallpapers-pv
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-wallpapers-pvc
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  storageClassName: {{ .Values.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.capacity }}
+
+# --- Database Storage ---
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-pgdata-pv
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  claimRef:
+    name: magic-frame-pgdata-pvc
+    namespace: {{ .Values.namespace.namespace }}
+  storageClassName: {{ .Values.storage.className }}
+  capacity:
+    storage: {{ .Values.storage.capacity }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.storage.hostPathBase }}/magic-frame-pgdata-pv
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-pgdata-pvc
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  storageClassName: {{ .Values.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.capacity }}
+
+# --- Caddy Storage (Conditional) ---
+{{- if .Values.caddy.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-conf-pv
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  claimRef:
+    name: magic-frame-caddy-conf-pvc
+    namespace: {{ .Values.namespace.namespace }}
+  storageClassName: {{ .Values.storage.className }}
+  capacity:
+    storage: {{ .Values.storage.capacity }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.storage.hostPathBase }}/magic-frame-caddy-conf-pv
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-conf-pvc
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  storageClassName: {{ .Values.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.capacity }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-config-pv
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  claimRef:
+    name: magic-frame-caddy-config-pvc
+    namespace: {{ .Values.namespace.namespace }}
+  storageClassName: {{ .Values.storage.className }}
+  capacity:
+    storage: {{ .Values.storage.capacity }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.storage.hostPathBase }}/magic-frame-caddy-config-pv
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-config-pvc
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  storageClassName: {{ .Values.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.capacity }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-data-pv
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  claimRef:
+    name: magic-frame-caddy-data-pvc
+    namespace: {{ .Values.namespace.namespace }}
+  storageClassName: {{ .Values.storage.className }}
+  capacity:
+    storage: {{ .Values.storage.capacity }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.storage.hostPathBase }}/magic-frame-caddy-data-pv
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-data-pvc
+  namespace: {{ .Values.namespace.namespace }}
+spec:
+  storageClassName: {{ .Values.storage.className }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.capacity }}
+{{- end }}
