@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
+import { describeHaFetchError } from "@/lib/ha/fetch-error";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,7 @@ export async function GET(_: NextRequest, ctx: Ctx) {
     });
     return NextResponse.json({ entityId, items });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
+    return NextResponse.json({ error: describeHaFetchError(err) }, { status: 500 });
   }
 }
 
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     }
     return NextResponse.json({ ok: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
+    return NextResponse.json({ error: describeHaFetchError(err) }, { status: 500 });
   }
 }
 
@@ -122,7 +123,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     }
     return NextResponse.json({ ok: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
+    return NextResponse.json({ error: describeHaFetchError(err) }, { status: 500 });
   }
 }
 
@@ -154,6 +155,6 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
     }
     return NextResponse.json({ ok: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
+    return NextResponse.json({ error: describeHaFetchError(err) }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
+import { describeHaFetchError } from "@/lib/ha/fetch-error";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +78,7 @@ export async function GET() {
     return NextResponse.json({ lists });
   } catch (err: any) {
     return NextResponse.json(
-      { error: err?.message || "Unknown error" },
+      { error: describeHaFetchError(err) },
       { status: 500 },
     );
   }

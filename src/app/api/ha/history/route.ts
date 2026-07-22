@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
+import { describeHaFetchError } from "@/lib/ha/fetch-error";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
   } catch (err: any) {
     console.error("[HA History] error:", err);
     return NextResponse.json(
-      { error: err?.message ?? "Failed" },
+      { error: describeHaFetchError(err) },
       { status: 500 },
     );
   }

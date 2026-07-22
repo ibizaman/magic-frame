@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import WebSocket from "ws";
 import { getAppSettings } from "@/lib/settings/store";
+import { describeHaFetchError } from "@/lib/ha/fetch-error";
 
 export const dynamic = "force-dynamic";
 
@@ -148,6 +149,6 @@ export async function GET() {
     return NextResponse.json({ notifications });
   } catch (err: any) {
     console.error("[ha-notifications] error:", err);
-    return NextResponse.json({ error: err?.message ?? "Failed" }, { status: 500 });
+    return NextResponse.json({ error: describeHaFetchError(err) }, { status: 500 });
   }
 }
