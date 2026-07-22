@@ -120,6 +120,7 @@ export interface WidgetLayoutItem {
     showIfEntity4?: string;
     showIfState4?: string;
     maxNotifications?: number;
+    dismissButton?: 'auto' | 'hover' | 'always' | 'off';
     rules?: any[]; // NotificationRule array
     tintStrength?: number;
     tintDirection?: 'left' | 'right';

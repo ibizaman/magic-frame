@@ -141,6 +141,7 @@ const haNotificationConfig = baseConfig
     frameScale: z.number().optional(),
     timeFormat: z.enum(["auto", "minutes", "hours", "days", "combined"]).optional(),
     showTimers: z.boolean().optional(),
+    dismissButton: z.enum(["auto", "hover", "always", "off"]).optional(),
     // Tint-Design: Stärke + Richtung des Farbverlaufs + optionaler Rahmen
     tintStrength: z.number().optional(),
     tintDirection: z.enum(["left", "right"]).optional(),

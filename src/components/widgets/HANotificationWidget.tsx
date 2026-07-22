@@ -85,6 +85,25 @@ export default function HANotificationWidget({
     const timeFormat: NotifTimeFormat = (config?.timeFormat as NotifTimeFormat) ?? "auto";
     const showTimers: boolean = config?.showTimers !== false;
 
+    // Wegwischen-Knopf: auf einem reinen Bilderrahmen ist das X nur Störung,
+    // auf einem Touch-Panel ist "nur bei Hover" dagegen unauffindbar (Touch
+    // kennt kein Hover). "auto" entscheidet das anhand des Geräts.
+    const dismissMode: string = config?.dismissButton ?? "auto";
+    const [canHover, setCanHover] = useState(true);
+    useEffect(() => {
+        if (typeof window === "undefined" || !window.matchMedia) return;
+        const mq = window.matchMedia("(hover: hover)");
+        const upd = () => setCanHover(mq.matches);
+        upd();
+        mq.addEventListener?.("change", upd);
+        return () => mq.removeEventListener?.("change", upd);
+    }, []);
+    const dismissBtnClass =
+        dismissMode === "off" ? "hidden"
+        : dismissMode === "always" ? "opacity-45 group-hover:opacity-100 transition-opacity"
+        : dismissMode === "hover" ? "opacity-0 group-hover:opacity-100 transition-opacity"
+        : (canHover ? "opacity-0 group-hover:opacity-100 transition-opacity" : "opacity-45 transition-opacity");
+
     // Aktive Timer über shared Hook ziehen
     const { timers: activeTimers, dismissTimer } = useDockedTimers(dashboardId, showTimers);
 
@@ -619,7 +638,7 @@ export default function HANotificationWidget({
                             e.stopPropagation();
                             dismissTimer(timer.id);
                         }}
-                        className={`shrink-0 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded-full ${
+                        className={`shrink-0 ${dismissBtnClass} w-6 h-6 flex items-center justify-center rounded-full ${
                             isLight ? "hover:bg-black/10 text-black/50" : "hover:bg-white/10 text-white/50"
                         }`}
                         title={tr("Timer beenden")}
@@ -647,7 +666,7 @@ export default function HANotificationWidget({
                         e.stopPropagation();
                         dismissTimer(timer.id);
                     }}
-                    className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 flex items-center justify-center rounded-full ${
+                    className={`absolute top-1 right-1 ${dismissBtnClass} w-7 h-7 flex items-center justify-center rounded-full ${
                         isLight ? "hover:bg-black/10 text-black/50" : "hover:bg-white/20 text-white/70"
                     } z-10`}
                     title={tr("Timer beenden")}
@@ -720,20 +739,66 @@ export default function HANotificationWidget({
                     const color = "#60A5FA";
                     const icon = "mdi:bell-ring";
                     const ageStr = n.createdAt ? formatNotifAge(new Date(n.createdAt), timeFormat, nowMs, locale) : "";
+
+                    // Minimal-Design gab es bisher nur für eigene Regeln.
+                    if (isMinimal) {
+                        return (
+                          <div key={n.id} className="group flex gap-[0.8em] items-center mb-[0.6em]">
+                            <span className="shrink-0 w-[4px] rounded-full self-stretch my-1" style={{ backgroundColor: color }}></span>
+                            <div className="flex items-center justify-center h-full opacity-80" style={{ color }}>
+                               <Icon icon={icon} className="text-[1.8em]" />
+                            </div>
+                            <div className="flex flex-col flex-1 min-w-0 justify-center">
+                              <span className={`font-bold leading-tight truncate ${isLight ? 'text-black' : 'text-white'}`} style={{ fontSize: '1em' }}>
+                                {n.title}
+                              </span>
+                              {n.message && (
+                                <span className={`leading-snug line-clamp-2 ${isLight ? 'text-black/70' : 'text-white/70'}`} style={{ fontSize: '0.8em' }}>
+                                  {n.message}
+                                </span>
+                              )}
+                              {ageStr && (
+                                <span className={`${isLight ? 'text-black/50' : 'text-white/50'}`} style={{ fontSize: '0.7em' }}>{ageStr}</span>
+                              )}
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); dismissHaPersistent(n.entityId); }}
+                              className={`shrink-0 ${dismissBtnClass} w-6 h-6 flex items-center justify-center rounded-full ${isLight ? 'hover:bg-black/10 text-black/50' : 'hover:bg-white/10 text-white/50'}`}
+                              title={tr("Wegwischen (auch in HA)")}
+                            >
+                              <Icon icon="lucide:x" width={14} height={14} />
+                            </button>
+                          </div>
+                        );
+                    }
+
                     return (
                         <div
                             key={n.id}
-                            className={`group relative flex items-start gap-[0.8em] w-full rounded-3xl p-[0.6em] shrink-0 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/10') : ''} ${hasBg ? 'shadow-xl' : ''}`}
+                            // items-center statt items-start: sonst klebt das Icon
+                            // oben statt mittig zum Text.
+                            className={`group relative flex items-center gap-[0.8em] w-full rounded-3xl p-[0.6em] shrink-0 overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/10') : ''} ${hasBg ? 'shadow-xl' : ''}`}
                             style={{
                                 backgroundColor: isLight ? `rgba(255,255,255,${cardOpacity / 100})` : `rgba(0,0,0,${cardOpacity / 100})`,
+                                // Design-Einstellungen galten bisher nur für eigene
+                                // Regeln — im Persistent-Modus sahen die Karten immer
+                                // gleich aus, egal was eingestellt war.
+                                ...(isTint ? {
+                                  backgroundImage: tintGradient(color),
+                                  ...(config?.tintAnimate === true
+                                    ? { backgroundSize: "150% 100%", animation: "mf-tint-drift 11s ease-in-out infinite alternate" }
+                                    : {}),
+                                } : {}),
                                 backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : 'none',
                                 boxShadow: hasBg ? `0 8px 32px ${color}15` : 'none',
-                                borderLeft: hasBg ? `0.3em solid ${color}` : 'none',
+                                ...(cardBorderFor(color)
+                                  ? { border: cardBorderFor(color), borderLeft: cardBorderFor(color) }
+                                  : { borderLeft: hasBg && !isTint ? `0.3em solid ${color}` : 'none' }),
                             }}
                         >
                             <button
                               onClick={(e) => { e.stopPropagation(); dismissHaPersistent(n.entityId); }}
-                              className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 flex items-center justify-center rounded-full ${isLight ? 'hover:bg-black/10 text-black/50' : 'hover:bg-white/20 text-white/70'} z-10`}
+                              className={`absolute top-1 right-1 ${dismissBtnClass} w-7 h-7 flex items-center justify-center rounded-full ${isLight ? 'hover:bg-black/10 text-black/50' : 'hover:bg-white/20 text-white/70'} z-10`}
                               title={tr("Wegwischen (auch in HA)")}
                             >
                               <Icon icon="lucide:x" width={14} height={14} />
@@ -802,7 +867,7 @@ export default function HANotificationWidget({
                          </div>
                          <button
                            onClick={(e) => { e.stopPropagation(); dismissAlert(alert.configIndex); }}
-                           className={`shrink-0 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded-full ${isLight ? 'hover:bg-black/10 text-black/50' : 'hover:bg-white/10 text-white/50'}`}
+                           className={`shrink-0 ${dismissBtnClass} w-6 h-6 flex items-center justify-center rounded-full ${isLight ? 'hover:bg-black/10 text-black/50' : 'hover:bg-white/10 text-white/50'}`}
                            title={tr("Wegwischen")}
                          >
                            <Icon icon="lucide:x" width={14} height={14} />
@@ -839,7 +904,7 @@ export default function HANotificationWidget({
                     >
                         <button
                           onClick={(e) => { e.stopPropagation(); dismissAlert(alert.configIndex); }}
-                          className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 flex items-center justify-center rounded-full ${isLight ? 'hover:bg-black/10 text-black/50' : 'hover:bg-white/20 text-white/70'} z-10`}
+                          className={`absolute top-1 right-1 ${dismissBtnClass} w-7 h-7 flex items-center justify-center rounded-full ${isLight ? 'hover:bg-black/10 text-black/50' : 'hover:bg-white/20 text-white/70'} z-10`}
                           title={tr("Wegwischen")}
                         >
                           <Icon icon="lucide:x" width={14} height={14} />

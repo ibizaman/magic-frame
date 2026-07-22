@@ -1791,6 +1791,18 @@ export const EN: Record<string, string> = {
     "Font scales with the width (responsive) — exactly like on the display.",
   "Schrift fest:": "Fixed font:",
   "Manuell": "Manual",
+  "Wegwischen-Knopf":
+    "Dismiss button",
+  "Automatisch (Touch: sichtbar, Maus: bei Hover)":
+    "Automatic (touch: visible, mouse: on hover)",
+  "Nur bei Hover":
+    "Only on hover",
+  "Immer sichtbar":
+    "Always visible",
+  "Aus (reiner Bilderrahmen)":
+    "Off (pure picture frame)",
+  "Das ✕ zum Quittieren. Ohne Touch stört es meist nur — mit Touch findet man es sonst nicht.":
+    "The ✕ that dismisses a card. Without touch it mostly just gets in the way — with touch you would never find it otherwise.",
   "Alben auswählen ({n} gefunden)":
     "Select albums ({n} found)",
   "Mehrere Alben werden zu einer Diashow zusammengeführt; doppelte Fotos erscheinen nur einmal.":

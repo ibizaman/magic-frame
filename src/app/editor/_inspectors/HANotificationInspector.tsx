@@ -210,6 +210,22 @@ export default function HANotificationInspector({
              <p className="text-[11px] text-[var(--mf-fg)]/35 mb-3 leading-snug">
                 {t("Gilt für Alert- und Timer-Kacheln — nicht für Media-, RSS- oder Status-Karten.")}
              </p>
+             <div className="mb-4">
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Wegwischen-Knopf")}</label>
+                <select
+                   value={(activeWidget.config as any)?.dismissButton || 'auto'}
+                   onChange={(e) => updateConfig(activeWidget.i, 'dismissButton', e.target.value)}
+                   className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-fuchsia-500"
+                >
+                   <option value="auto">{t("Automatisch (Touch: sichtbar, Maus: bei Hover)")}</option>
+                   <option value="hover">{t("Nur bei Hover")}</option>
+                   <option value="always">{t("Immer sichtbar")}</option>
+                   <option value="off">{t("Aus (reiner Bilderrahmen)")}</option>
+                </select>
+                <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5 leading-relaxed">
+                   {t("Das ✕ zum Quittieren. Ohne Touch stört es meist nur — mit Touch findet man es sonst nicht.")}
+                </p>
+             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
              {/* Icon-Darstellung (#20) — Defaults = bisheriges Verhalten */}
              <label className="flex items-center gap-3 cursor-pointer group py-1">
