@@ -198,20 +198,45 @@ export default function WallpaperSettingsModal({
                         {immichAlbums && immichAlbums.length > 0 && (
                            <div>
                               <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
-                                 {t("Album auswählen ({n} gefunden)").replace("{n}", String(immichAlbums.length))}
+                                 {t("Alben auswählen ({n} gefunden)").replace("{n}", String(immichAlbums.length))}
                               </label>
-                              <select
-                                 value={wallpaper.immichAlbumId || ''}
-                                 onChange={(e) => setWallpaper({ ...wallpaper, immichAlbumId: e.target.value })}
-                                 className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors cursor-pointer"
-                              >
-                                 <option value="">{t("— Album wählen —")}</option>
-                                 {immichAlbums.map((al) => (
-                                    <option key={al.id} value={al.id}>
-                                       {al.albumName} ({al.assetCount} {t("Fotos")})
-                                    </option>
-                                 ))}
-                              </select>
+                              {/* #40: Mehrfachauswahl. Alte Views mit einem
+                                  einzelnen immichAlbumId werden hier weiter
+                                  korrekt angehakt und beim ersten Klick
+                                  sauber in die Liste überführt. */}
+                              <div className="max-h-56 overflow-y-auto rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-surface)] divide-y divide-[var(--mf-bdr)]/5">
+                                 {immichAlbums.map((al) => {
+                                    const selected: string[] = Array.isArray(wallpaper.immichAlbumIds) && wallpaper.immichAlbumIds.length > 0
+                                       ? wallpaper.immichAlbumIds
+                                       : (wallpaper.immichAlbumId ? [wallpaper.immichAlbumId] : []);
+                                    const checked = selected.includes(al.id);
+                                    return (
+                                       <label key={al.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-[var(--mf-elev)]/5 transition-colors">
+                                          <input
+                                             type="checkbox"
+                                             checked={checked}
+                                             onChange={() => {
+                                                const next = checked
+                                                   ? selected.filter((x) => x !== al.id)
+                                                   : [...selected, al.id];
+                                                setWallpaper({
+                                                   ...wallpaper,
+                                                   immichAlbumIds: next,
+                                                   // Einzelfeld mitführen: ältere Clients/Backups lesen es noch.
+                                                   immichAlbumId: next[0] || "",
+                                                });
+                                             }}
+                                             className="w-4 h-4 rounded accent-blue-500 shrink-0"
+                                          />
+                                          <span className="text-sm text-[var(--mf-fg)]/85 truncate flex-1">{al.albumName}</span>
+                                          <span className="text-[11px] text-[var(--mf-fg)]/35 shrink-0 tabular-nums">{al.assetCount} {t("Fotos")}</span>
+                                       </label>
+                                    );
+                                 })}
+                              </div>
+                              <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2 px-1">
+                                 {t("Mehrere Alben werden zu einer Diashow zusammengeführt; doppelte Fotos erscheinen nur einmal.")}
+                              </p>
                            </div>
                         )}
 
@@ -221,11 +246,19 @@ export default function WallpaperSettingsModal({
                            </p>
                         )}
 
-                        {wallpaper.immichAlbumId && (
-                           <p className="text-[11px] text-[var(--mf-fg)]/30 px-1 font-mono">
-                              {t("Ausgewählte ID:")} {wallpaper.immichAlbumId}
-                           </p>
-                        )}
+                        {(() => {
+                           const sel: string[] = Array.isArray(wallpaper.immichAlbumIds) && wallpaper.immichAlbumIds.length > 0
+                              ? wallpaper.immichAlbumIds
+                              : (wallpaper.immichAlbumId ? [wallpaper.immichAlbumId] : []);
+                           if (sel.length === 0) return null;
+                           return (
+                              <p className="text-[11px] text-[var(--mf-fg)]/30 px-1 font-mono break-all">
+                                 {sel.length === 1
+                                    ? `${t("Ausgewählte ID:")} ${sel[0]}`
+                                    : `${sel.length} ${t("Alben ausgewählt")}`}
+                              </p>
+                           );
+                        })()}
                      </div>
                    ) : (
                      <div>

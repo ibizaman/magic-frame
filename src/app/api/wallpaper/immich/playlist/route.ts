@@ -18,58 +18,131 @@ export const dynamic = 'force-dynamic';
 //   people     → POST /api/search/metadata {personIds}
 // Alle Pfade liefern Immich-Assets mit (optional) exifInfo — die Metadata-/
 // Proxy-Logik darunter bleibt identisch.
+// Wie viele Bilder EIN Abruf ausliefert. Bewusst begrenzt: die Liste geht als
+// JSON an jedes Display, auch an schwache Tizen-TVs (~240 Byte pro Eintrag).
+const MAX_PLAYLIST = 1500;
+// Wie viele Assets wir aus Immich HOLEN, bevor gemischt wird. Deutlich höher
+// als die Auslieferung — nur so hat auch Foto Nr. 4999 dieselbe Chance,
+// gezogen zu werden. Vorher war hier bei 4000 Schluss (Rest unerreichbar).
+const MAX_SEARCH_PAGES = 20;
+const SEARCH_PAGE_SIZE = 1000;
+
+/** Metadata-Suche mit Seitenlauf — sonst endet ein Album bei 1000 Fotos. */
+async function searchAllPages(baseUrl: string, headers: Record<string, string>, body: any): Promise<any[]> {
+  const out: any[] = [];
+  for (let page = 1; page <= MAX_SEARCH_PAGES; page++) {
+    const r = await fetch(`${baseUrl}/api/search/metadata`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, size: SEARCH_PAGE_SIZE, page }),
+    });
+    if (!r.ok) {
+      if (page === 1) throw new Error(`Immich search ${r.status}`);
+      break; // spätere Seite kaputt → mit dem nehmen, was da ist
+    }
+    const d = await r.json();
+    const items = d?.assets?.items ?? [];
+    out.push(...items);
+    // Immich meldet die nächste Seite; fehlt sie, sind wir durch.
+    if (!d?.assets?.nextPage || items.length === 0) break;
+  }
+  return out;
+}
+
 async function fetchImmichAssets(baseUrl: string, apiKey: string, wp: any): Promise<any[]> {
   const headers = { 'x-api-key': apiKey, 'Accept': 'application/json' };
   const mode = wp.immichMode || 'album';
 
   if (mode === 'favorites' || mode === 'people') {
-    const body: any = { type: 'IMAGE', size: 250, withExif: true };
+    // Vorher fix 250 Treffer — bei vielen Favoriten fiel der Rest weg.
+    const body: any = { type: 'IMAGE', withExif: true };
     if (mode === 'favorites') body.isFavorite = true;
     if (mode === 'people') {
       if (!wp.immichPersonId) throw new Error('Missing personId');
       body.personIds = [wp.immichPersonId];
     }
-    const r = await fetch(`${baseUrl}/api/search/metadata`, {
-      method: 'POST',
-      headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) throw new Error(`Immich search ${r.status}`);
-    const d = await r.json();
-    return d?.assets?.items ?? [];
+    return searchAllPages(baseUrl, headers, body);
   }
 
   if (mode === 'memories') {
-    const r = await fetch(`${baseUrl}/api/memories`, { headers });
-    if (!r.ok) throw new Error(`Immich memories ${r.status}`);
-    const d = await r.json();
-    const list = Array.isArray(d) ? d : [];
+    // #61: /api/memories ohne Parameter liefert ALLE Rückblicke — dadurch
+    // liefen wahllos Fotos statt "heute in früheren Jahren". Immich filtert
+    // serverseitig, wenn man ?for=<Datum> mitgibt; zusätzlich filtern wir
+    // selbst auf Tag+Monat, falls die Immich-Version ?for= ignoriert.
+    const now = new Date();
+    const fetchMemories = async (query: string): Promise<any[]> => {
+      const r = await fetch(`${baseUrl}/api/memories${query}`, { headers });
+      if (!r.ok) throw new Error(`Immich memories ${r.status}`);
+      const d = await r.json();
+      return Array.isArray(d) ? d : [];
+    };
+
+    let list: any[] = [];
+    try {
+      list = await fetchMemories(`?for=${encodeURIComponent(now.toISOString())}`);
+    } catch {
+      list = []; // ältere Immich-Versionen kennen ?for= nicht
+    }
+    if (list.length === 0) list = await fetchMemories('');
+
+    const dayKey = (d: Date) => `${d.getMonth()}-${d.getDate()}`;
+    const today = dayKey(now);
+    const sameDay = list.filter((m: any) => {
+      const at = m?.memoryAt ?? m?.showAt ?? m?.data?.date;
+      if (!at) return false;
+      const d = new Date(at);
+      return !isNaN(d.getTime()) && dayKey(d) === today;
+    });
+
     // Jede Memory hat ein eigenes assets[]-Array — alle zusammenführen.
-    return list.flatMap((m: any) => (Array.isArray(m?.assets) ? m.assets : []));
+    return sameDay.flatMap((m: any) => (Array.isArray(m?.assets) ? m.assets : []));
   }
 
-  // album (default)
-  if (!wp.immichAlbumId) throw new Error('Missing albumId');
-  const r = await fetch(`${baseUrl}/api/albums/${wp.immichAlbumId}`, { headers });
-  if (!r.ok) throw new Error(`Immich album ${r.statusText}`);
-  const d = await r.json();
-  // Immich <= 2.x liefert die Assets direkt im Album-Detail.
-  if (Array.isArray(d?.assets) && d.assets.length > 0) return d.assets;
-  // Immich >= 3.0: Breaking Change — das Album-Detail enthält kein assets[]
-  // mehr (nur noch assetCount). Assets stattdessen über die Metadata-Suche
-  // mit albumIds holen — gleiche Response-Form wie favorites/people
-  // (assets.items); exifInfo via withExif bleibt für die Metadata-Bar erhalten.
-  if ((d?.assetCount ?? 0) > 0) {
-    const sr = await fetch(`${baseUrl}/api/search/metadata`, {
-      method: 'POST',
-      headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ albumIds: [wp.immichAlbumId], type: 'IMAGE', size: 1000, withExif: true }),
-    });
-    if (!sr.ok) throw new Error(`Immich album search ${sr.status}`);
-    const sd = await sr.json();
-    return sd?.assets?.items ?? [];
+  // album (default) — #40: mehrere Alben möglich. immichAlbumIds ist der
+  // neue Weg, immichAlbumId bleibt als Einzel-Fallback bestehen, damit
+  // vorhandene Views unverändert weiterlaufen.
+  const albumIds: string[] = (Array.isArray(wp.immichAlbumIds) ? wp.immichAlbumIds : [])
+    .map((x: any) => String(x || '').trim())
+    .filter(Boolean);
+  if (albumIds.length === 0 && wp.immichAlbumId) albumIds.push(String(wp.immichAlbumId));
+  if (albumIds.length === 0) throw new Error('Missing albumId');
+
+  const perAlbum = await Promise.all(albumIds.map(async (albumId) => {
+    const r = await fetch(`${baseUrl}/api/albums/${albumId}`, { headers });
+    if (!r.ok) {
+      // Ein gelöschtes Album darf die anderen nicht mitreißen.
+      console.warn(`[immich] Album ${albumId} nicht abrufbar (${r.status})`);
+      return [];
+    }
+    const d = await r.json();
+    // Immich <= 2.x liefert die Assets direkt im Album-Detail.
+    if (Array.isArray(d?.assets) && d.assets.length > 0) return d.assets;
+    // Immich >= 3.0: Breaking Change — das Album-Detail enthält kein assets[]
+    // mehr (nur noch assetCount). Assets stattdessen über die Metadata-Suche
+    // mit albumIds holen — gleiche Response-Form wie favorites/people
+    // (assets.items); exifInfo via withExif bleibt für die Metadata-Bar erhalten.
+    if ((d?.assetCount ?? 0) > 0) {
+      try {
+        return await searchAllPages(baseUrl, headers, { albumIds: [albumId], type: 'IMAGE', withExif: true });
+      } catch (e: any) {
+        console.warn(`[immich] Album-Suche ${albumId} fehlgeschlagen: ${e?.message}`);
+        return [];
+      }
+    }
+    return [];
+  }));
+
+  // Zusammenführen und doppelte Assets entfernen (ein Foto kann in mehreren
+  // Alben liegen — sonst käme es doppelt so oft in der Rotation vor).
+  const seen = new Set<string>();
+  const merged: any[] = [];
+  for (const asset of perAlbum.flat()) {
+    const key = asset?.id ?? asset?.deviceAssetId;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(asset);
   }
-  return [];
+  return merged;
 }
 
 export async function GET(req: NextRequest) {
@@ -97,9 +170,16 @@ export async function GET(req: NextRequest) {
 
      if (assets.length === 0) return new NextResponse("No assets found for this Immich source", { status: 404 });
 
-     // Shuffle and select up to 200 assets
-     const shuffled = assets.sort(() => 0.5 - Math.random());
-     const selected = shuffled.slice(0, 200);
+     // Mischen und begrenzen. Das alte Limit von 200 war für große Alben viel
+     // zu knapp — bei 1000+ Fotos sah man nie mehr als ein Fünftel davon.
+     // `sort(() => 0.5 - Math.random())` war zudem kein echtes Mischen
+     // (verzerrt und je nach Engine instabil) → Fisher-Yates.
+     const shuffled = [...assets];
+     for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+     }
+     const selected = shuffled.slice(0, MAX_PLAYLIST);
 
      const playlist = [];
 
