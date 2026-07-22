@@ -62,6 +62,7 @@ export interface WidgetLayoutItem {
     qrScale?: number;
     // Status widget (Auto lädt, Drucker druckt, …)
     statusEntity?: string;
+    statusAccent?: string;
     statusStates?: string;
     alertStates?: string;
     alertPulse?: boolean;

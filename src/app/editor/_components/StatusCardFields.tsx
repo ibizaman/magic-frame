@@ -316,7 +316,7 @@ export default function StatusCardFields({ value, set }: {
       {/* Akzentfarbe */}
       <div className="flex items-center gap-3">
         <span className="text-xs text-[var(--mf-fg)]/70 flex-1">{t("Akzentfarbe")}</span>
-        <input type="color" value={value.color || "#0ea5e9"} onChange={(e) => set("color", e.target.value)}
+        <input type="color" value={value.statusAccent || value.color || "#0ea5e9"} onChange={(e) => set("statusAccent", e.target.value)}
           className="h-9 w-9 rounded cursor-pointer shrink-0 border-0 bg-transparent p-0" />
       </div>
     </div>

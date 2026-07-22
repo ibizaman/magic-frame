@@ -128,7 +128,11 @@ export default function StatusWidget({ config, onVisibilityChange }: {
   const artworkBg = config?.artworkAsTileBg !== false;
   const bgBlur = Math.max(4, Math.min(60, Number(config?.bgBlur) || 16));
   const bgZoom = Math.max(1, Math.min(3, (Number(config?.bgZoom) || 120) / 100));
-  const accent: string = config?.color || "#0ea5e9";
+  // Akzent hat ein eigenes Feld. Vorher lag er auf config.color — dem Feld,
+  // das der Text-&-Farbe-Tab als Textfarbe beschreibt; beim eigenständigen
+  // Widget hingen beide Regler damit aneinander. Rückfall auf color, weil
+  // bestehende Status-KARTEN im Notify-Stapel ihn dort gespeichert haben.
+  const accent: string = config?.statusAccent || config?.color || "#0ea5e9";
   const glass = useGlassStyle(config);
   const isLight = glass.isLight;
   // Host-Modus (Notification-Karte): Host zeichnet Karte/Rand, wir nur Inhalt.

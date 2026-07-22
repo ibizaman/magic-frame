@@ -377,6 +377,7 @@ const statusDetailSlot = z.object({
 
 const statusConfig = baseConfig.extend({
   statusEntity: z.string().optional(),
+  statusAccent: z.string().optional(),
   statusStates: z.string().optional(), // Komma-Liste; leer = aktiv wenn nicht aus/idle
   alertStates: z.string().optional(), // Zustände, bei denen die Karte markant wird (Puls + Tönung)
   alertPulse: z.boolean().optional(), // Tönung pulsiert (Default an)
