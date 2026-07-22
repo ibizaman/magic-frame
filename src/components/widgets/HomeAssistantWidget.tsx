@@ -471,7 +471,7 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
                sliderValue={(openColorModal as string).split('.')[0] === 'cover' ? (statesDict[openColorModal].attributes?.current_position || 0) : (statesDict[openColorModal].attributes?.brightness || 0)}
                sliderMax={(openColorModal as string).split('.')[0] === 'cover' ? 100 : 255}
                supportedModes={statesDict[openColorModal].attributes?.supported_color_modes || []}
-               isLight={config?.cardTheme === 'light'}
+               isLight={glass.isLight}
                accentColor={statesDict[openColorModal].state === 'on' ? (statesDict[openColorModal].attributes?.rgb_color ? `rgb(${statesDict[openColorModal].attributes.rgb_color.join(',')})` : '#facc15') : '#ffffff80'}
                onClose={() => setOpenColorModal(null)}
            />

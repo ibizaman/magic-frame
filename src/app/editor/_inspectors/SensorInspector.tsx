@@ -63,10 +63,11 @@ export function SensorInspector({ widget, updateConfig }: Props) {
         <div>
           <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Kachel-Theme")}</label>
           <select
-            value={cfg.cardTheme === "light" ? "light" : "dark"}
+            value={cfg.cardTheme || "auto"}
             onChange={(e) => updateConfig(widget.i, "cardTheme", e.target.value)}
             className={INPUT}
           >
+            <option value="auto">{t("Automatisch (folgt View)")}</option>
             <option value="dark">{t("Dunkel (Glas)")}</option>
             <option value="light">{t("Hell (weißes Glas)")}</option>
           </select>

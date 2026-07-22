@@ -1,9 +1,23 @@
 import type { CSSProperties } from "react";
+import { useViewTheme } from "./view-theme";
+
+/**
+ * Hell oder dunkel für EIN Widget: feste Wahl im Widget schlägt alles,
+ * sonst greift die zentrale View-Einstellung. Nicht gesetzt = "auto",
+ * und weil der View-Standard "dark" ist, bleibt Bestehendes unverändert.
+ */
+export function useIsLight(config?: GlassConfig): boolean {
+  const viewTheme = useViewTheme();
+  if (config?.cardTheme === "light") return true;
+  if (config?.cardTheme === "dark") return false;
+  return viewTheme === "light";
+}
 
 export type GlassConfig = {
   cardOpacity?: number; // 0..100
   cardBlur?: number; // 0..64 (px)
-  cardTheme?: "dark" | "light";
+  /** "auto"/nicht gesetzt = folgt der zentralen View-Einstellung */
+  cardTheme?: "dark" | "light" | "auto";
 };
 
 export type GlassStyle = {
@@ -27,7 +41,7 @@ export type GlassStyle = {
 export function useGlassStyle(config?: GlassConfig): GlassStyle {
   const cardOpacity = config?.cardOpacity ?? 40;
   const cardBlur = config?.cardBlur ?? 12;
-  const isLight = config?.cardTheme === "light";
+  const isLight = useIsLight(config);
   const hasBg = cardOpacity > 0 || cardBlur > 0;
   const baseRgb = isLight ? "255,255,255" : "0,0,0";
   const borderRgba = isLight ? "0,0,0,0.1" : "255,255,255,0.1";

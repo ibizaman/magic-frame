@@ -177,7 +177,7 @@ export interface WidgetLayoutItem {
     showBorder?: boolean;
     idleHideMinutes?: number;
     cardOpacity?: number;
-    cardTheme?: 'dark' | 'light';
+    cardTheme?: 'dark' | 'light' | 'auto';
     cardBlur?: number;
     design?: 'cards' | 'minimal' | 'tint';
     hideControlButton?: boolean;
@@ -224,6 +224,7 @@ export interface WallpaperConfig {
   immichUrl?: string;
   immichApiKey?: string;
   immichAlbumId?: string;
+  immichAlbumIds?: string[]; // #40: mehrere Alben als Quelle
   immichMode?: "album" | "favorites" | "memories" | "people"; // Immich-Quelle (#16, Schritt 2)
   immichPersonId?: string; // bei immichMode === "people"
   showDateTaken?: boolean; // deprecated, use metaShowDate

@@ -242,12 +242,13 @@ export default function HomeAssistantInspector({
           <span>{t("Kacheln: Theme (Hell/Dunkel)")}</span>
         </label>
         <select
-          value={(activeWidget.config as any)?.cardTheme || "dark"}
+          value={(activeWidget.config as any)?.cardTheme || "auto"}
           onChange={(e) =>
             updateConfig(activeWidget.i, "cardTheme", e.target.value)
           }
           className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-2 mb-4"
         >
+          <option value="auto">{t("Automatisch (folgt View)")}</option>
           <option value="dark">{t("Dunkel (Standard)")}</option>
           <option value="light">{t("Hell (Weißes Glas)")}</option>
         </select>

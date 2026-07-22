@@ -119,7 +119,7 @@ const homeAssistantConfig = baseConfig
   .extend({
     design: z.enum(["cards", "minimal", "tint"]).optional(), // tint = Media-Stil (farbige Tönung)
     cardOpacity: z.number().optional(),
-    cardTheme: z.enum(["dark", "light"]).optional(),
+    cardTheme: z.enum(["dark", "light", "auto"]).optional(),
     cardBlur: z.number().optional(),
     iconFrame: z.boolean().optional(), // Icon-Box an/aus (Default an)
     iconScale: z.number().optional(), // Icon-Größe-Faktor (Default 1)
@@ -134,7 +134,7 @@ const haNotificationConfig = baseConfig
     maxNotifications: z.number().optional(),
     rules: z.array(z.any()).optional(),
     cardOpacity: z.number().optional(),
-    cardTheme: z.enum(["dark", "light"]).optional(),
+    cardTheme: z.enum(["dark", "light", "auto"]).optional(),
     cardBlur: z.number().optional(),
     iconFrame: z.boolean().optional(),
     iconScale: z.number().optional(),
@@ -214,6 +214,7 @@ const imageConfig = baseConfig
   .extend({
     immichSource: z.enum(["global", "view"]).optional(),
     immichAlbumId: z.string().optional(),
+    immichAlbumIds: z.array(z.string()).optional(),
     fit: z.enum(["cover", "contain", "fill", "none", "blur"]).optional(),
     intervalSec: z.number().optional(),
     cornerRadius: z.number().optional(),
@@ -232,7 +233,7 @@ const sensorSlot = z.object({
 const sensorConfig = baseConfig
   .extend({
     design: z.enum(["cards", "grid"]).optional(),
-    cardTheme: z.enum(["dark", "light"]).optional(),
+    cardTheme: z.enum(["dark", "light", "auto"]).optional(),
     cardOpacity: z.number().optional(),
     cardBlur: z.number().optional(),
     iconFrame: z.boolean().optional(),
@@ -343,7 +344,7 @@ const rssConfig = baseConfig.extend({
   titleLines: z.number().optional(),
   descLines: z.number().optional(),
   textOverflow: z.enum(["truncate", "shrink", "scroll"]).optional(), // Titel: abschneiden/verkleinern/scrollen
-  cardTheme: z.enum(["light", "dark"]).optional(), // gesetzt, wenn als Notification-Karte eingebettet
+  cardTheme: z.enum(["light", "dark", "auto"]).optional(), // gesetzt, wenn als Notification-Karte eingebettet
 });
 
 const qrConfig = baseConfig.extend({
@@ -396,7 +397,7 @@ const statusConfig = baseConfig.extend({
   alwaysShow: z.boolean().optional(),
   showState: z.boolean().optional(),
   artworkAsTileBg: z.boolean().optional(), // Bild als Blur-Hintergrund (Default an)
-  cardTheme: z.enum(["light", "dark"]).optional(), // gesetzt, wenn eingebettet
+  cardTheme: z.enum(["light", "dark", "auto"]).optional(), // gesetzt, wenn eingebettet
 });
 
 export const widgetLayoutItemSchema = z.union([

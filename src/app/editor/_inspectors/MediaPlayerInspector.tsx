@@ -223,7 +223,8 @@ export function MediaPlayerInspector({ widget, updateConfig }: Props) {
         <div className="space-y-3 mt-2">
           <div>
             <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Kachel-Theme")}</label>
-            <select value={cfg.cardTheme === "light" ? "light" : "dark"} onChange={(e) => updateConfig(widget.i, "cardTheme", e.target.value)} className={INPUT}>
+            <select value={cfg.cardTheme || "auto"} onChange={(e) => updateConfig(widget.i, "cardTheme", e.target.value)} className={INPUT}>
+              <option value="auto">{t("Automatisch (folgt View)")}</option>
               <option value="dark">{t("Dunkel (Glas)")}</option>
               <option value="light">{t("Hell (weißes Glas)")}</option>
             </select>

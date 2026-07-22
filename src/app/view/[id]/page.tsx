@@ -9,6 +9,7 @@ import "react-resizable/css/styles.css";
 import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 import WallpaperEngine from "@/components/WallpaperEngine";
 import { renderWidget } from "@/components/widgets/renderWidget";
+import { ViewThemeScope } from "@/lib/ui/view-theme";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -455,6 +456,9 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
 
   return (
     <LocaleProvider>
+    {/* Zentrale Hell/Dunkel-Steuerung: löst die View-Einstellung auf und
+        stellt sie allen Widgets bereit, die kein festes Theme haben. */}
+    <ViewThemeScope settings={viewSettings}>
     <div className="relative w-screen h-screen overflow-hidden text-white font-sans bg-black">
       <WallpaperEngine dashboardId={dashboardId} config={wallpaperConfig} />
 
@@ -513,6 +517,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
       </div>
 
     </div>
+    </ViewThemeScope>
     </LocaleProvider>
   );
 }
