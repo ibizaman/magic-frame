@@ -361,7 +361,15 @@ export default function MediaPlayerWidget({
   const hideGraceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!visCbRef.current) return;
-    if (!hideWhenIdle) { visCbRef.current(true); return; }
+    if (!hideWhenIdle) {
+      // Wichtig: eine noch laufende Ausblend-Frist abbrechen. Sonst feuert
+      // sie später und klappt die Karte wieder zu, obwohl gar nicht mehr
+      // ausgeblendet werden soll — sichtbar z. B. beim Umschalten von
+      // "Live" auf "Beispieldaten" in der Editor-Vorschau.
+      if (hideGraceRef.current) { clearTimeout(hideGraceRef.current); hideGraceRef.current = null; }
+      visCbRef.current(true);
+      return;
+    }
     if (effectiveMedia) {
       if (hideGraceRef.current) { clearTimeout(hideGraceRef.current); hideGraceRef.current = null; }
       visCbRef.current(true);
