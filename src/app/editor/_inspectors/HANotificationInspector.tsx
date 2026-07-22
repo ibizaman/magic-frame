@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Trash2, ChevronDown } from 'lucide-react';
+import { Trash2, ChevronDown, SlidersHorizontal, Bell, Timer as TimerIcon, Music, Rss, Activity } from 'lucide-react';
 import type { WidgetLayoutItem } from '../_types';
 import HAEntityInput from '../_components/HAEntityInput';
 import IconPicker from '../_components/IconPicker';
@@ -86,8 +86,64 @@ export default function HANotificationInspector({
   // die Karte landet erst mit Übernehmen in der Config)
   const [editCardIdx, setEditCardIdx] = useState<number | "new" | null>(null);
 
+  const ruleCount = Array.isArray((activeWidget.config as any)?.rules)
+    ? ((activeWidget.config as any).rules as any[]).length
+    : 0;
+
   return (
     <div className="space-y-6">
+       {/* Kachel-Optik — gilt für ALLE Karten im Stapel, deshalb ganz oben */}
+       <CollapsibleSection title="Kachel-Optik" subtitle="Theme, Deckkraft und Blur — diese drei gelten für ALLE Karten im Stapel."
+          defaultOpen={false} accent="#38bdf8" icon={<SlidersHorizontal size={14} />}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+             <div>
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Kacheln: Theme")}</label>
+                <select
+                   value={activeWidget.config?.cardTheme || 'auto'}
+                   onChange={(e) => updateConfig(activeWidget.i, 'cardTheme', e.target.value)}
+                   className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-500"
+                >
+                   <option value="auto">{t("Automatisch (folgt View)")}</option>
+                   <option value="dark">{t("Dunkel (Standard Black)")}</option>
+                   <option value="light">{t("Hell (Weißes Glas)")}</option>
+                </select>
+             </div>
+             <div>
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
+                   <span>{t("Kacheln Deckkraft")}</span>
+                   <span className="text-blue-400">{activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}%</span>
+                </label>
+                <input
+                   type="range" min="0" max="100" value={activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}
+                   onChange={(e) => updateConfig(activeWidget.i, 'cardOpacity', parseInt(e.target.value))}
+                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
+                />
+             </div>
+             <div>
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
+                   <span>{t("Kacheln Blur")}</span>
+                   <span className="text-blue-400">{activeWidget.config?.cardBlur !== undefined ? activeWidget.config.cardBlur : 12}px</span>
+                </label>
+                <input
+                   type="range" min="0" max="40" value={activeWidget.config?.cardBlur !== undefined ? activeWidget.config.cardBlur : 12}
+                   onChange={(e) => updateConfig(activeWidget.i, 'cardBlur', parseInt(e.target.value))}
+                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
+                />
+             </div>
+          </div>
+       </CollapsibleSection>
+
+       {/* Benachrichtigungen — eine Kartenart im Stapel wie jede andere */}
+       <CollapsibleSection
+          title="Benachrichtigungen"
+          subtitle="Alerts aus eigenen Regeln oder direkt aus HA-persistent_notification."
+          defaultOpen={false}
+          accent="#f43f5e"
+          icon={<Bell size={14} />}
+          headerRight={<span className="text-[11px] text-[var(--mf-fg)]/40 tabular-nums whitespace-nowrap">
+             {source === "rules" ? `${ruleCount} ${ruleCount === 1 ? t("Regel") : t("Regeln")}` : t("HA Persistent")}
+          </span>}
+       >
        <div className="bg-[var(--mf-elev)]/5 rounded-xl p-3 border border-[var(--mf-bdr)]/10">
           <label className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-2 uppercase tracking-wider">{t("Quelle")}</label>
           <div className="grid grid-cols-2 gap-2">
@@ -124,46 +180,37 @@ export default function HANotificationInspector({
              </div>
           )}
        </div>
-       <div className="border-b border-[var(--mf-bdr)]/10 pb-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
-             <div>
-                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Kacheln: Theme")}</label>
-                <select
-                   value={activeWidget.config?.cardTheme || 'dark'}
-                   onChange={(e) => updateConfig(activeWidget.i, 'cardTheme', e.target.value)}
-                   className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-500"
-                >
-                   <option value="dark">{t("Dunkel (Standard Black)")}</option>
-                   <option value="light">{t("Hell (Weißes Glas)")}</option>
-                </select>
-             </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 mt-4">
              <div>
                 <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Max. gleichzeitige Alerts")}</label>
                 <input type="number" min="1" max="15" value={activeWidget.config?.maxNotifications || 5} onChange={(e) => updateConfig(activeWidget.i, 'maxNotifications', parseInt(e.target.value))} className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3" />
              </div>
              <div>
-                <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
-                   <span>{t("Kacheln Deckkraft")}</span>
-                   <span className="text-blue-400">{activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}%</span>
-                </label>
-                <input
-                   type="range" min="0" max="100" value={activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}
-                   onChange={(e) => updateConfig(activeWidget.i, 'cardOpacity', parseInt(e.target.value))}
-                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
-                />
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Zeitformat")}</label>
+                <select
+                   value={(activeWidget.config as any)?.timeFormat || 'auto'}
+                   onChange={(e) => updateConfig(activeWidget.i, 'timeFormat', e.target.value)}
+                   className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-fuchsia-500"
+                >
+                   <option value="auto">{t("Automatisch (vor 5 Min.)")}</option>
+                   <option value="minutes">{t("Nur Minuten (vor 120 min)")}</option>
+                   <option value="hours">{t("Nur Stunden (vor 5 h)")}</option>
+                   <option value="days">{t("Nur Tage (vor 3 Tagen)")}</option>
+                   <option value="combined">{t("Kombiniert (vor 1d 2h 5m)")}</option>
+                </select>
              </div>
-             <div>
-                <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
-                   <span>{t("Kacheln Blur")}</span>
-                   <span className="text-blue-400">{activeWidget.config?.cardBlur !== undefined ? activeWidget.config.cardBlur : 12}px</span>
-                </label>
-                <input
-                   type="range" min="0" max="40" value={activeWidget.config?.cardBlur !== undefined ? activeWidget.config.cardBlur : 12}
-                   onChange={(e) => updateConfig(activeWidget.i, 'cardBlur', parseInt(e.target.value))}
-                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
-                />
-             </div>
+          </div>
 
+          {/* Nur die Alert- und Timer-Kacheln: Media/RSS/Status zeigen Bilder
+              statt Icons und bringen ihre eigene Optik mit. */}
+          <div className="mt-5 pt-4 border-t border-[var(--mf-bdr)]/10">
+             <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--mf-fg)]/45 mb-1">
+                {t("Darstellung der Kacheln")}
+             </div>
+             <p className="text-[11px] text-[var(--mf-fg)]/35 mb-3 leading-snug">
+                {t("Gilt für Alert- und Timer-Kacheln — nicht für Media-, RSS- oder Status-Karten.")}
+             </p>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
              {/* Icon-Darstellung (#20) — Defaults = bisheriges Verhalten */}
              <label className="flex items-center gap-3 cursor-pointer group py-1">
                 <div className="relative">
@@ -201,39 +248,77 @@ export default function HANotificationInspector({
                    />
                 </div>
              )}
-             <div>
-                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Zeitformat")}</label>
-                <select
-                   value={(activeWidget.config as any)?.timeFormat || 'auto'}
-                   onChange={(e) => updateConfig(activeWidget.i, 'timeFormat', e.target.value)}
-                   className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-fuchsia-500"
-                >
-                   <option value="auto">{t("Automatisch (vor 5 Min.)")}</option>
-                   <option value="minutes">{t("Nur Minuten (vor 120 min)")}</option>
-                   <option value="hours">{t("Nur Stunden (vor 5 h)")}</option>
-                   <option value="days">{t("Nur Tage (vor 3 Tagen)")}</option>
-                   <option value="combined">{t("Kombiniert (vor 1d 2h 5m)")}</option>
-                </select>
              </div>
-             <div className="flex flex-col justify-center">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                   <input
-                      type="checkbox"
-                      checked={(activeWidget.config as any)?.showTimers !== false}
-                      onChange={(e) => updateConfig(activeWidget.i, 'showTimers', e.target.checked)}
-                      className="appearance-none w-5 h-5 shrink-0 border border-[var(--mf-bdr)]/20 rounded bg-[var(--mf-surface)] checked:bg-emerald-500 checked:border-emerald-500"
-                   />
-                   <span className="text-sm text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)]">
-                      {t("Aktive Timer unten andocken")}
-                   </span>
+          <div className="mt-5 pt-4 border-t border-[var(--mf-bdr)]/10">
+             <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Karten-Stil")}</label>
+          <select value={(activeWidget.config as any)?.design || 'cards'}
+             onChange={(e) => updateConfig(activeWidget.i, 'design', e.target.value)}
+             className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+             <option value="cards">{t("Karten (Standard)")}</option>
+             <option value="minimal">{t("Minimal")}</option>
+             <option value="tint">{t("Media-Stil (farbig getönt)")}</option>
+          </select>
+
+          {(activeWidget.config as any)?.design === 'tint' && (
+             <div className="mt-3">
+                <label className="text-xs font-medium text-[var(--mf-fg)]/60 flex justify-between mb-1.5">
+                   <span>{t("Farbverlauf-Stärke")}</span><span className="text-fuchsia-400">{(activeWidget.config as any)?.tintStrength ?? 45}%</span>
                 </label>
-                <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5 leading-relaxed">
-                   {t("Laufende Timer erscheinen als Notification-Karte mit Countdown, einsortiert unter den Alerts. Start via")}{" "}
-                   <code className="bg-[var(--mf-elev)]/10 px-1 rounded">POST /api/timers?key=…&minutes=10</code>.
-                </p>
+                <input type="range" min="0" max="100" step="5"
+                   value={(activeWidget.config as any)?.tintStrength ?? 45}
+                   onChange={(e) => updateConfig(activeWidget.i, 'tintStrength', parseInt(e.target.value))}
+                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
+                <div className="mt-2">
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Richtung")}</label>
+                   <select value={(activeWidget.config as any)?.tintDirection || 'left'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'tintDirection', e.target.value)}
+                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+                      <option value="left">{t("Von links")}</option>
+                      <option value="right">{t("Von rechts")}</option>
+                   </select>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer mt-2.5">
+                   <input type="checkbox"
+                      checked={(activeWidget.config as any)?.tintAnimate === true}
+                      onChange={(e) => updateConfig(activeWidget.i, 'tintAnimate', e.target.checked)}
+                      className="accent-fuchsia-500" />
+                   <span className="text-xs text-[var(--mf-fg)]/70">{t("Farbverlauf sanft animieren")}</span>
+                </label>
              </div>
+          )}
+
+          {/* Rahmen der Karten */}
+          <div className="mt-3">
+             <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Rahmen")}</label>
+             <div className="flex items-center gap-2">
+                <select value={(activeWidget.config as any)?.notifyBorder || 'off'}
+                   onChange={(e) => updateConfig(activeWidget.i, 'notifyBorder', e.target.value)}
+                   className="flex-1 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
+                   <option value="off">{t("Aus")}</option>
+                   <option value="accent">{t("In Alarm-Farbe")}</option>
+                   <option value="custom">{t("Eigene Farbe")}</option>
+                </select>
+                {(activeWidget.config as any)?.notifyBorder === 'custom' && (
+                   <input type="color" value={(activeWidget.config as any)?.notifyBorderColor || '#ffffff'}
+                      onChange={(e) => updateConfig(activeWidget.i, 'notifyBorderColor', e.target.value)}
+                      className="w-9 h-9 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer shrink-0" />
+                )}
+             </div>
+             {(activeWidget.config as any)?.notifyBorder && (activeWidget.config as any)?.notifyBorder !== 'off' && (
+                <div className="mt-2">
+                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                      <span>{t("Rand-Dicke")}</span>
+                      <span className="text-fuchsia-400">{Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}px</span>
+                   </label>
+                   <input type="range" min={0.25} max={6} step={0.25}
+                      value={Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}
+                      onChange={(e) => updateConfig(activeWidget.i, 'notifyBorderWidth', parseFloat(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
+                </div>
+             )}
           </div>
-       </div>
+          </div>
+          </div>
        {source === "rules" && (
        <>
        <div className="space-y-4">
@@ -479,79 +564,27 @@ export default function HANotificationInspector({
        </button>
        </>
        )}
-
-       {/* Karten-Design — einklappbar */}
-       <CollapsibleSection title="Design" defaultOpen>
-          <select value={(activeWidget.config as any)?.design || 'cards'}
-             onChange={(e) => updateConfig(activeWidget.i, 'design', e.target.value)}
-             className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
-             <option value="cards">{t("Karten (Standard)")}</option>
-             <option value="minimal">{t("Minimal")}</option>
-             <option value="tint">{t("Media-Stil (farbig getönt)")}</option>
-          </select>
-
-          {(activeWidget.config as any)?.design === 'tint' && (
-             <div className="mt-3">
-                <label className="text-xs font-medium text-[var(--mf-fg)]/60 flex justify-between mb-1.5">
-                   <span>{t("Farbverlauf-Stärke")}</span><span className="text-fuchsia-400">{(activeWidget.config as any)?.tintStrength ?? 45}%</span>
-                </label>
-                <input type="range" min="0" max="100" step="5"
-                   value={(activeWidget.config as any)?.tintStrength ?? 45}
-                   onChange={(e) => updateConfig(activeWidget.i, 'tintStrength', parseInt(e.target.value))}
-                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
-                <div className="mt-2">
-                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Richtung")}</label>
-                   <select value={(activeWidget.config as any)?.tintDirection || 'left'}
-                      onChange={(e) => updateConfig(activeWidget.i, 'tintDirection', e.target.value)}
-                      className="w-full bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
-                      <option value="left">{t("Von links")}</option>
-                      <option value="right">{t("Von rechts")}</option>
-                   </select>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer mt-2.5">
-                   <input type="checkbox"
-                      checked={(activeWidget.config as any)?.tintAnimate === true}
-                      onChange={(e) => updateConfig(activeWidget.i, 'tintAnimate', e.target.checked)}
-                      className="accent-fuchsia-500" />
-                   <span className="text-xs text-[var(--mf-fg)]/70">{t("Farbverlauf sanft animieren")}</span>
-                </label>
-             </div>
-          )}
-
-          {/* Rahmen der Karten */}
-          <div className="mt-3">
-             <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Rahmen")}</label>
-             <div className="flex items-center gap-2">
-                <select value={(activeWidget.config as any)?.notifyBorder || 'off'}
-                   onChange={(e) => updateConfig(activeWidget.i, 'notifyBorder', e.target.value)}
-                   className="flex-1 bg-[var(--mf-ovl)]/50 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs p-2 rounded focus:border-fuchsia-500 outline-none">
-                   <option value="off">{t("Aus")}</option>
-                   <option value="accent">{t("In Alarm-Farbe")}</option>
-                   <option value="custom">{t("Eigene Farbe")}</option>
-                </select>
-                {(activeWidget.config as any)?.notifyBorder === 'custom' && (
-                   <input type="color" value={(activeWidget.config as any)?.notifyBorderColor || '#ffffff'}
-                      onChange={(e) => updateConfig(activeWidget.i, 'notifyBorderColor', e.target.value)}
-                      className="w-9 h-9 rounded-lg border border-[var(--mf-bdr)]/10 bg-transparent cursor-pointer shrink-0" />
-                )}
-             </div>
-             {(activeWidget.config as any)?.notifyBorder && (activeWidget.config as any)?.notifyBorder !== 'off' && (
-                <div className="mt-2">
-                   <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
-                      <span>{t("Rand-Dicke")}</span>
-                      <span className="text-fuchsia-400">{Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}px</span>
-                   </label>
-                   <input type="range" min={0.25} max={6} step={0.25}
-                      value={Number((activeWidget.config as any)?.notifyBorderWidth) || 1.5}
-                      onChange={(e) => updateConfig(activeWidget.i, 'notifyBorderWidth', parseFloat(e.target.value))}
-                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 bg-[var(--mf-elev)]/10" />
-                </div>
-             )}
-          </div>
        </CollapsibleSection>
+
+       {/* Timer — ebenfalls eine eigene Kartenart, jetzt auch so dargestellt */}
+       <CollapsibleSection
+          title="Timer"
+          subtitle="Laufende Timer erscheinen als Karte mit Countdown, einsortiert unter den Alerts."
+          defaultOpen={false}
+          accent="#10b981"
+          icon={<TimerIcon size={14} />}
+          headerRight={<Switch checked={(activeWidget.config as any)?.showTimers !== false} onChange={(v) => updateConfig(activeWidget.i, 'showTimers', v)} color="#10b981" />}
+       >
+          <p className="text-[11px] text-[var(--mf-fg)]/40 leading-relaxed">
+             {t("Start via")}{" "}
+             <code className="bg-[var(--mf-elev)]/10 px-1 rounded">POST /api/timers?key=…&minutes=10</code>.
+          </p>
+       </CollapsibleSection>
+
 
        {/* Now-Playing-Karte — einklappbar, standardmäßig zu (neues Opt-in-Feature) */}
        <CollapsibleSection title="Now Playing (Media-Player)" subtitle="Zeigt eine Musik-Karte im Stack, solange ein Player läuft." defaultOpen={false}
+          accent="#d946ef" icon={<Music size={14} />}
           headerRight={<Switch checked={(activeWidget.config as any)?.mediaEnabled !== false} onChange={(v) => updateConfig(activeWidget.i, 'mediaEnabled', v)} color="#d946ef" />}>
           <MediaPlayersEditor
              key={activeWidget.i}
@@ -655,6 +688,7 @@ export default function HANotificationInspector({
 
        {/* Laufende RSS-Karte — einklappbar, standardmäßig zu */}
        <CollapsibleSection title="RSS-Feed" subtitle="Zeigt eine laufende Schlagzeilen-Karte im Stack." defaultOpen={false}
+          accent="#f59e0b" icon={<Rss size={14} />}
           headerRight={<Switch checked={(activeWidget.config as any)?.rssEnabled !== false} onChange={(v) => updateConfig(activeWidget.i, 'rssEnabled', v)} color="#f59e0b" />}>
           <FeedListEditor
              key={activeWidget.i}
@@ -776,7 +810,8 @@ export default function HANotificationInspector({
        </CollapsibleSection>
 
        {/* Status-Karten — einklappbar, standardmäßig zu */}
-       <CollapsibleSection title="Status-Karten" subtitle="Auto lädt, Drucker druckt, Toniebox spielt — Karte mit Bild und Live-Details, solange das Ereignis aktiv ist." defaultOpen={false}
+       <CollapsibleSection title="Status-Karten" subtitle="Auto lädt, Drucker druckt, Toniebox spielt — Karte mit Bild und Live-Details, solange das Ereignis aktiv ist (pro Karte auch dauerhaft möglich)." defaultOpen={false}
+          accent="#0ea5e9" icon={<Activity size={14} />}
           headerRight={<Switch checked={(activeWidget.config as any)?.statusEnabled !== false} onChange={(v) => updateConfig(activeWidget.i, 'statusEnabled', v)} color="#0ea5e9" />}>
           {(() => {
              const cards: any[] = Array.isArray(activeWidget.config?.statusCards) ? (activeWidget.config!.statusCards as any[]) : [];

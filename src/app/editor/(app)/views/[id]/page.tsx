@@ -49,6 +49,8 @@ import {
 } from "@/app/editor/_types";
 import InspectorPanel from "@/app/editor/_components/InspectorPanel";
 import WidgetPreview from "@/app/editor/_components/WidgetPreview";
+import { WIDGET_ACCENT, DEFAULT_ACCENT, widgetIconFor } from "@/app/editor/_components/widget-visuals";
+import { ViewThemeScope, type ViewThemeMode } from "@/lib/ui/view-theme";
 import WallpaperSettingsModal, {
   type ImmichAlbum,
 } from "@/app/editor/_components/WallpaperSettingsModal";
@@ -79,26 +81,6 @@ const WIDGET_CATALOG: {
   { type: "StatusWidget.tsx", label: "Status", icon: <Activity size={16} /> },
 ];
 
-const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }> = {
-  "ClockWidget.tsx":           { hex: "#3b82f6", glow: "rgba(59,130,246,0.25)",  tint: "rgba(59,130,246,0.12)"  }, // blue
-  "WeatherWidget.tsx":         { hex: "#06b6d4", glow: "rgba(6,182,212,0.25)",   tint: "rgba(6,182,212,0.12)"   }, // cyan
-  "CalendarWidget.tsx":        { hex: "#8b5cf6", glow: "rgba(139,92,246,0.25)",  tint: "rgba(139,92,246,0.12)"  }, // violet
-  "HomeAssistantWidget.tsx":   { hex: "#22c55e", glow: "rgba(34,197,94,0.25)",   tint: "rgba(34,197,94,0.12)"   }, // green
-  "HANotificationWidget.tsx":  { hex: "#f97316", glow: "rgba(249,115,22,0.25)",  tint: "rgba(249,115,22,0.12)"  }, // orange
-  "ButtonWidget.tsx":          { hex: "#f59e0b", glow: "rgba(245,158,11,0.25)",  tint: "rgba(245,158,11,0.12)"  }, // amber
-  "TimerWidget.tsx":           { hex: "#10b981", glow: "rgba(16,185,129,0.25)",  tint: "rgba(16,185,129,0.12)"  }, // emerald
-  "MessagesWidget.tsx":        { hex: "#d946ef", glow: "rgba(217,70,239,0.25)",  tint: "rgba(217,70,239,0.12)"  }, // fuchsia
-  "ImageWidget.tsx":           { hex: "#a855f7", glow: "rgba(168,85,247,0.25)",  tint: "rgba(168,85,247,0.12)"  }, // purple
-  "SensorWidget.tsx":          { hex: "#14b8a6", glow: "rgba(20,184,166,0.25)",  tint: "rgba(20,184,166,0.12)"  }, // teal
-  "CameraWidget.tsx":          { hex: "#f43f5e", glow: "rgba(244,63,94,0.25)",   tint: "rgba(244,63,94,0.12)"   }, // rose
-  "MediaPlayerWidget.tsx":     { hex: "#ec4899", glow: "rgba(236,72,153,0.25)",  tint: "rgba(236,72,153,0.12)"  }, // pink
-  "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
-  "TodosWidget.tsx":           { hex: "#6366f1", glow: "rgba(99,102,241,0.25)",  tint: "rgba(99,102,241,0.12)"  }, // indigo
-  "RssWidget.tsx":             { hex: "#f59e0b", glow: "rgba(245,158,11,0.25)",  tint: "rgba(245,158,11,0.12)"  }, // amber
-  "QrWidget.tsx":              { hex: "#06b6d4", glow: "rgba(6,182,212,0.25)",   tint: "rgba(6,182,212,0.12)"   }, // cyan
-  "StatusWidget.tsx":          { hex: "#0ea5e9", glow: "rgba(14,165,233,0.25)",  tint: "rgba(14,165,233,0.12)"  }, // sky
-};
-const DEFAULT_ACCENT = { hex: "#64748b", glow: "rgba(100,116,139,0.2)", tint: "rgba(100,116,139,0.1)" };
 
 /**
  * Editor placeholder body — a low-fidelity skeleton that hints at the
@@ -404,46 +386,6 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
   }
 }
 
-function widgetIconFor(type: string, size = 12): React.ReactNode {
-  switch (type) {
-    case "ClockWidget.tsx":
-      return <ClockIcon size={size} />;
-    case "WeatherWidget.tsx":
-      return <CloudSun size={size} />;
-    case "CalendarWidget.tsx":
-      return <CalendarIcon size={size} />;
-    case "HomeAssistantWidget.tsx":
-      return <Zap size={size} />;
-    case "ButtonWidget.tsx":
-      return <Power size={size} />;
-    case "HANotificationWidget.tsx":
-      return <Bell size={size} />;
-    case "TimerWidget.tsx":
-      return <TimerIcon size={size} />;
-    case "MessagesWidget.tsx":
-      return <MessageSquare size={size} />;
-    case "ImageWidget.tsx":
-      return <ImageIcon size={size} />;
-    case "SensorWidget.tsx":
-      return <Gauge size={size} />;
-    case "CameraWidget.tsx":
-      return <Video size={size} />;
-    case "MediaPlayerWidget.tsx":
-      return <Music size={size} />;
-    case "RssWidget.tsx":
-      return <Rss size={size} />;
-    case "QrWidget.tsx":
-      return <QrCode size={size} />;
-    case "StatusWidget.tsx":
-      return <Activity size={size} />;
-    case "ShoppingListWidget.tsx":
-      return <ShoppingCart size={size} />;
-    case "TodosWidget.tsx":
-      return <ClipboardList size={size} />;
-    default:
-      return null;
-  }
-}
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -1335,6 +1277,9 @@ export default function ViewEditor({
         const activeWidget = layout.find((w) => w.i === activeSettingsId);
         if (!activeWidget) return null;
         return (
+          // Vorschau rechnet mit derselben zentralen Hell/Dunkel-Auflösung
+          // wie der Live-View — sonst lügt sie beim Theme.
+          <ViewThemeScope settings={settings}>
           <div
             className="fixed inset-0 z-[60] flex items-stretch md:items-center md:justify-center bg-[var(--mf-backdrop)]/60 backdrop-blur-sm md:bg-[var(--mf-backdrop)]/40 md:backdrop-blur-none md:p-6"
             onClick={() => setActiveSettingsId(null)}
@@ -1381,6 +1326,7 @@ export default function ViewEditor({
               )}
             </div>
           </div>
+          </ViewThemeScope>
         );
       })()}
 
@@ -1433,6 +1379,73 @@ export default function ViewEditor({
               </select>
               <p className="text-[11px] text-[var(--mf-fg)]/40">{t("Lädt diese View regelmäßig neu — hält Dauer-Displays frisch (leert den Browser-Cache).")}</p>
             </div>
+
+            {/* Zentrale Hell/Dunkel-Steuerung — greift für alle Widgets,
+                die kein festes Theme eingestellt haben. */}
+            <div className="flex flex-col gap-1.5 border-t border-[var(--mf-bdr)]/10 pt-4">
+              <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Hell / Dunkel")}</label>
+              <select
+                value={(settings?.themeMode as ViewThemeMode) ?? "dark"}
+                onChange={(e) => setSettings({ ...settings, themeMode: e.target.value })}
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/20 text-[var(--mf-fg)] text-sm rounded-lg p-2.5"
+              >
+                <option value="dark">{t("Immer dunkel")}</option>
+                <option value="light">{t("Immer hell")}</option>
+                <option value="sun">{t("Nach Sonnenstand (HA)")}</option>
+                <option value="time">{t("Nach Uhrzeit")}</option>
+                <option value="entity">{t("Nach HA-Entität")}</option>
+              </select>
+
+              {settings?.themeMode === "entity" && (
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <input
+                    value={settings?.themeEntity ?? ""}
+                    onChange={(e) => setSettings({ ...settings, themeEntity: e.target.value })}
+                    placeholder="input_boolean.tag"
+                    className="bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/20 text-[var(--mf-fg)] text-sm rounded-lg p-2.5 font-mono text-xs"
+                  />
+                  <input
+                    value={settings?.themeLightState ?? ""}
+                    onChange={(e) => setSettings({ ...settings, themeLightState: e.target.value })}
+                    placeholder={t("Zustand für hell (z. B. on)")}
+                    className="bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/20 text-[var(--mf-fg)] text-sm rounded-lg p-2.5 font-mono text-xs"
+                  />
+                </div>
+              )}
+
+              {(settings?.themeMode === "time" || settings?.themeMode === "sun" || settings?.themeMode === "entity") && (
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <label className="flex flex-col gap-1 text-[11px] text-[var(--mf-fg)]/50">
+                    {t("Hell ab")}
+                    <input type="time" value={settings?.themeLightFrom ?? "07:00"}
+                      onChange={(e) => setSettings({ ...settings, themeLightFrom: e.target.value })}
+                      className="bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/20 text-[var(--mf-fg)] text-sm rounded-lg p-2.5" />
+                  </label>
+                  <label className="flex flex-col gap-1 text-[11px] text-[var(--mf-fg)]/50">
+                    {t("Dunkel ab")}
+                    <input type="time" value={settings?.themeLightTo ?? "20:00"}
+                      onChange={(e) => setSettings({ ...settings, themeLightTo: e.target.value })}
+                      className="bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/20 text-[var(--mf-fg)] text-sm rounded-lg p-2.5" />
+                  </label>
+                </div>
+              )}
+
+              <p className="text-[11px] text-[var(--mf-fg)]/40">
+                {settings?.themeMode === "sun"
+                  ? t("Folgt sun.sun aus Home Assistant. Fehlt die Entität, greifen die Zeiten als Sicherheitsnetz.")
+                  : settings?.themeMode === "entity"
+                    ? t("Folgt einer freien HA-Entität — z. B. einer Szene. Fehlt sie, greifen die Zeiten.")
+                    : t("Gilt für alle Widgets, die auf „Automatisch“ stehen. Widgets mit fest eingestelltem Theme bleiben unberührt.")}
+              </p>
+              <button
+                type="button"
+                onClick={() => setLayout(layout.map((w) => ({ ...w, config: { ...(w.config ?? {}), cardTheme: "auto" } })))}
+                className="mt-1 self-start text-[11px] font-medium text-sky-400 hover:text-sky-300 transition-colors"
+              >
+                {t("Alle Widgets auf „Automatisch“ setzen")}
+              </button>
+            </div>
+
             <p className="text-[11px] text-[var(--mf-fg)]/50 border-t border-[var(--mf-bdr)]/10 pt-3">{t("Nicht vergessen: oben Speichern, sonst greift die Änderung nicht.")}</p>
           </div>
         </div>

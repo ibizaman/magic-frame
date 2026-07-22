@@ -16,6 +16,7 @@ export default function CollapsibleSection({
   subtitle,
   defaultOpen = true,
   accent = "var(--mf-fg)",
+  icon,
   headerRight,
   children,
 }: {
@@ -23,6 +24,8 @@ export default function CollapsibleSection({
   subtitle?: string;
   defaultOpen?: boolean;
   accent?: string;
+  /** Kleines Icon links vom Titel — macht lange Inspektoren scanbar. */
+  icon?: React.ReactNode;
   headerRight?: React.ReactNode; // z. B. ein Ein/Aus-Schalter — togglet die Sektion NICHT
   children: React.ReactNode;
 }) {
@@ -34,14 +37,28 @@ export default function CollapsibleSection({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="flex-1 min-w-0 group text-left"
+          className="flex-1 min-w-0 group text-left flex items-center gap-2.5"
         >
-          <div className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--mf-fg)]/55 group-hover:text-[var(--mf-fg)]/85 transition-colors">
-            {t(title)}
-          </div>
-          {subtitle && (
-            <div className="text-[11px] text-[var(--mf-fg)]/35 mt-0.5 leading-snug">{t(subtitle)}</div>
+          {icon && (
+            <span
+              className="shrink-0 w-7 h-7 rounded-lg border flex items-center justify-center transition-colors"
+              // Hex-Akzent → getönte Fläche; CSS-Variable → neutrale Fläche
+              // (var(--x)1a wäre ungültiges CSS).
+              style={accent.startsWith("#")
+                ? { color: accent, backgroundColor: `${accent}1a`, borderColor: `${accent}33` }
+                : { color: "var(--mf-fg)", backgroundColor: "rgba(127,127,127,0.10)", borderColor: "rgba(127,127,127,0.20)" }}
+            >
+              {icon}
+            </span>
           )}
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--mf-fg)]/55 group-hover:text-[var(--mf-fg)]/85 transition-colors">
+              {t(title)}
+            </span>
+            {subtitle && (
+              <span className="block text-[11px] text-[var(--mf-fg)]/35 mt-0.5 leading-snug">{t(subtitle)}</span>
+            )}
+          </span>
         </button>
         {headerRight && <div className="shrink-0">{headerRight}</div>}
         <button

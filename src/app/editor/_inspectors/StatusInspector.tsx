@@ -19,7 +19,7 @@ export default function StatusInspector({ widget, updateConfig }: Props) {
     <div className="space-y-4">
       <StatusCardFields value={cfg} set={(key, v) => updateConfig(widget.i, key, v)} />
       <p className="text-xs text-[var(--mf-fg)]/40 px-1 leading-relaxed">
-        {t("Die Kachel erscheint nur, wenn das Ereignis aktiv ist — perfekt zum Stapeln mit anderen Widgets.")}
+        {t("Standardmäßig erscheint die Kachel nur bei aktivem Ereignis — perfekt zum Stapeln mit anderen Widgets. Mit „Auch ohne Ereignis anzeigen“ bleibt sie dauerhaft sichtbar.")}
       </p>
     </div>
   );

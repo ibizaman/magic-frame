@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import StatusWidget from "@/components/widgets/StatusWidget";
 import StatusCardFields from "./StatusCardFields";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { useViewTheme } from "@/lib/ui/view-theme";
 
 type Display = { clientId: string; width: number; height: number; dpr: number };
 
@@ -31,6 +32,7 @@ export function StatusCardPreview({ card, host, defaultHeightEm = 5, font, gridW
   gridH?: number;
 }) {
   const t = useT();
+  const viewTheme = useViewTheme();
   // Gestapelt/Zentriert brauchen von Haus aus mehr Höhe für eine ehrliche Vorschau.
   const tall = card.statusLayout === "stack" || card.statusLayout === "center";
   const [widthPct, setWidthPct] = useState(100);
@@ -86,7 +88,9 @@ export function StatusCardPreview({ card, host, defaultHeightEm = 5, font, gridW
     : 0;
   const scale = display && tileW > 0 ? Math.min(1, (availPx - 32) / tileW) : 1;
 
-  const isLight = (host?.cardTheme ?? card.cardTheme) === "light";
+  // "auto"/nicht gesetzt → zentrale View-Einstellung, wie im Live-View.
+  const themeChoice = host?.cardTheme ?? card.cardTheme;
+  const isLight = themeChoice === "light" ? true : themeChoice === "dark" ? false : viewTheme === "light";
   const cardOpacity = host?.cardOpacity ?? 40;
   const cardBlur = host?.cardBlur ?? 12;
   const borderWidth = Math.max(0.25, Math.min(6, Number(host?.borderWidth) || 1));

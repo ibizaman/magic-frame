@@ -6,6 +6,7 @@ import type { WidgetLayoutItem } from "../_types";
 import { widgetTitle, isAutoDefaultLabel } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import CollapsibleSection from "./CollapsibleSection";
+import { accentFor, widgetIconFor } from "./widget-visuals";
 import WidgetPreview from "./WidgetPreview";
 import ClockInspector from "../_inspectors/ClockInspector";
 import WeatherInspector from "../_inspectors/WeatherInspector";
@@ -85,6 +86,7 @@ export default function InspectorPanel(props: InspectorPanelProps) {
   const [tab, setTab] = useState<Tab>("layout");
 
   const typeLabel = t(TYPE_LABELS[activeWidget.type] ?? activeWidget.type.replace("Widget.tsx", ""));
+  const accent = accentFor(activeWidget.type);
 
   // Layout/Text-Tabs sind immer gleichförmig → 2 Spalten. Inhalt nur bei
   // Feld-basierten Widgets (Uhr/Wetter/Companion).
@@ -93,8 +95,14 @@ export default function InspectorPanel(props: InspectorPanelProps) {
   return (
     <div className="h-full md:h-auto md:max-h-[88vh] w-full flex flex-col bg-[var(--mf-surface)] overflow-hidden nodrag md:rounded-2xl md:border md:border-[var(--mf-bdr)]/10 md:shadow-2xl">
       <header className="flex items-center gap-3 px-4 h-14 border-b border-[var(--mf-bdr)]/10 shrink-0">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-[var(--mf-bdr)]/10 flex items-center justify-center text-blue-300 shrink-0">
-          <SlidersHorizontal size={15} />
+        {/* Typ-Icon in der Akzentfarbe des Widgets — dieselbe Zuordnung wie
+            in Palette und Ebenen-Liste, damit man sofort sieht, was man
+            gerade bearbeitet. Custom-Module fallen auf das Regler-Icon zurück. */}
+        <div
+          className="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0"
+          style={{ color: accent.hex, backgroundColor: accent.tint, borderColor: `${accent.hex}33` }}
+        >
+          {widgetIconFor(activeWidget.type, 16) ?? <SlidersHorizontal size={15} />}
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 font-medium">
