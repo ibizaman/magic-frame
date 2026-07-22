@@ -694,7 +694,10 @@ export default function MediaPlayerWidget({
   const cTrack = onArt ? "rgba(255,255,255,0.22)" : (glass.isLight ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.18)");
   // Fortschritts-Farbe: eigener Picker gewinnt, sonst bewusst DEZENT
   // (gedimmtes Weiß/Schwarz im Apple-Stil statt Signal-Blau).
-  const accentPick: string = config?.accentColor || config?.color || "";
+  // NUR der eigene Picker. Der frühere Rückfall auf config.color hieß: wer im
+  // Text-&-Farbe-Tab die Schriftfarbe ändert, verstellt damit die
+  // Fortschrittsleiste — zwei Regler, ein sichtbarer Effekt.
+  const accentPick: string = config?.accentColor || "";
   const cAccent = accentPick || (onArt ? "rgba(255,255,255,0.8)" : glass.isLight ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.75)");
   const cFaint = onArt ? "rgba(255,255,255,0.4)" : (glass.isLight ? "rgba(0,0,0,0.25)" : "rgba(255,255,255,0.35)");
 

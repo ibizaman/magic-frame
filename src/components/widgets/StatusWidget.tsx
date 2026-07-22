@@ -128,16 +128,17 @@ export default function StatusWidget({ config, onVisibilityChange }: {
   const artworkBg = config?.artworkAsTileBg !== false;
   const bgBlur = Math.max(4, Math.min(60, Number(config?.bgBlur) || 16));
   const bgZoom = Math.max(1, Math.min(3, (Number(config?.bgZoom) || 120) / 100));
-  // Akzent hat ein eigenes Feld. Vorher lag er auf config.color — dem Feld,
-  // das der Text-&-Farbe-Tab als Textfarbe beschreibt; beim eigenständigen
-  // Widget hingen beide Regler damit aneinander. Rückfall auf color, weil
-  // bestehende Status-KARTEN im Notify-Stapel ihn dort gespeichert haben.
-  const accent: string = config?.statusAccent || config?.color || "#0ea5e9";
   const glass = useGlassStyle(config);
   const isLight = glass.isLight;
   // Host-Modus (Notification-Karte): Host zeichnet Karte/Rand, wir nur Inhalt.
   const hostRadius = typeof config?.frameRadius === "number" ? config.frameRadius : null;
   const embedded = hostRadius !== null;
+  // Akzent hat ein eigenes Feld. Vorher lag er auf config.color — genau dem
+  // Feld, das der Text-&-Farbe-Tab als Schriftfarbe beschreibt. Der Rückfall
+  // darauf gilt nur für EINGEBETTETE Karten: die haben kein eigenes
+  // Schriftfarbfeld und speichern ihren Akzent dort. Eigenständig wäre es
+  // dieselbe Doppelbelegung wie bei RSS und Media.
+  const accent: string = config?.statusAccent || (embedded ? config?.color : "") || "#0ea5e9";
   const tileRadius = hostRadius ?? 24;
 
   // ── Live-Zustände (eine SSE-Subscription für alles) ──
