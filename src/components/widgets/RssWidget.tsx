@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Rss } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useT, useLocale } from "@/lib/i18n/LocaleProvider";
-import { useIsLight } from "@/lib/ui/glass";
 
 type RssItem = { title: string; link: string; date: string | null; image: string | null; summary?: string | null; source?: string };
 
@@ -92,9 +91,12 @@ export default function RssWidget({ config }: { config?: any }) {
   // Feld, das der Text-&-Farbe-Tab als Textfarbe beschreibt. Beide Regler
   // hingen also aneinander, und eine echte Textfarbe gab es gar nicht.
   const accent: string = config?.rssAccent || "#f59e0b";
-  // Theme-Awareness: im Live-View immer dunkel (weißer Text), aber als Karte im
-  // Notification-Widget kann der Hintergrund hell sein → dann dunkler Text.
-  const isLight = useIsLight(config);
+  // Theme-Awareness: NUR wenn die Kachel wirklich auf hellem Grund sitzt —
+  // also wenn sie als Karte im Notification-Widget eingebettet ist und der
+  // Host cardTheme mitgibt. Eigenständig liegt sie direkt auf dem Wallpaper;
+  // würde sie dem View-Theme folgen, färbte sie ihren Text dunkel, ohne dass
+  // hinter ihr irgendetwas hell wird — und man sieht nichts mehr.
+  const isLight = config?.cardTheme === "light";
   // Textfarbe: gesetzte Farbe gewinnt, sonst passend zum Theme.
   const fg = config?.color || (isLight ? "rgba(15,23,42,0.92)" : "#ffffff");
   const fgDim = isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.55)";
