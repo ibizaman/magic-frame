@@ -19,6 +19,21 @@ import { getCaddyProvider } from "./providers";
  * holen wir ein „Auto-Fill" aus ddns.providerConfig[provider] — damit man nicht
  * den gleichen Token zweimal eintippen muss.
  */
+/**
+ * Adresse, unter der Caddy die App erreicht. In docker-compose heißt der
+ * Service "app", auf Kubernetes je nach Namensschema anders (z. B.
+ * "magic-frame-app"). Statt das Caddyfile von Hand nachzubearbeiten, kann
+ * die Adresse über APP_UPSTREAM gesetzt werden — Standard bleibt app:3000,
+ * bestehende Installationen merken davon nichts. (Frage von @RudiKlein, #24)
+ */
+function appUpstream(): string {
+  const raw = (process.env.APP_UPSTREAM || "").trim();
+  if (!raw) return "app:3000";
+  // Nur Host[:Port] zulassen — das Caddyfile ist eine Konfigurationsdatei,
+  // hier soll niemand zusätzliche Direktiven einschleusen können.
+  return /^[A-Za-z0-9._-]+(:\d{1,5})?$/.test(raw) ? raw : "app:3000";
+}
+
 export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
   caddyfile: string;
   warnings: string[];
@@ -29,7 +44,7 @@ export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
     if (!cfg.customCaddyfile.trim()) {
       warnings.push("Custom-Caddyfile ist leer.");
       return {
-        caddyfile: "# Custom-Modus, aber leeres Caddyfile — fallback auf transparenten Proxy.\n:80 {\n    reverse_proxy app:3000\n}\n",
+        caddyfile: `# Custom-Modus, aber leeres Caddyfile — fallback auf transparenten Proxy.\n:80 {\n    reverse_proxy ${appUpstream()}\n}\n`,
         warnings,
       };
     }
@@ -49,7 +64,7 @@ export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
 
   if (!cfg.enabled || !cfg.domain) {
     lines.push(":80 {");
-    lines.push("    reverse_proxy app:3000");
+    lines.push(`    reverse_proxy ${appUpstream()}`);
     lines.push("}");
     return { caddyfile: lines.join("\n") + "\n", warnings };
   }
@@ -97,7 +112,7 @@ export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
   lines.push(`${domains} {`);
   for (const l of tlsBlock) lines.push(`    ${l}`);
   lines.push("    encode zstd gzip");
-  lines.push("    reverse_proxy app:3000 {");
+  lines.push(`    reverse_proxy ${appUpstream()} {`);
   lines.push("        header_up X-Real-IP {remote_host}");
   lines.push("        header_up X-Forwarded-For {remote_host}");
   lines.push("        header_up X-Forwarded-Proto {scheme}");
@@ -108,7 +123,7 @@ export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
     lines.push("");
     lines.push("# HTTP→HTTPS-Redirect deaktiviert; Caddy lauscht weiter auf :80 mit reverse_proxy.");
     lines.push(":80 {");
-    lines.push("    reverse_proxy app:3000");
+    lines.push(`    reverse_proxy ${appUpstream()}`);
     lines.push("}");
   }
 
