@@ -1,0 +1,81 @@
+{{- if .Values.caddy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: magic-frame-caddy
+  namespace: {{ .Values.namespace.namespace }}
+  labels:
+    app: magic-frame-caddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: magic-frame-caddy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: magic-frame-caddy
+    spec:
+      containers:
+        - name: magic-frame-caddy
+          image: ghcr.io/jeremiaa/magic-frame-caddy
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
+              protocol: TCP
+            - containerPort: 443
+              protocol: UDP
+            - containerPort: 2019
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/caddy
+              name: magic-frame-caddy-config-pvc
+            - mountPath: /data
+              name: magic-frame-caddy-data-pvc
+            - mountPath: /config
+              name: magic-frame-caddy-config-pvc
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-caddy-config-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-config-pvc
+        - name: magic-frame-caddy-data-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-data-pvc
+        - name: magic-frame-caddy-conf-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-conf-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-caddy
+  namespace: {{ .Values.namespace.namespace }}
+  labels:
+    app: magic-frame-caddy
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: {{ .Values.nodePorts.httpPort }}
+    - name: https
+      port: 443
+      targetPort: 443
+      nodePort: {{ .Values.nodePorts.httpsPort }}
+    - name: https-udp
+      protocol: UDP
+      port: 443
+      targetPort: 443
+    - name: caddy-mgm
+      port: 2019
+      targetPort: 2019
+      nodePort: {{ .Values.nodePorts.caddyPort }}
+  selector:
+    app: magic-frame-caddy
+{{- end }}
