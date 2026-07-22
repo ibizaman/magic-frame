@@ -78,6 +78,10 @@ const NO_MULTICOL_CONTENT = new Set<string>([
   "ImageWidget.tsx",
   "SensorWidget.tsx",
   "CameraWidget.tsx",
+  // Die Status-Felder sind EIN zusammenhängender Block (break-inside: avoid),
+  // der sich nicht auf zwei Spalten verteilen lässt — er füllte Spalte 1 und
+  // ließ rechts eine leere Spalte mit nur dem Schlusssatz stehen.
+  "StatusWidget.tsx",
 ]);
 
 export default function InspectorPanel(props: InspectorPanelProps) {
