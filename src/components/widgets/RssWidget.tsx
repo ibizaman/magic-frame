@@ -88,11 +88,15 @@ export default function RssWidget({ config }: { config?: any }) {
   // Zeilen-Limits: 0 = Auto (an Kachelhöhe angepasst), sonst fester Wert.
   const titleLinesCfg = Math.max(0, Math.min(3, Number(config?.titleLines) || 0));
   const descLinesCfg = Math.max(0, Math.min(6, Number(config?.descLines) || 0));
-  const accent: string = config?.color || "#f59e0b";
+  // Akzent hat ein EIGENES Feld. Vorher lag er auf config.color — genau dem
+  // Feld, das der Text-&-Farbe-Tab als Textfarbe beschreibt. Beide Regler
+  // hingen also aneinander, und eine echte Textfarbe gab es gar nicht.
+  const accent: string = config?.rssAccent || "#f59e0b";
   // Theme-Awareness: im Live-View immer dunkel (weißer Text), aber als Karte im
   // Notification-Widget kann der Hintergrund hell sein → dann dunkler Text.
   const isLight = useIsLight(config);
-  const fg = isLight ? "rgba(15,23,42,0.92)" : "#ffffff";
+  // Textfarbe: gesetzte Farbe gewinnt, sonst passend zum Theme.
+  const fg = config?.color || (isLight ? "rgba(15,23,42,0.92)" : "#ffffff");
   const fgDim = isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.55)";
   const fgFaint = isLight ? "rgba(15,23,42,0.45)" : "rgba(255,255,255,0.40)";
   const dotIdle = isLight ? "rgba(15,23,42,0.25)" : "rgba(255,255,255,0.3)";

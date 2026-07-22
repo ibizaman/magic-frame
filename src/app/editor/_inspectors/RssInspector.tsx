@@ -35,7 +35,7 @@ export default function RssInspector({ widget, updateConfig }: Props) {
   const showQr: boolean = cfg.showQr === true;
   const titleLines: number = Number(cfg.titleLines) || 0; // 0 = Auto
   const descLines: number = Number(cfg.descLines) || 0;   // 0 = Auto
-  const color: string = cfg.color ?? "#f59e0b";
+  const color: string = cfg.rssAccent ?? "#f59e0b";
 
   return (
     <div className="space-y-5">
@@ -207,13 +207,13 @@ export default function RssInspector({ widget, updateConfig }: Props) {
           <input
             type="color"
             value={color}
-            onChange={(e) => set("color", e.target.value)}
+            onChange={(e) => set("rssAccent", e.target.value)}
             className="h-10 w-10 rounded cursor-pointer shrink-0 border-0 bg-transparent p-0"
           />
           <input
             type="text"
             value={color}
-            onChange={(e) => set("color", e.target.value)}
+            onChange={(e) => set("rssAccent", e.target.value)}
             className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg px-3 focus:outline-none focus:border-amber-500"
           />
         </div>

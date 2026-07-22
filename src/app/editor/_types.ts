@@ -41,6 +41,7 @@ export interface WidgetLayoutItem {
     linkable?: boolean;
     showQr?: boolean;
     showDots?: boolean;
+    rssAccent?: string;
     titleLines?: number;
     descLines?: number;
     // QR-Code widget

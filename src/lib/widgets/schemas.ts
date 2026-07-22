@@ -342,6 +342,7 @@ const rssConfig = baseConfig.extend({
   linkable: z.boolean().optional(),
   showQr: z.boolean().optional(),
   showDots: z.boolean().optional(),
+  rssAccent: z.string().optional(),
   titleLines: z.number().optional(),
   descLines: z.number().optional(),
   textOverflow: z.enum(["truncate", "shrink", "scroll"]).optional(), // Titel: abschneiden/verkleinern/scrollen

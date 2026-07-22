@@ -557,7 +557,12 @@ export default function HANotificationWidget({
                         showQr: config?.rssShowQr === true,
                         showDots: config?.rssShowDots !== false,
                         textOverflow: config?.rssTextOverflow || "truncate",
-                        color: config?.rssColor || "#f59e0b",
+                        // rssColor war schon immer als AKZENT gemeint (Quelle +
+                        // Punkte). Seit Akzent und Textfarbe getrennt sind,
+                        // muss er auf rssAccent — sonst hätte er plötzlich den
+                        // Fließtext eingefärbt. Die Textfarbe kommt weiter vom
+                        // Karten-Theme.
+                        rssAccent: config?.rssColor || "#f59e0b",
                     }}
                 />
             </div>
