@@ -420,6 +420,34 @@ export default function HANotificationWidget({
     const iconScale = typeof config?.iconScale === "number" ? config.iconScale : 1;
     const frameScale = typeof config?.frameScale === "number" ? config.frameScale : 1;
 
+    /**
+     * Icon einer Alert-/Timer-Kachel. Eine Stelle für alle drei Kartenarten,
+     * damit die Einstellung "Icon im Kasten" nirgends vergessen wird — im
+     * Media-Stil war der runde Kasten vorher fest verdrahtet und die
+     * Einstellung damit wirkungslos.
+     */
+    const renderTileIcon = (iconName: string, tint: string) => {
+        if (!iconFrame) {
+            return <Icon icon={iconName} className="shrink-0 relative z-10"
+                style={{ color: tint, fontSize: `${(isTint ? 1.5 : 1.4) * iconScale}em` }} />;
+        }
+        if (isTint) {
+            return (
+                <div className="shrink-0 rounded-full flex items-center justify-center relative"
+                    style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${tint}26` }}>
+                    <Icon icon={iconName} className="relative z-10" style={{ color: tint, fontSize: `${1.5 * iconScale}em` }} />
+                </div>
+            );
+        }
+        return (
+            <div className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden transition-colors duration-500 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
+                style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${tint}20` }}>
+                <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: tint }}></div>
+                <Icon icon={iconName} className="relative z-10" style={{ color: tint, fontSize: `${1.4 * iconScale}em` }} />
+            </div>
+        );
+    };
+
     if (error) return <div className="text-red-400 text-xs text-center">{error}</div>;
 
     // Wenn Quelle = rules und Regeln noch nicht konfiguriert: Hinweis (auch dann
@@ -673,21 +701,7 @@ export default function HANotificationWidget({
                 >
                     <Icon icon="lucide:x" width={14} height={14} />
                 </button>
-                {iconFrame ? (
-                <div
-                    className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? "border border-black/5" : "border border-white/5") : ""}`}
-                    style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${accent}20` }}
-                >
-                    <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: accent }} />
-                    <Icon
-                        icon="mdi:timer-outline"
-                        className="relative z-10"
-                        style={{ color: accent, fontSize: `${1.4 * iconScale}em` }}
-                    />
-                </div>
-                ) : (
-                <Icon icon="mdi:timer-outline" className="shrink-0 relative z-10" style={{ color: accent, fontSize: `${1.4 * iconScale}em` }} />
-                )}
+                {renderTileIcon("mdi:timer-outline", accent)}
                 <div className="flex flex-col min-w-0 flex-1 gap-[0.25em]">
                     <span
                         style={{ fontSize: "0.9em", color: isLight ? "rgba(0,0,0,0.9)" : "#fff" }}
@@ -803,17 +817,7 @@ export default function HANotificationWidget({
                             >
                               <Icon icon="lucide:x" width={14} height={14} />
                             </button>
-                            {iconFrame ? (
-                            <div
-                              className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
-                              style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${color}20` }}
-                            >
-                              <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: color }}></div>
-                              <Icon icon={icon} className="relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
-                            </div>
-                            ) : (
-                            <Icon icon={icon} className="shrink-0 relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
-                            )}
+                            {renderTileIcon(icon, color)}
                             <div className="flex flex-col min-w-0 flex-1">
                               <span style={{ fontSize: '0.9em', color: isLight ? "rgba(0,0,0,0.9)" : "#fff" }} className="font-bold tracking-tight leading-tight text-ellipsis whitespace-nowrap overflow-hidden">
                                 {n.title}
@@ -909,22 +913,7 @@ export default function HANotificationWidget({
                         >
                           <Icon icon="lucide:x" width={14} height={14} />
                         </button>
-                        {isTint ? (
-                        <div className="shrink-0 rounded-full flex items-center justify-center relative"
-                           style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${color}26` }}>
-                            <Icon icon={icon} className="relative z-10" style={{ color, fontSize: `${1.5 * iconScale}em` }} />
-                        </div>
-                        ) : iconFrame ? (
-                        <div
-                           className={`shrink-0 rounded-[0.8em] flex items-center justify-center relative overflow-hidden transition-colors duration-500 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
-                           style={{ width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em`, backgroundColor: `${color}20` }}
-                        >
-                            <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: color }}></div>
-                            <Icon icon={icon} className="relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
-                        </div>
-                        ) : (
-                        <Icon icon={icon} className="shrink-0 relative z-10" style={{ color, fontSize: `${1.4 * iconScale}em` }} />
-                        )}
+                        {renderTileIcon(icon, color)}
                         <div className="flex flex-col min-w-0 flex-1">
                             <span style={{ fontSize: '0.9em', color: isLight ? "rgba(0,0,0,0.9)" : "#fff" }} className="font-bold tracking-tight leading-tight text-ellipsis whitespace-nowrap overflow-hidden">
                                 {rule.message || `${rule.entityId} Alert!`}
