@@ -86,9 +86,17 @@ class HaBroadcaster extends EventEmitter {
       const base = settings.haUrl.replace(/\/$/, "");
       const wsUrl = base.replace(/^http/i, "ws") + "/api/websocket";
 
-      this.ws = new WebSocket(wsUrl);
+      // Socket LOKAL festhalten: bei einem Reconnect zeigt this.ws sonst
+      // schon auf die neue, noch verbindende Verbindung — ein verspäteter
+      // Handler der alten hat dann auf die neue gesendet und den Prozess
+      // mit "WebSocket is not open: readyState 0" aussteigen lassen.
+      const ws = new WebSocket(wsUrl);
+      this.ws = ws;
+      const send = (payload: any) => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(payload));
+      };
 
-      this.ws.on("message", (data) => {
+      ws.on("message", (data) => {
         let msg: any;
         try {
           msg = JSON.parse(data.toString());
@@ -97,23 +105,19 @@ class HaBroadcaster extends EventEmitter {
         }
 
         if (msg.type === "auth_required") {
-          this.ws!.send(
-            JSON.stringify({ type: "auth", access_token: settings.haToken }),
-          );
+          send({ type: "auth", access_token: settings.haToken });
         } else if (msg.type === "auth_ok") {
           this.connected = true;
           this.connecting = false;
           this.reconnectDelay = 2000;
           this.emit("open");
           // Initialer Snapshot + Event-Subscription
-          this.ws!.send(JSON.stringify({ id: this.msgId++, type: "get_states" }));
-          this.ws!.send(
-            JSON.stringify({
-              id: this.msgId++,
-              type: "subscribe_events",
-              event_type: "state_changed",
-            }),
-          );
+          send({ id: this.msgId++, type: "get_states" });
+          send({
+            id: this.msgId++,
+            type: "subscribe_events",
+            event_type: "state_changed",
+          });
         } else if (msg.type === "result" && Array.isArray(msg.result)) {
           // get_states-Antwort
           for (const entity of msg.result) {
@@ -132,19 +136,21 @@ class HaBroadcaster extends EventEmitter {
         } else if (msg.type === "auth_invalid") {
           console.error("[HA Broadcaster] auth_invalid — HA-Token prüfen.");
           this.connecting = false;
-          this.ws?.close();
+          ws.close();
           // Kein automatischer Reconnect bei Auth-Fehler — sonst DoS auf HA.
           return;
         }
       });
 
-      this.ws.on("close", () => {
+      ws.on("close", () => {
+        // Nur reagieren, wenn das noch DIE aktuelle Verbindung ist.
+        if (this.ws !== ws) return;
         this.connected = false;
         this.connecting = false;
         if (this.subscriberCount > 0) this.scheduleReconnect();
       });
 
-      this.ws.on("error", (err) => {
+      ws.on("error", (err) => {
         console.error("[HA Broadcaster] WS error:", err);
         // close-Event folgt; Reconnect läuft dort.
       });
