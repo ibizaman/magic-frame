@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Trash2 } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Trash2, Upload } from "lucide-react";
 import HAEntityInput from "./HAEntityInput";
 import IconPicker from "./IconPicker";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
@@ -15,6 +15,58 @@ const INPUT =
   "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-sky-500";
 const ENTITY_INPUT =
   "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm p-2 rounded-lg focus:border-sky-500 outline-none";
+
+/**
+ * Lädt ein Bild direkt in Magic Frame hoch und setzt die URL. Der native
+ * Datei-Knopf wird versteckt (seine Beschriftung kommt vom Browser, nicht
+ * von uns) und durch einen eigenen ersetzt.
+ */
+function ImageUploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const t = useT();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const upload = async (file: File) => {
+    setBusy(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/uploads", { method: "POST", body: fd });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d?.error || t("Upload fehlgeschlagen"));
+      onUploaded(d.url);
+    } catch (e: any) {
+      setErr(e?.message || t("Upload fehlgeschlagen"));
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="mt-1.5">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className="sr-only"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }}
+      />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => inputRef.current?.click()}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--mf-bdr)]/15 px-2.5 py-1.5 text-[11px] text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] hover:border-[var(--mf-bdr)]/30 transition-colors disabled:opacity-50"
+      >
+        <Upload size={12} />
+        {busy ? t("Lädt hoch…") : t("Eigenes Bild hochladen")}
+      </button>
+      {err && <p className="text-[10px] text-red-400 mt-1 px-1">{err}</p>}
+    </div>
+  );
+}
 
 function Seg({ value, options, onChange }: { value: string; options: { v: string; label: string }[]; onChange: (v: string) => void }) {
   return (
@@ -122,6 +174,9 @@ export default function StatusCardFields({ value, set }: {
           <div className="mt-2">
             <input value={value.imageUrl || ""} onChange={(e) => set("imageUrl", e.target.value)}
               placeholder="/local/car/auto.png oder https://…" spellCheck={false} className={INPUT} />
+            {/* Eigenes Bild direkt hochladen — erspart das Ablegen im
+                HA-www-Ordner und das Raten von Pfaden. */}
+            <ImageUploadButton onUploaded={(url) => set("imageUrl", url)} />
             <p className="text-[10px] text-[var(--mf-fg)]/40 mt-1 px-1">{t("Pfade aus dem HA-www-Ordner funktionieren direkt: /local/…")}</p>
           </div>
         )}

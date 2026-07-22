@@ -1791,6 +1791,20 @@ export const EN: Record<string, string> = {
     "Font scales with the width (responsive) — exactly like on the display.",
   "Schrift fest:": "Fixed font:",
   "Manuell": "Manual",
+  "Eigenes Bild hochladen":
+    "Upload your own image",
+  "Lädt hoch…":
+    "Uploading…",
+  "Upload fehlgeschlagen":
+    "Upload failed",
+  "Keine Datei empfangen":
+    "No file received",
+  "Nur PNG, JPEG, WebP oder GIF":
+    "PNG, JPEG, WebP or GIF only",
+  "Nicht unterstütztes Bildformat":
+    "Unsupported image format",
+  "Datei ist zu groß":
+    "File is too large",
   "Wegwischen-Knopf":
     "Dismiss button",
   "Automatisch (Touch: sichtbar, Maus: bei Hover)":
