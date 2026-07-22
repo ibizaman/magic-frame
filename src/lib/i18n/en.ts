@@ -220,6 +220,14 @@ export const EN: Record<string, string> = {
   "Immich-Slideshow oder WebDAV/URL-Bild, mit Ken-Burns & Split-View.": "Immich slideshow or WebDAV/URL image, with Ken Burns & split-view.",
   "Mehrere HA-Sensorwerte als Kacheln mit Icon, Farbe & History-Sparkline.": "Multiple HA sensor values as tiles with icon, colour & history sparkline.",
   "HA-Kamera-Entities — Snapshot, MJPEG oder WebRTC-Livestream.": "HA camera entities — snapshot, MJPEG or WebRTC livestream.",
+  "Läuft-gerade-Karte mit Cover, Fortschritt und Steuerung.":
+    "Now-playing card with artwork, progress and controls.",
+  "Schlagzeilen mit Vorschaubild, Teaser und QR zum Weiterlesen.":
+    "Headlines with a thumbnail, teaser and a QR code to read on.",
+  "WLAN, Links & Texte als QR — runde Punkte, Farbverläufe, Icon in der Mitte.":
+    "Wi-Fi, links and text as a QR code — rounded dots, gradients, icon in the middle.",
+  "Gerätekarte mit Bild und Live-Details — wahlweise dauerhaft oder nur bei aktivem Ereignis.":
+    "Device card with a picture and live details — permanently, or only while the event is active.",
   "Keine Sensoren gewählt — im Inspector hinzufügen.": "No sensors selected — add them in the inspector.",
   "Media Player": "Media Player",
   "Kein Media-Player gewählt — im Inspector wählen.": "No media player selected — pick one in the inspector.",
@@ -1752,11 +1760,11 @@ export const EN: Record<string, string> = {
   "Zustand anzeigen": "Show state",
   "Bild als Hintergrund (Blur)": "Picture as background (blur)",
   "Auch ohne Ereignis anzeigen": "Show even without an event",
-  "Die Kachel erscheint nur, wenn das Ereignis aktiv ist — perfekt zum Stapeln mit anderen Widgets.":
-    "The tile only appears while the event is active — perfect for stacking with other widgets.",
+    "Standardmäßig erscheint die Kachel nur bei aktivem Ereignis — perfekt zum Stapeln mit anderen Widgets. Mit „Auch ohne Ereignis anzeigen“ bleibt sie dauerhaft sichtbar.":
+    "By default the tile only appears while the event is active — perfect for stacking with other widgets. With \"Show even without an event\" it stays visible all the time.",
   "Status-Karten": "Status cards",
-  "Auto lädt, Drucker druckt, Toniebox spielt — Karte mit Bild und Live-Details, solange das Ereignis aktiv ist.":
-    "Car charging, printer printing, toniebox playing — a card with picture and live details while the event is active.",
+    "Auto lädt, Drucker druckt, Toniebox spielt — Karte mit Bild und Live-Details, solange das Ereignis aktiv ist (pro Karte auch dauerhaft möglich).":
+    "Car charging, printer printing, toniebox playing — a card with a picture and live details while the event is active (each card can also stay visible permanently).",
   "Karte": "Card",
   "Status-Karte hinzufügen": "Add status card",
   "Pfade aus dem HA-www-Ordner funktionieren direkt: /local/…": "Paths from HA's www folder work directly: /local/…",
@@ -1783,6 +1791,60 @@ export const EN: Record<string, string> = {
     "Font scales with the width (responsive) — exactly like on the display.",
   "Schrift fest:": "Fixed font:",
   "Manuell": "Manual",
+  "Alben auswählen ({n} gefunden)":
+    "Select albums ({n} found)",
+  "Mehrere Alben werden zu einer Diashow zusammengeführt; doppelte Fotos erscheinen nur einmal.":
+    "Several albums are merged into one slideshow; duplicate photos appear only once.",
+  "Alben ausgewählt":
+    "albums selected",
+  "Theme, Deckkraft und Blur — diese drei gelten für ALLE Karten im Stapel.":
+    "Theme, opacity and blur — these three apply to EVERY card in the stack.",
+  "Darstellung der Kacheln":
+    "Tile appearance",
+  "Gilt für Alert- und Timer-Kacheln — nicht für Media-, RSS- oder Status-Karten.":
+    "Applies to alert and timer tiles — not to media, RSS or status cards.",
+  "Kachel-Optik":
+    "Tile look",
+  "Aussehen aller Karten im Stapel — Theme, Deckkraft, Rahmen und Icons.":
+    "How every card in the stack looks — theme, opacity, border and icons.",
+  "Karten-Stil":
+    "Card style",
+  "Alerts aus eigenen Regeln oder direkt aus HA-persistent_notification.":
+    "Alerts from your own rules or straight from HA persistent_notification.",
+  "Regeln":
+    "Rules",
+  "Laufende Timer erscheinen als Karte mit Countdown, einsortiert unter den Alerts.":
+    "Running timers appear as a card with a countdown, sorted below the alerts.",
+  "Start via":
+    "Start via",
+  "Automatisch (folgt View)":
+    "Automatic (follows view)",
+  "Hell / Dunkel":
+    "Light / dark",
+  "Immer dunkel":
+    "Always dark",
+  "Immer hell":
+    "Always light",
+  "Nach Sonnenstand (HA)":
+    "By sun position (HA)",
+  "Nach Uhrzeit":
+    "By time of day",
+  "Nach HA-Entität":
+    "By HA entity",
+  "Zustand für hell (z. B. on)":
+    "State meaning light (e.g. on)",
+  "Hell ab":
+    "Light from",
+  "Dunkel ab":
+    "Dark from",
+  "Folgt sun.sun aus Home Assistant. Fehlt die Entität, greifen die Zeiten als Sicherheitsnetz.":
+    "Follows sun.sun from Home Assistant. If the entity is missing, the times kick in as a safety net.",
+  "Folgt einer freien HA-Entität — z. B. einer Szene. Fehlt sie, greifen die Zeiten.":
+    "Follows any HA entity — a scene, for example. If it is missing, the times kick in.",
+  "Gilt für alle Widgets, die auf „Automatisch“ stehen. Widgets mit fest eingestelltem Theme bleiben unberührt.":
+    "Applies to every widget set to “Automatic”. Widgets with a fixed theme stay untouched.",
+  "Alle Widgets auf „Automatisch“ setzen":
+    "Set all widgets to “Automatic”",
   "Beispieldaten": "Sample data",
   "Beispiel-Benachrichtigung — so sieht ein Alert aus": "Sample notification — this is what an alert looks like",
   "Beispiel-Titel": "Sample track",
@@ -1791,6 +1853,11 @@ export const EN: Record<string, string> = {
   "Fußballtraining": "Football practice",
   "Geburtstag Oma": "Grandma's birthday",
   "Zahnarzt-Termin": "Dentist appointment",
+  "Team-Meeting": "Team meeting",
+  "Yoga-Kurs": "Yoga class",
+  "Elternabend": "Parents' evening",
+  "Kino mit Freunden": "Cinema with friends",
+  "Müllabfuhr": "Bin collection",
   "Zeigt das Widget mit echten Daten, während du unten Einstellungen änderst.":
     "Shows the widget with real data while you change settings below.",
   "Für Community-Module gibt es hier noch keine Live-Vorschau.": "No live preview for community modules here yet.",

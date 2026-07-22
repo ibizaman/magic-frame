@@ -64,21 +64,45 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
   const hideOnEmpty = config?.hideOnEmpty || false;
 
   const [fetchedEvents, setEvents] = useState<CalendarEvent[]>([]);
-  // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo — ein leerer
-  // Kalender zeigt dann Beispiel-Termine in der EIGENEN Formatierung.
-  // Wird nie gespeichert und existiert im Live-View nicht.
-  const events: CalendarEvent[] = (config?.__demo && fetchedEvents.length === 0)
-    ? (() => {
-        const d = (offsetDays: number, h: number, m: number) => {
-          const x = new Date(); x.setDate(x.getDate() + offsetDays); x.setHours(h, m, 0, 0); return x.toISOString();
-        };
-        return [
-          { id: "demo-1", title: t("Fußballtraining"), start: d(0, 18, 0), end: d(0, 19, 30), isAllDay: false },
-          { id: "demo-2", title: t("Geburtstag Oma"), start: d(1, 0, 0), end: d(1, 23, 59), isAllDay: true },
-          { id: "demo-3", title: t("Zahnarzt-Termin"), start: d(2, 9, 30), end: d(2, 10, 0), isAllDay: false },
+  // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo. Echte Termine
+  // bleiben stehen und werden bis zur KONFIGURIERTEN Anzahl mit Beispielen
+  // aufgefüllt — so sieht man das Layout bei voller Liste, auch wenn der
+  // Kalender gerade nur einen Termin hat. Im Live-View existiert das nie.
+  const events: CalendarEvent[] = !config?.__demo
+    ? fetchedEvents
+    : (() => {
+        // Agenda-Modus zeigt genau die nächsten 3 Tage, sonst gilt `limit`.
+        const want = Math.max(1, Math.min(showEmptyDays ? 3 : limit, 12));
+        const missing = want - fetchedEvents.length;
+        if (missing <= 0) return fetchedEvents;
+        const pool = [
+          { title: t("Fußballtraining"), h: 18, m: 0, dur: 90, allDay: false },
+          { title: t("Geburtstag Oma"), h: 0, m: 0, dur: 0, allDay: true },
+          { title: t("Zahnarzt-Termin"), h: 9, m: 30, dur: 30, allDay: false },
+          { title: t("Team-Meeting"), h: 11, m: 0, dur: 60, allDay: false },
+          { title: t("Yoga-Kurs"), h: 19, m: 0, dur: 60, allDay: false },
+          { title: t("Elternabend"), h: 19, m: 30, dur: 90, allDay: false },
+          { title: t("Kino mit Freunden"), h: 20, m: 0, dur: 150, allDay: false },
+          { title: t("Müllabfuhr"), h: 0, m: 0, dur: 0, allDay: true },
         ];
-      })()
-    : fetchedEvents;
+        const at = (offsetDays: number, h: number, m: number, plusMin = 0) => {
+          const x = new Date();
+          x.setDate(x.getDate() + offsetDays);
+          x.setHours(h, m + plusMin, 0, 0);
+          return x.toISOString();
+        };
+        const demo: CalendarEvent[] = Array.from({ length: missing }, (_, i) => {
+          const p = pool[i % pool.length];
+          return {
+            id: `demo-${i}`,
+            title: p.title,
+            start: at(i, p.h, p.m),
+            end: p.allDay ? at(i, 23, 59) : at(i, p.h, p.m, p.dur),
+            isAllDay: p.allDay,
+          };
+        });
+        return [...fetchedEvents, ...demo].sort((a, b) => a.start.localeCompare(b.start));
+      })();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -136,7 +160,9 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedsKey, limit, days, hideOnEmpty, showEmptyDays]);
 
-  if (feeds.length === 0) {
+  // Beide Hinweise überspringen, wenn die Editor-Vorschau Beispieldaten will —
+  // sonst sieht man beim frisch angelegten Widget nur "URL hinterlegen".
+  if (feeds.length === 0 && !config?.__demo) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full text-white/50 text-[0.8em] text-center p-4">
         {t("Bitte Kalender-URL(s) im Editor hinterlegen")}
@@ -144,7 +170,7 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
     );
   }
 
-  if (loading) {
+  if (loading && !config?.__demo) {
      return (
         <div className="flex flex-col items-center justify-center w-full h-full text-white/50 text-[0.8em] animate-pulse">
            {t("Kalender wird gesammelt...")}

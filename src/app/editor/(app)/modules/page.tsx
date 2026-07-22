@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Clock, CloudSun, Calendar, Power, Bell, Timer, MessageSquare, ShoppingCart, ClipboardList, Code2, FileCode, CheckCircle2, ChevronDown, Upload, Trash2, Eye, EyeOff, Zap, Image as ImageIcon, Gauge, Video } from "lucide-react";
+import { Clock, CloudSun, Calendar, Power, Bell, Timer, MessageSquare, ShoppingCart, ClipboardList, Code2, FileCode, CheckCircle2, ChevronDown, Upload, Trash2, Eye, EyeOff, Zap, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode, Activity } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 type CustomModule = {
@@ -41,6 +41,10 @@ const INSTALLED = [
   { key: "image", label: "Bild", desc: "Immich-Slideshow oder WebDAV/URL-Bild, mit Ken-Burns & Split-View.", icon: <ImageIcon size={16} />, accent: "text-purple-300 bg-purple-500/10 border-purple-500/30" },
   { key: "sensor", label: "Sensor", desc: "Mehrere HA-Sensorwerte als Kacheln mit Icon, Farbe & History-Sparkline.", icon: <Gauge size={16} />, accent: "text-teal-300 bg-teal-500/10 border-teal-500/30" },
   { key: "camera", label: "Kamera", desc: "HA-Kamera-Entities — Snapshot, MJPEG oder WebRTC-Livestream.", icon: <Video size={16} />, accent: "text-rose-300 bg-rose-500/10 border-rose-500/30" },
+  { key: "media", label: "Media Player", desc: "Läuft-gerade-Karte mit Cover, Fortschritt und Steuerung.", icon: <Music size={16} />, accent: "text-pink-300 bg-pink-500/10 border-pink-500/30" },
+  { key: "rss", label: "RSS Feed", desc: "Schlagzeilen mit Vorschaubild, Teaser und QR zum Weiterlesen.", icon: <Rss size={16} />, accent: "text-amber-300 bg-amber-500/10 border-amber-500/30" },
+  { key: "qr", label: "QR-Code", desc: "WLAN, Links & Texte als QR — runde Punkte, Farbverläufe, Icon in der Mitte.", icon: <QrCode size={16} />, accent: "text-cyan-300 bg-cyan-500/10 border-cyan-500/30" },
+  { key: "status", label: "Status", desc: "Gerätekarte mit Bild und Live-Details — wahlweise dauerhaft oder nur bei aktivem Ereignis.", icon: <Activity size={16} />, accent: "text-sky-300 bg-sky-500/10 border-sky-500/30" },
 ];
 
 export default function ModulesPage() {
