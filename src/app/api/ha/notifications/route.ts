@@ -92,6 +92,27 @@ function fetchViaWebSocket(haUrl: string, token: string): Promise<HANotification
   });
 }
 
+// HA erlaubt Markdown (und etwas HTML) in Benachrichtigungen. Ungefiltert
+// landete das als "### Sensors must be cleaned … ![image](data:image/png;
+// base64,…)" auf der Kachel — unleserlich, und das eingebettete Bild blies
+// die Antwort auf. Wir machen daraus schlichten Text.
+function markdownToText(input: string): string {
+  let s = String(input ?? "");
+  s = s.replace(/!\[[^\]]*\]\([^)]*\)/g, " ");       // Bilder (oft riesige data:-URIs)
+  s = s.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");     // Links → nur der Text
+  s = s.replace(/<[^>]+>/g, " ");                     // HTML-Tags
+  s = s.replace(/(\*\*|__)(.*?)\1/g, "$2");           // fett
+  s = s.replace(/(\*|_)(.*?)\1/g, "$2");              // kursiv
+  s = s.replace(/~~(.*?)~~/g, "$1");                  // durchgestrichen
+  s = s.replace(/`{1,3}([^`]*)`{1,3}/g, "$1");        // Code
+  s = s.replace(/^\s{0,3}>\s?/gm, "");                // Zitate
+  s = s.replace(/^\s{0,3}[-*+]\s+/gm, "• ");          // Listen
+  // Führende Überschrift wird zum Vorsatz, sonst klebt sie am Fließtext.
+  s = s.replace(/^\s{0,3}#{1,6}\s+([^\n]+)\r?\n+/, "$1 — ");
+  s = s.replace(/^\s{0,3}#{1,6}\s+/gm, "");           // restliche Überschriften
+  return s.replace(/\s+/g, " ").trim();
+}
+
 function toIso(v: string | number | undefined): string {
   if (typeof v === "number") return new Date(v * 1000).toISOString(); // HA liefert Sekunden
   if (typeof v === "string" && v) return v;
@@ -117,8 +138,8 @@ export async function GET() {
         // Form beibehalten: das Widget leitet daraus die notification_id zum
         // Wegklicken ab (dismiss).
         entityId: `persistent_notification.${n.notification_id}`,
-        title: n.title ?? "Benachrichtigung",
-        message: n.message ?? "",
+        title: markdownToText(n.title ?? "") || "Benachrichtigung",
+        message: markdownToText(n.message ?? ""),
         createdAt: toIso(n.created_at),
         status: "notifying",
       }));
