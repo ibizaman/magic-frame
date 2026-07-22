@@ -78,24 +78,36 @@ async function fetchImmichAssets(baseUrl: string, apiKey: string, wp: any): Prom
     };
 
     let list: any[] = [];
+    let serverFiltered = false;
     try {
       list = await fetchMemories(`?for=${encodeURIComponent(now.toISOString())}`);
+      serverFiltered = list.length > 0;
     } catch {
       list = []; // ältere Immich-Versionen kennen ?for= nicht
     }
     if (list.length === 0) list = await fetchMemories('');
 
-    const dayKey = (d: Date) => `${d.getMonth()}-${d.getDate()}`;
-    const today = dayKey(now);
-    const sameDay = list.filter((m: any) => {
-      const at = m?.memoryAt ?? m?.showAt ?? m?.data?.date;
-      if (!at) return false;
-      const d = new Date(at);
-      return !isNaN(d.getTime()) && dayKey(d) === today;
-    });
+    // Hat Immich schon selbst auf heute gefiltert, übernehmen wir das Ergebnis
+    // unverändert. Nur die ungefilterte Notfall-Liste sieben wir selbst — sonst
+    // würde ein abweichender Feldname bei irgendeiner Immich-Version dazu
+    // führen, dass wir ALLES wegwerfen und der Rahmen schwarz bleibt.
+    let use = list;
+    if (!serverFiltered) {
+      const dayKey = (d: Date) => `${d.getMonth()}-${d.getDate()}`;
+      const today = dayKey(now);
+      const sameDay = list.filter((m: any) => {
+        const at = m?.memoryAt ?? m?.showAt ?? m?.data?.date;
+        if (!at) return false;
+        const d = new Date(at);
+        return !isNaN(d.getTime()) && dayKey(d) === today;
+      });
+      // Greift unser Filter ins Leere, obwohl es Rückblicke gibt, kennen wir
+      // das Datumsfeld nicht — dann lieber die alte Anzeige als gar keine.
+      use = sameDay.length > 0 || list.length === 0 ? sameDay : list;
+    }
 
     // Jede Memory hat ein eigenes assets[]-Array — alle zusammenführen.
-    return sameDay.flatMap((m: any) => (Array.isArray(m?.assets) ? m.assets : []));
+    return use.flatMap((m: any) => (Array.isArray(m?.assets) ? m.assets : []));
   }
 
   // album (default) — #40: mehrere Alben möglich. immichAlbumIds ist der
