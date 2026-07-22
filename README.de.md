@@ -209,6 +209,10 @@ Echte Setups auf unterschiedlicher Hardware. Gleiches Projekt, andere Layouts, a
 | **Messages** | Quick-Post (Text + Bild) per REST-API mit TTL |
 | **Shopping** | 3 Quellen: lokal, HA (todo.\*) oder **Todoist** |
 | **Todos** | 3 Quellen: lokal, HA (todo.\*) oder **Todoist** |
+| **Media Player** | Läuft-gerade-Karte — Cover, Fortschritt, Steuerung, mehrere Player stapeln sich |
+| **RSS Feed** | Schlagzeilen mit Vorschaubild und Teaser, QR-Code zum Weiterlesen |
+| **QR Code** | WLAN, Links und Texte — runde Punkte, Farbverläufe, Icon in der Mitte |
+| **Status** | Gerätekarte mit Bild und Live-Details — Auto lädt, Drucker druckt, Toniebox spielt |
 
 ### Externe Integrationen
 - **Home Assistant** mit Live-WebSocket-Entity-Updates

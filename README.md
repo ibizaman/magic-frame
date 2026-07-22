@@ -180,6 +180,10 @@ Real-world setups across different hardware. Same project, different layouts, di
 | **Messages** | Quick post (text + image) via REST API with TTL |
 | **Shopping** | 3 sources: local, HA (todo.\*) or **Todoist** |
 | **Todos** | 3 sources: local, HA (todo.\*) or **Todoist** |
+| **Media Player** | Now-playing card — artwork, progress, controls, several players stack |
+| **RSS Feed** | Headlines with thumbnail and teaser, QR code to carry on reading |
+| **QR Code** | Wi-Fi, links and text — rounded dots, gradients, icon in the middle |
+| **Status** | Device card with picture and live details — car charging, printer printing, toniebox playing |
 
 ### Editor & live view
 
