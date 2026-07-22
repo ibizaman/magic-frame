@@ -692,7 +692,7 @@ export default function ViewEditor({
         setTimeout(() => setSaveStatus(null), 2500);
         return;
       }
-      if (socket) socket.emit("LAYOUT_UPDATED", viewId);
+      // LAYOUT_UPDATED kommt serverseitig aus /api/layout/sync — kein Emit nötig.
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(null), 2000);
     } catch (err) {
@@ -703,28 +703,41 @@ export default function ViewEditor({
     }
   };
 
-  const handleCastToTV = () => {
-    if (socket) {
-      socket.emit("FORCE_NAVIGATE", viewId);
-      alert(`${t("Befehl gesendet: Alle verbundenen Displays wechseln auf")} "${viewName || viewId}".`);
-    } else {
-      alert(t("Keine Verbindung zum WebSocket-Server."));
+  // Steuerbefehle laufen über die API, nicht mehr über den Socket (#63):
+  // der Server schickt sie erst nach bestandener Anmeldung an die Displays.
+  const sendDeviceCommand = async (path: string, body?: Record<string, unknown>) => {
+    try {
+      const res = await fetch(`/api/devices/${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body ?? {}),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(`${t("Befehl fehlgeschlagen")}: ${d?.error || res.status}`);
+        return false;
+      }
+      return true;
+    } catch {
+      alert(t("Netzwerkfehler — Befehl nicht gesendet."));
+      return false;
     }
   };
 
-  const handleStopCast = () => {
-    if (socket) {
-      socket.emit("CLEAR_NAVIGATE");
+  const handleCastToTV = async () => {
+    if (await sendDeviceCommand("navigate", { dashboardId: viewId })) {
+      alert(`${t("Befehl gesendet: Alle verbundenen Displays wechseln auf")} "${viewName || viewId}".`);
+    }
+  };
+
+  const handleStopCast = async () => {
+    if (await sendDeviceCommand("clear-navigate")) {
       alert(t("Befehl gesendet: Alle Displays kehren zurück."));
     }
   };
 
   const handleRefreshDevices = (onlyThisView: boolean) => {
-    if (!socket) {
-      alert(t("Keine Verbindung zum WebSocket-Server."));
-      return;
-    }
-    socket.emit("REFRESH_DEVICE", onlyThisView ? viewId : null);
+    void sendDeviceCommand("refresh", onlyThisView ? { dashboardId: viewId } : {});
   };
 
   const copyWidgetToClipboard = (widget: any) => {

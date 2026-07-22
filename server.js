@@ -34,28 +34,17 @@ app.prepare().then(() => {
     }
   });
 
+  // Der Socket ist bewusst NUR ein Empfangskanal. Displays verbinden sich
+  // ohne Anmeldung (der View ist offen) und hören zu — mehr nicht.
+  //
+  // Früher standen hier Handler, die client-gesendete Events ungeprüft an
+  // alle Displays weitergereicht haben. Wer den Server erreichte, konnte
+  // damit jedes Display umschalten oder neu laden (#63). Gesendet wird
+  // jetzt ausschließlich serverseitig aus den API-Routen heraus, über
+  // global.LIVE_SYNC_IO — und die verlangen eine Anmeldung:
+  //   POST /api/devices/navigate | clear-navigate | refresh
   io.on('connection', (socket) => {
     console.log('Display connected to live-sync:', socket.id);
-
-    socket.on('LAYOUT_UPDATED', (dashboardId) => {
-       console.log('Broadcasting LAYOUT_UPDATED for', dashboardId);
-       io.emit('LAYOUT_UPDATED', dashboardId);
-    });
-
-    socket.on('FORCE_NAVIGATE', (dashboardId) => {
-       console.log('Forcing all displays to navigate to', dashboardId);
-       io.emit('FORCE_NAVIGATE', dashboardId);
-    });
-
-    socket.on('CLEAR_NAVIGATE', () => {
-       console.log('Clearing all forced navigations');
-       io.emit('CLEAR_NAVIGATE');
-    });
-
-    socket.on('REFRESH_DEVICE', (dashboardId) => {
-       console.log('Refreshing devices', dashboardId || '(all)');
-       io.emit('REFRESH_DEVICE', dashboardId || null);
-    });
 
     socket.on('disconnect', () => {
       console.log('Display disconnected:', socket.id);

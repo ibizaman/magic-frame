@@ -255,7 +255,7 @@ function MobileEditorInner() {
         }),
       });
       if (!res.ok) throw new Error("save failed");
-      if (socket) socket.emit("LAYOUT_UPDATED", currentDashboardId);
+      // LAYOUT_UPDATED sendet /api/layout/sync serverseitig.
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(null), 2000);
     } catch {

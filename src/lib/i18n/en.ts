@@ -1791,6 +1791,14 @@ export const EN: Record<string, string> = {
     "Font scales with the width (responsive) — exactly like on the display.",
   "Schrift fest:": "Fixed font:",
   "Manuell": "Manual",
+  "Befehl fehlgeschlagen":
+    "Command failed",
+  "Netzwerkfehler — Befehl nicht gesendet.":
+    "Network error — command was not sent.",
+  "Live-Sync ist nicht verfügbar":
+    "Live sync is not available",
+  "dashboardId fehlt":
+    "dashboardId is missing",
   "Eigenes Bild hochladen":
     "Upload your own image",
   "Lädt hoch…":
