@@ -486,7 +486,7 @@ export default function ViewEditor({
         const maxW = landscapeish ? 1100 : 500;
         const maxH = landscapeish ? 700 : 900;
         const scale = Math.min(maxW / activeDisplay.width, maxH / activeDisplay.height);
-        return { w: Math.round(activeDisplay.width * scale), h: Math.round(activeDisplay.height * scale) };
+        return { w: Math.round(activeDisplay.width * scale), h: Math.round(activeDisplay.height * scale), scale };
       })()
     : null;
 
@@ -502,7 +502,13 @@ export default function ViewEditor({
   // Untere Metadata-Leiste (65px) nur reservieren, wenn sie auch angezeigt wird.
   // Ohne Leiste reicht das Grid bis zum Canvas-Boden — der ResizeObserver misst
   // die geänderte Höhe und maxRows passt sich automatisch an (#28).
-  const metaBarPx = wallpaper.showMetadata !== false ? 65 : 0;
+  // Die Leiste ist auf dem echten Display 65 px hoch. Im 1:1-Modus wird der
+  // Canvas verkleinert — bliebe sie bei 65 px, beanspruchte sie mehr als das
+  // Doppelte ihres echten Anteils (bei 2560x1358: 11 % statt 5 %) und würde
+  // dem Raster Höhe wegnehmen, die es in Wirklichkeit hat.
+  const metaBarPx = wallpaper.showMetadata !== false
+    ? (displayCanvas ? Math.max(10, Math.round(65 * displayCanvas.scale)) : 65)
+    : 0;
 
   useEffect(() => {
     const el = gridAreaRef.current;
@@ -1230,8 +1236,15 @@ export default function ViewEditor({
 
               {wallpaper.showMetadata !== false && (
                 <div
-                  className={`absolute bottom-0 inset-x-0 h-[65px] z-20 pointer-events-none flex flex-row items-center justify-between px-6 transition-all ${(wallpaper.metaBgOpacity ?? 40) > 0 ? "backdrop-blur-md border-t border-[var(--mf-bdr)]/10" : ""}`}
-                  style={{ backgroundColor: `color-mix(in srgb, var(--mf-ovl) ${(wallpaper.metaBgOpacity ?? 40)}%, transparent)` }}
+                  className={`absolute bottom-0 inset-x-0 z-20 pointer-events-none flex flex-row items-center justify-between px-6 transition-all ${(wallpaper.metaBgOpacity ?? 40) > 0 ? "backdrop-blur-md border-t border-[var(--mf-bdr)]/10" : ""}`}
+                  style={{
+                    // Höhe bleibt 65 px wie auf dem echten Display; im
+                    // 1:1-Modus schrumpft `zoom` die Box MIT Inhalt auf
+                    // denselben Anteil, den sie dort einnimmt (= metaBarPx).
+                    height: "65px",
+                    backgroundColor: `color-mix(in srgb, var(--mf-ovl) ${(wallpaper.metaBgOpacity ?? 40)}%, transparent)`,
+                    ...(displayCanvas ? { zoom: displayCanvas.scale } : {}),
+                  }}
                 >
                   <div className="flex items-center gap-2">
                     {wallpaper.showTimer !== false && (
